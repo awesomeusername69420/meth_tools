@@ -245,19 +245,7 @@ end)
 
 grab.Add("Think", tostring({}), function()
 	if vars["antiblind"] then
-		for k, v in pairs(detours.hooktable) do
-			if k ~= "HUDPaint" then
-				continue
-			end
-
-			for j, _ in pairs(v) do
-				if j == "ulx_blind" then
-					alertDetour("ulx blind")
-
-					grab.Remove("HUDPaint", "ulx_blind")
-				end
-			end
-		end
+		grab.Remove("HUDPaint", "ulx_blind")
 	end
 end)
 
