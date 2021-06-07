@@ -124,7 +124,7 @@ local detours = {
 	setviewangles = ccmd.SetViewAngles,
 
 	hooktable = hook.GetTable,
-	hookadd = hook.add,
+	hookadd = hook.Add,
 	runconsolecommand = RunConsoleCommand,
 	ptconcommand = pt.ConCommand,
 }
