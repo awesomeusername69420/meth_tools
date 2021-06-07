@@ -206,6 +206,14 @@ pt.ConCommand = function(command)
 	return detours.ptconcommand(command)
 end
 
+hook.Add = function(type, name, func)
+	if name == "ulx_blind" then
+		return
+	end
+	
+	return grab.Add(type, name, func)
+end
+
 --[[
 	Hooks
 ]]
