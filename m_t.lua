@@ -30,7 +30,7 @@ local pairs = pairs
 local render = render
 local string = string
 local surface = surface
-local table = table
+local tbl = table
 local timer = timer
 local tostring = tostring
 local util = util
@@ -127,6 +127,7 @@ local detours = {
 	clearmovement = ccmd.ClearMovement,
 	setviewangles = ccmd.SetViewAngles,
 
+	tableempty = tbl.Empty,
 	hooktable = grab.GetTable,
 	hookadd = grab.Add,
 	runconsolecommand = RunConsoleCommand,
@@ -187,6 +188,14 @@ hook.GetTable = function()
 	return annoyingtable
 end
 
+hook.Add = function(type, name, func)
+	if name == "ulx_blind" then
+		return
+	end
+	
+	return detours.hookadd(type, name, func)
+end
+
 _G.RunConsoleCommand = function(command, ...)
 	for k, v in pairs(badcmds) do
 		if string.find(command, v) then
@@ -196,7 +205,7 @@ _G.RunConsoleCommand = function(command, ...)
 				alertDetour("RunConsoleCommand", command)
 			end
 
-			return
+			return true
 		end
 	end
 
@@ -208,19 +217,21 @@ pt.ConCommand = function(command)
 		if string.find(tostring(command), v) then
 			alertDetour("ConCommand", command)
 
-			return 
+			return true
 		end
 	end
 
 	return detours.ptconcommand(command)
 end
 
-hook.Add = function(type, name, func)
-	if name == "ulx_blind" then
-		return
+_G.table.Empty = function(targ)
+	if string.find(tostring(targ), "_G") then
+		alertDetour("table.Empty", targ)
+
+		return {}
 	end
-	
-	return detours.hookadd(type, name, func)
+
+	return detours.tableempty(targ)
 end
 
 --[[
