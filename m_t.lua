@@ -124,6 +124,7 @@ local detours = {
 	setviewangles = ccmd.SetViewAngles,
 
 	hooktable = hook.GetTable,
+	hookadd = hook.add,
 	runconsolecommand = RunConsoleCommand,
 	ptconcommand = pt.ConCommand,
 }
@@ -211,7 +212,7 @@ hook.Add = function(type, name, func)
 		return
 	end
 	
-	return grab.Add(type, name, func)
+	return detours.hookadd(type, name, func)
 end
 
 --[[
