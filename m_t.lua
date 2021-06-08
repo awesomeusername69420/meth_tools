@@ -1,19 +1,22 @@
 --[[
 	Commands:
 
-	m_render_fov (int)		|		Sets FOV
-	m_render_toggle_antiblind	|		Toggles anti ULX blind
-	m_render_toggle_fullbright	|		Toggles fullbright
+	m_render_fov (int)			|		Sets FOV
+	m_render_toggle_antiblind		|		Toggles anti ULX blind
+	m_render_toggle_fullbright		|		Toggles fullbright
 	
-	m_tools_gestureloop_set (str)	|		Sets action for gestureloop (ex: "dance")
-	m_tools_psay_message (str)	|		Sets message used for ULX psay spammer
-	m_tools_toggle_gestureloop	|		Toggles gestureloop
-	m_tools_toggle_psay		|		Toggles ULX psay spammer
+	m_tools_gestureloop_set (str)		|		Sets action for gestureloop (ex: "dance")
+	m_tools_psay_message (str)		|		Sets message used for ULX psay spammer
+	m_tools_toggle_gestureloop		|		Toggles gestureloop
+	m_tools_toggle_psay			|		Toggles ULX psay spammer
+	m_tools_toggle_guiopenurl		|		Toggles gui.OpenURL capabilities
 ]]
 
 --[[
 	Localization
 ]]
+
+local methrend = meth_lua_api.render
 
 local cmd = concommand
 local Color = Color
@@ -22,6 +25,7 @@ local FindMetaTable = FindMetaTable
 local game = game
 local GetConVar = GetConVar
 local grab = hook
+local graphicaluserinterface = gui
 local ipairs = ipairs
 local LocalPlayer = LocalPlayer
 local math = math
@@ -60,6 +64,7 @@ local vars = {
 	["gestureloop"] = false,
 	["psay"] = false,
 	["psay_msg"] = "message",
+	["noguiopenurl"] = false,
 }
 
 --[[
@@ -67,8 +72,6 @@ local vars = {
 ]]
 
 local alertDetour = function(evt, data)
-	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
-
 	if not evt then
 		evt = "UNKNOWN_EVENT"
 	end
@@ -77,7 +80,13 @@ local alertDetour = function(evt, data)
 		data = "NO_DATA"
 	end
 
-	MsgC(Color(255, 100, 100), "Blocked ", Color(100, 255, 255), tostring(evt) .. "(" .. tostring(data) .. ")", Color(255, 100, 100), ".\n")
+	if methrend then
+		methrend.PushAlert("Blocked " .. tostring(evt) .. "(" .. tostring(data) .. ")")
+	else
+		surface.PlaySound("garrysmod/balloon_pop_cute.wav")
+	
+		MsgC(Color(255, 100, 100), "Blocked ", Color(100, 255, 255), tostring(evt) .. "(" .. tostring(data) .. ")", Color(255, 100, 100), ".\n")
+	end
 end
 
 local annoyingtable = {["whats the max tabs you can have open on a vpn"] = {nil}, ["how many vpns does it take to stop a ddos"] = {nil}, ["whats better analog or garrys mod"] = {nil}, ["whats the time"] = {nil}, ["is it possible to make a clock in binary"] = {nil}, ["how many cars can you drive at once"] = {nil}, ["did you know there's more planes on the ground than there is submarines in the air"] = {nil}, ["how many busses can you fit on 1 bus"] = {nil}, ["how many tables does it take to support a chair"] = {nil}, ["how many doors does it take to screw a screw"] = {nil}, ["how long can you hold your eyes closed in bed"] = {nil}, ["how long can you hold your breath for under spagetti"] = {nil}, ["whats the fastest time to deliver the mail as mail man"] = {nil}, ["how many bees does it take to make a wasp make honey"] = {nil}, ["If I paint the sun blue will it turn blue"] = {nil}, ["how many beavers does it take to build a dam"] = {nil}, ["how much wood does it take to build a computer"] = {nil}, ["can i have ur credit card number"] = {nil}, ["is it possible to blink and jump at the same time"] = {nil}, ["did you know that dinosaurs were,  on average,  large"] = {nil}, ["how many thursdays does it take to paint an elephant purple"] = {nil}, ["if cars could talk how fast would they go"] = {nil}, ["did you know theres no oxygen in space"] = {nil}, ["do toilets flush the other way in australia"] = {nil}, ["if i finger paint will i get a splinter"] = {nil}, ["can you build me an ant farm"] = {nil}, ["did you know australia hosts 4 out of 6 of the deadliest spiders in the world"] = {nil}, ["is it possible to ride a bike in space"] = {nil}, ["can i make a movie based around your life"] = {nil}, ["how many pants can you put on while wearing pants"] = {nil}, ["if I paint a car red can it wear pants"] = {nil}, ["how come no matter what colour the liquid is the froth is always white"] = {nil}, ["can a hearse driver drive a corpse in the car pool lane"] = {nil}, ["how come the sun is cold at night"] = {nil}, ["why is it called a TV set when there is only one"] = {nil}, ["if i blend strawberries can i have ur number"] = {nil}, ["if I touch the moon will it be as hot as the sun"] = {nil}, ["did u know ur dad is always older than u"] = {nil}, ["did u know the burger king logo spells burger king"] = {nil}, ["did uknow if u chew on broken glass for a few mins,  it starts to taste like blood"] = {nil}, ["did u know running is faster than walking"] = {nil}, ["did u kno the colur blue is called blue because its blue"] = {nil}, ["did you know a shooting star isnt a star"] = {nil}, ["did u know shooting stars dont actually have guns"] = {nil}, ["did u kno the great wall of china is in china"] = {nil}, ["statistictal fact: 100% of non smokers die"] = {nil}, ["did you kmow if you eat you poop it out"] = {nil}, ["did u know rain clouds r called rain clouds cus they are clouds that rain"] = {nil}, ["if cows drink milk is that cow a cannibal"] = {nil}, ["did u know you cant win a staring contest with a stuffed animal"] = {nil}, ["did u know if a race car is at peak speed and hits someone they'll die"] = {nil}, ["did u know the distance between the sun and earth is the same distance as the distance between the earth and the sun"] = {nil}, ["did u kno flat screen tvs arent flat"] = {nil}, ["did u know aeroplane mode on ur phone doesnt make ur phone fly"] = {nil}, ["did u kno too many britdhays can kill you"] = {nil}, ["did u know rock music isnt for rocks"] = {nil}, ["did u know if you eat enough ice you can stop global warming"] = {nil}, ["if ww2 happened before vietnam would that make vietnam world war 2"] = {nil}, ["did you know 3.14 isn't a real pie"] = {nil}, ["did u know 100% of stair accidents happen on stairs"] = {nil}, ["can vampires get AIDS"] = {nil}, ["what type of bird was a dodo"] = {nil}, ["did u know dog backwards is god"] = {nil}, ["did you know on average a dog barks more than a cat"] = {nil}}
@@ -127,6 +136,7 @@ local detours = {
 	clearmovement = ccmd.ClearMovement,
 	setviewangles = ccmd.SetViewAngles,
 
+	openurl = graphicaluserinterface.OpenURL,
 	tableempty = tbl.Empty,
 	hooktable = grab.GetTable,
 	hookadd = grab.Add,
@@ -136,13 +146,13 @@ local detours = {
 
 ccmd.SetViewAngles = function(...)
 	if not ... then
-		return
+		return true
 	end
 
 	local s = string.lower(debug.getinfo(2).short_src)
 
 	if string.find(s, "taunt_camera") then
-		return
+		return true
 	end
 
 	return detours.setviewangles(...)
@@ -150,13 +160,13 @@ end
 
 ccmd.ClearButtons = function(...)
 	if not ... then
-		return
+		return true
 	end
 
 	local s = string.lower(debug.getinfo(2).short_src)
 
 	if string.find(s, "taunt_camera") then
-		return
+		return true
 	end
 
 	return detours.ClearButtons(...)
@@ -164,13 +174,13 @@ end
 
 ccmd.ClearMovement = function(...)
 	if not ... then
-		return
+		return true
 	end
 
 	local s = string.lower(debug.getinfo(2).short_src)
 
 	if string.find(s, "taunt_camera") then
-		return
+		return true
 	end
 
 	return detours.ClearMovement(...)
@@ -189,14 +199,22 @@ hook.GetTable = function()
 end
 
 hook.Add = function(type, name, func)
+	if not name then
+		return true
+	end
+
 	if name == "ulx_blind" then
-		return
+		return true
 	end
 	
 	return detours.hookadd(type, name, func)
 end
 
 _G.RunConsoleCommand = function(command, ...)
+	if not command then
+		return true
+	end
+
 	for k, v in pairs(badcmds) do
 		if string.find(command, v) then
 			if ... then
@@ -213,6 +231,10 @@ _G.RunConsoleCommand = function(command, ...)
 end
 
 pt.ConCommand = function(command)
+	if not command then
+		return true
+	end
+
 	for _, v in pairs(badcmds) do
 		if string.find(tostring(command), v) then
 			alertDetour("ConCommand", command)
@@ -225,6 +247,10 @@ pt.ConCommand = function(command)
 end
 
 _G.table.Empty = function(targ)
+	if not targ then
+		return {}
+	end
+
 	if string.find(tostring(targ), "_G") then
 		alertDetour("table.Empty", targ)
 
@@ -232,6 +258,20 @@ _G.table.Empty = function(targ)
 	end
 
 	return detours.tableempty(targ)
+end
+
+_G.gui.OpenURL = function(...)
+	if not ... then
+		return true
+	end
+
+	if vars["noguiopenurl"] then
+		alertDetour("gui.OpenURL", tostring(...))
+
+		return true
+	else
+		return detours.openurl(...)
+	end
 end
 
 --[[
@@ -364,4 +404,8 @@ cmd.Add("m_tools_toggle_psay", function()
 	else
 		timer.Remove(vars["slowtimer"])
 	end
+end)
+
+cmd.Add("m_tools_toggle_guiopenurl", function()
+	vars["noguiopenurl"] = !vars["noguiopenurl"]
 end)
