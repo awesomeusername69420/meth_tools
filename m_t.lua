@@ -381,7 +381,7 @@ end)
 cmd.Add("m_tools_toggle_gestureloop", function()
 	vars["gestureloop"] = !vars["gestureloop"]
 
-	if vars["gesture"] then
+	if vars["gestureloop"] then
 		timer.Create(vars["fasttimer"], 0.1, 0, function()
 			detours.runconsolecommand("act", vars["gesture"])
 		end)
