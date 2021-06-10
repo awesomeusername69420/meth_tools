@@ -83,16 +83,16 @@ local alertDetour = function(evt, data)
 		evt = "UNKNOWN_EVENT"
 	end
 
-	if not data then
-		data = "NO_DATA"
-	end
-
 	if methrend then
 		methrend.PushAlert("Blocked " .. tostring(evt) .. "(" .. tostring(data) .. ")")
 	else
 		surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 	
-		MsgC(Color(255, 100, 100), "Blocked ", Color(100, 255, 255), tostring(evt) .. "(" .. tostring(data) .. ")", Color(255, 100, 100), ".\n")
+		if not data then
+			MsgC(Color(255, 100, 100), "Blocked ", Color(100, 255, 255), tostring(evt), Color(255, 100, 100), ".\n")
+		else
+			MsgC(Color(255, 100, 100), "Blocked ", Color(100, 255, 255), tostring(evt) .. "(" .. tostring(data) .. ")", Color(255, 100, 100), ".\n")
+		end
 	end
 end
 
