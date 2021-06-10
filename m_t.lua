@@ -129,7 +129,6 @@ local badcmds = {
 	"say",
 	"screenshot",
 	"startmovie",
-	"ulx",
 }
 
 local detours = {
