@@ -16,7 +16,7 @@
 	Localization
 ]]
 
-local methapi = meth_lua_api
+local methapi = meth_lua_api or nil
 local methrend = nil
 
 if methapi then
@@ -105,12 +105,14 @@ local badcmds = {
 	"+moveleft",
 	"+right",
 	"+voicerecord",
+	"+zoom",
 	"-back",
 	"-forward",
 	"-left",
 	"-moveleft",
 	"-right",
 	"-voicerecord",
+	"-zoom",
 	"bind",
 	"bind_mac",
 	"bindtoggle",
@@ -119,10 +121,13 @@ local badcmds = {
 	"demos",
 	"disconnect",
 	"engine_no_focus_sleep",
+	"exit",
+	"fps_max",
 	"impulse",
 	"jpeg",
 	"kill",
 	"mat_texture_limit",
+	"open",
 	"pp_bloom",
 	"pp_bokeh",
 	"pp_dof",
@@ -131,6 +136,7 @@ local badcmds = {
 	"pp_texturize",
 	"pp_texturize_scale",
 	"pp_toytown",
+	"quit",
 	"record",
 	"retry",
 	"say",
