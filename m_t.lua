@@ -16,7 +16,14 @@
 	Localization
 ]]
 
-local methrend = meth_lua_api.render or nil
+local methapi = meth_lua_api
+local methrend = nil
+
+if methapi then
+	if methapi.render then
+		methrend = methapi.render	
+	end
+end
 
 local cmd = concommand
 local Color = Color
