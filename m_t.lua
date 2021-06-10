@@ -16,7 +16,7 @@
 	Localization
 ]]
 
-local methrend = meth_lua_api.render
+local methrend = meth_lua_api.render or nil
 
 local cmd = concommand
 local Color = Color
@@ -129,6 +129,7 @@ local badcmds = {
 	"say",
 	"screenshot",
 	"startmovie",
+	"ulx",
 }
 
 local detours = {
