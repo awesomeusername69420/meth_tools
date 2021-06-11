@@ -101,6 +101,7 @@ local annoyingtable = {["whats the max tabs you can have open on a vpn"] = {nil}
 local badcmds = {
 	"+back",
 	"+forward",
+	"+jump",
 	"+left",
 	"+moveleft",
 	"+right",
@@ -108,6 +109,7 @@ local badcmds = {
 	"+zoom",
 	"-back",
 	"-forward",
+	"-jump",
 	"-left",
 	"-moveleft",
 	"-right",
@@ -116,6 +118,11 @@ local badcmds = {
 	"bind",
 	"bind_mac",
 	"bindtoggle",
+	"cl_chatfilters",
+	"cl_interp",
+	"cl_interp_all",
+	"cl_interp_npcs",
+	"cl_interp_ratio",
 	"cl_yawspeed",
 	"connect",
 	"demos",
@@ -127,6 +134,15 @@ local badcmds = {
 	"jpeg",
 	"kill",
 	"mat_texture_limit",
+	"net_graph",
+	"net_graphheight",
+	"net_graphmsecs",
+	"net_graphpos",
+	"net_graphproportionalfont",
+	"net_graphshowinterp",
+	"net_graphshowlatency",
+	"net_graphsolid",
+	"net_graphtext",
 	"open",
 	"pp_bloom",
 	"pp_bokeh",
@@ -137,6 +153,7 @@ local badcmds = {
 	"pp_texturize_scale",
 	"pp_toytown",
 	"quit",
+	"rate",
 	"record",
 	"retry",
 	"say",
@@ -149,12 +166,12 @@ local detours = {
 	clearmovement = ccmd.ClearMovement,
 	setviewangles = ccmd.SetViewAngles,
 
-	openurl = graphicaluserinterface.OpenURL,
-	tableempty = tbl.Empty,
-	hooktable = grab.GetTable,
 	hookadd = grab.Add,
-	runconsolecommand = RunConsoleCommand,
+	hooktable = grab.GetTable,
+	openurl = graphicaluserinterface.OpenURL,
 	ptconcommand = pt.ConCommand,
+	runconsolecommand = RunConsoleCommand,
+	tableempty = tbl.Empty,
 }
 
 ccmd.SetViewAngles = function(...)
@@ -228,7 +245,11 @@ _G.RunConsoleCommand = function(command, ...)
 		return true
 	end
 
-	for k, v in pairs(badcmds) do
+	for _, v in pairs(badcmds) do
+		if not v then
+			continue
+		end
+		
 		if string.find(command, v) then
 			if ... then
 				alertDetour("RunConsoleCommand", command .. " " .. tostring(...))
@@ -249,6 +270,10 @@ pt.ConCommand = function(command)
 	end
 
 	for _, v in pairs(badcmds) do
+		if not v then
+			continue
+		end
+		
 		if string.find(tostring(command), v) then
 			alertDetour("ConCommand", command)
 
@@ -282,9 +307,9 @@ _G.gui.OpenURL = function(...)
 		alertDetour("gui.OpenURL", tostring(...))
 
 		return true
-	else
-		return detours.openurl(...)
 	end
+	
+	return detours.openurl(...)
 end
 
 --[[
@@ -365,7 +390,7 @@ end)
 	Commands
 ]]
 
--- render
+-- Render
 
 cmd.Add("m_render_fov", function(ply, c, args)
 	args[1] = math.Clamp(args[1], 0, 360)
