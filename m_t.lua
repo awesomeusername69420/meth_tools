@@ -41,6 +41,7 @@ local pairs = pairs
 local render = render
 local string = string
 local surface = surface
+local sys = system
 local tbl = table
 local timer = timer
 local tostring = tostring
@@ -171,6 +172,9 @@ local detours = {
 	openurl = graphicaluserinterface.OpenURL,
 	ptconcommand = pt.ConCommand,
 	runconsolecommand = RunConsoleCommand,
+	syslin = sys.IsLinux,
+	sysosx = sys.IsOSX,
+	syswin = sys.IsWindows,
 	tableempty = tbl.Empty,
 }
 
@@ -310,6 +314,18 @@ _G.gui.OpenURL = function(...)
 	end
 	
 	return detours.openurl(...)
+end
+
+_G.system.IsLinux = function()
+	return false
+end
+
+_G.system.IsOSX = function()
+	return false
+end
+
+_G.system.IsWindows = function()
+	return false
 end
 
 --[[
