@@ -73,7 +73,7 @@ local vars = {
 	["gestureloop"] = false,
 	["psay"] = false,
 	["psay_msg"] = "message",
-	["noguiopenurl"] = false,
+	["noguiopenurl"] = true,
 }
 
 --[[
