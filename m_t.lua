@@ -34,6 +34,7 @@ local GetConVar = GetConVar
 local grab = hook
 local graphicaluserinterface = gui
 local ipairs = ipairs
+local jt = jit
 local LocalPlayer = LocalPlayer
 local math = math
 local MsgC = MsgC
@@ -169,6 +170,7 @@ local detours = {
 
 	hookadd = grab.Add,
 	hooktable = grab.GetTable,
+	jitos = jt.os,
 	openurl = graphicaluserinterface.OpenURL,
 	ptconcommand = pt.ConCommand,
 	runconsolecommand = RunConsoleCommand,
@@ -327,6 +329,8 @@ end
 _G.system.IsWindows = function()
 	return false
 end
+
+jit.os = "Other"
 
 --[[
 	Hooks
