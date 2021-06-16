@@ -435,50 +435,43 @@ end)
 grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 	if not vars["tracers"] then
 		if vars["bounce"] then
-			return ACT_INVALID
-		else
 			return
+		else
+			return ACT_INVALID
 		end
 	end
-
-    if not ply then
-        return ACT_INVALID
-    end
-
+	
     if not ply:IsValid() or not ply:Alive() then
         return
     end
 
     -- 0 = PLAYERANIMEVENT_ATTACK_PRIMARY
 
-    if data == 0 and evt == 0 then
-        local s = tostring(math.random(-123456, 123456)) 
-
-        bullets[s] = {
-            ["src"] = ply:EyePos(),
-            ["dir"] = ply:EyeAngles():Forward(),
-            ["dis"] = 32767,
-        }
-
-        if ply == LocalPlayer() then
-            bullets[s]["col"] = Color(100, 255, 100, 255)
-        else
-            bullets[s]["col"] = Color(255, 100, 100, 255)
-        end
-
-        timer.Simple(3, function()
-            for k, _ in pairs(bullets) do
-                if k == s then
-                    bullets[k] = nil
-                end
-            end
-        end)
+    if not ply == LocalPlayer() then
+    	if data == 0 and evt == 0 then
+    	    local s = tostring(math.random(-123456, 123456)) 
+	
+    	    bullets[s] = {
+    	        ["src"] = ply:EyePos(),
+    	        ["dir"] = ply:EyeAngles():Forward(),
+    	        ["dis"] = 32767,
+    	        bullets[s]["col"] = Color(255, 100, 100, 255)
+    	    }
+	
+    	    timer.Simple(3, function()
+    	        for k, _ in pairs(bullets) do
+    	            if k == s then
+    	                bullets[k] = nil
+    	            end
+    	        end
+    	    end)
+    	end
     end
 
     if vars["bounce"] then
-		return ACT_INVALID
+		return 
 	else
-		return
+		return ACT_INVALID
 	end
 end)
 
