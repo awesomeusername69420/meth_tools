@@ -5,6 +5,7 @@ Probably has typos
 Commands:
 
 	m_render_fov (int)			|		Sets FOV
+	m_render_tracedelay (int)		|		Sets bullet tracer lifespan (in seconds)
 	m_render_toggle_antiblind		|		Toggles anti ULX blind
 	m_render_toggle_fullbright		|		Toggles fullbright
 	m_render_toggle_tracers			|		Toggles bullet tracers
