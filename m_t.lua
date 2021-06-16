@@ -2,6 +2,7 @@
 	Commands:
 
 	m_render_fov (int)			|		Sets FOV
+	m_render_tracedelay (int)		|		Sets bullet tracer lifespan (in seconds)
 	m_render_toggle_antiblind		|		Toggles anti ULX blind
 	m_render_toggle_fullbright		|		Toggles fullbright
 	m_render_toggle_tracers			|		Toggles bullet tracers
@@ -71,6 +72,7 @@ local vars = {
 
 	["fov"] = GetConVar("fov_desired"):GetInt(),
 	["fullbright"] = false,
+	["tracedelay"] = 3,
 	["tracers"] = false,
 	["bounce"] = true,
 
@@ -433,43 +435,41 @@ grab.Add("PreDrawEffects", tostring({}), function()
 end)
 
 grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
-	if not vars["tracers"] then
+	-- 0 = PLAYERANIMEVENT_ATTACK_PRIMARY
+
+	if not vars["tracers"] or not (data == 0 and evt == 0) then
 		if vars["bounce"] then
 			return
 		else
 			return ACT_INVALID
 		end
 	end
-	
+
     if not ply:IsValid() or not ply:Alive() then
         return
     end
 
-    -- 0 = PLAYERANIMEVENT_ATTACK_PRIMARY
-
-    if not ply == LocalPlayer() then
-    	if data == 0 and evt == 0 then
-    	    local s = tostring(math.random(-123456, 123456)) 
+    if ply ~= LocalPlayer() then
+    	local s = tostring(math.random(-123456, 123456)) 
 	
-    	    bullets[s] = {
-    	        ["src"] = ply:EyePos(),
-    	        ["dir"] = ply:EyeAngles():Forward(),
-    	        ["dis"] = 32767,
-    	        bullets[s]["col"] = Color(255, 100, 100, 255)
-    	    }
+    	bullets[s] = {
+    	    ["src"] = ply:EyePos(),
+    	    ["dir"] = ply:EyeAngles():Forward(),
+    	    ["dis"] = 32767,
+    	    ["col"] = Color(255, 100, 100, 255)
+    	}
 	
-    	    timer.Simple(3, function()
-    	        for k, _ in pairs(bullets) do
-    	            if k == s then
-    	                bullets[k] = nil
-    	            end
+    	timer.Simple(vars["tracedelay"], function()
+    	    for k, _ in pairs(bullets) do
+    	        if k == s then
+    	            bullets[k] = nil
     	        end
-    	    end)
-    	end
+    	    end
+    	end)
     end
 
     if vars["bounce"] then
-		return 
+		return
 	else
 		return ACT_INVALID
 	end
@@ -482,9 +482,23 @@ end)
 -- Render
 
 cmd.Add("m_render_fov", function(ply, c, args)
+	if not args[1] then
+		args[1] = 120
+	end
+
 	args[1] = math.Clamp(args[1], 0, 360)
 
-	vars["fov"] = args[1] or 120
+	vars["fov"] = args[1]
+end)
+
+cmd.Add("m_render_tracedelay", function(ply, c, args)
+	if not args[1] then
+		args[1] = 3
+	end
+
+	args[1] = math.Clamp(args[1], 0, 1337)
+
+	vars["fov"] = args[1]
 end)
 
 cmd.Add("m_render_toggle_fullbright", function()
