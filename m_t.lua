@@ -437,7 +437,11 @@ end)
 grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 	-- 0 = PLAYERANIMEVENT_ATTACK_PRIMARY
 
-	if not vars["tracers"] or not (data == 0 and evt == 0) then
+	if not (data == 0 and evt == 0) then
+		return
+	end
+
+	if not vars["tracers"] then
 		if vars["bounce"] then
 			return
 		else
