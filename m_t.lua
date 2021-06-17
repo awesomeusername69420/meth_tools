@@ -487,7 +487,7 @@ end)
 
 cmd.Add("m_render_fov", function(ply, c, args)
 	if not args[1] then
-		args[1] = 120
+		args[1] = GetConVar("fov_desired"):GetInt()
 	end
 
 	args[1] = math.Clamp(args[1], 0, 360)
