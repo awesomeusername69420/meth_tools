@@ -421,16 +421,8 @@ grab.Add("PreDrawEffects", tostring({}), function()
         if not k then
             continue
         end
-
-        local tr = util.TraceLine({
-            start = bullets[k]["src"],
-            endpos = bullets[k]["src"] + bullets[k]["dir"] * bullets[k]["dis"],
-            mask = MASK_SHOT,
-            filter = {},
-            ignoreworld = false,
-        })
-
-        render.DrawLine(bullets[k]["src"], tr.HitPos, bullets[k]["col"], true)
+			
+        render.DrawLine(bullets[k]["src"], bullets[k]["end"], bullets[k]["col"], true)
     end
 end)
 
@@ -463,6 +455,16 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
     	    ["col"] = Color(255, 100, 100, 255)
     	}
 	
+	local tr = util.TraceLine({
+            start = bullets[s]["src"],
+            endpos = bullets[s]["src"] + bullets[s]["dir"] * bullets[s]["dis"],
+            mask = MASK_SHOT,
+            filter = {LocalPlayer()},
+            ignoreworld = false,
+        })
+			
+	bullets[s]["end"] = tr.HitPos
+			
     	timer.Simple(vars["tracedelay"], function()
     	    for k, _ in pairs(bullets) do
     	        if k == s then
