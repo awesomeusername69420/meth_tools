@@ -10,6 +10,7 @@
 	
 	m_tools_gestureloop_set (str)		|		Sets action for gestureloop (ex: "dance")
 	m_tools_psay_message (str)		|		Sets message used for ULX psay spammer
+	m_tools_os_set (str)			|		Sets the OS that will be spoofed (Windows, Linux, OSX, BSD, POSIX, Other)
 	m_tools_toggle_gestureloop		|		Toggles gestureloop
 	m_tools_toggle_psay			|		Toggles ULX psay spammer
 	m_tools_toggle_guiopenurl		|		Toggles gui.OpenURL capabilities
@@ -30,13 +31,14 @@ end
 
 local cmd = concommand
 local Color = Color
-local debug = debug
+local dbug = debug
 local FindMetaTable = FindMetaTable
 local game = game
 local GetConVar = GetConVar
 local grab = hook
 local graphicaluserinterface = gui
 local ipairs = ipairs
+local IsValid = IsValid
 local jt = jit
 local LocalPlayer = LocalPlayer
 local math = math
@@ -84,6 +86,7 @@ local vars = {
 	["psay"] = false,
 	["psay_msg"] = "message",
 	["noguiopenurl"] = true,
+	["os"] = jt.os,
 }
 
 --[[
@@ -178,6 +181,7 @@ local detours = {
 
 	hookadd = grab.Add,
 	hooktable = grab.GetTable,
+	dregcon = dbug.getregistry().Player.ConCommand,
 	jitos = jt.os,
 	openurl = graphicaluserinterface.OpenURL,
 	ptconcommand = pt.ConCommand,
@@ -193,7 +197,7 @@ ccmd.SetViewAngles = function(...)
 		return true
 	end
 
-	local s = string.lower(debug.getinfo(2).short_src)
+	local s = string.lower(dbug.getinfo(2).short_src)
 
 	if string.find(s, "taunt_camera") then
 		return true
@@ -207,7 +211,7 @@ ccmd.ClearButtons = function(...)
 		return true
 	end
 
-	local s = string.lower(debug.getinfo(2).short_src)
+	local s = string.lower(dbug.getinfo(2).short_src)
 
 	if string.find(s, "taunt_camera") then
 		return true
@@ -221,7 +225,7 @@ ccmd.ClearMovement = function(...)
 		return true
 	end
 
-	local s = string.lower(debug.getinfo(2).short_src)
+	local s = string.lower(dbug.getinfo(2).short_src)
 
 	if string.find(s, "taunt_camera") then
 		return true
@@ -298,6 +302,26 @@ pt.ConCommand = function(command)
 	return detours.ptconcommand(command)
 end
 
+dbug.getregistry().Player.ConCommand = function(command)
+	if not command then
+		return true
+	end
+
+	for _, v in pairs(badcmds) do
+		if not v then
+			continue
+		end
+		
+		if string.find(tostring(command), v) then
+			alertDetour("ConCommand", command)
+
+			return true
+		end
+	end
+
+	return detours.dregcon(command)
+end
+
 _G.table.Empty = function(targ)
 	if not targ then
 		return {}
@@ -326,19 +350,43 @@ _G.gui.OpenURL = function(...)
 	return detours.openurl(...)
 end
 
-_G.system.IsLinux = function()
-	return false
-end
+--[[
+	Thing
+]]
 
-_G.system.IsOSX = function()
-	return false
-end
+local function spoofOS(set)
+	local win = string.StartWith(string.lower(set), "windows") or false
+	local bsd = string.StartWith(string.lower(set), "bsd") or false
+	local lin = string.StartWith(string.lower(set), "linux") or false
+	local osx = string.StartWith(string.lower(set), "osx") or false
+	local psx = string.StartWith(string.lower(set), "posix") or false
 
-_G.system.IsWindows = function()
-	return false
-end
+	if win then
+		jit.os = "Windows"
+	elseif lin then
+		jit.os = "Linux"
+	elseif osx then
+		jit.os = "OSX"
+	elseif bsd then
+		jit.os = "BSD"
+	elseif psx then
+		jit.os = "POSIX"
+	else
+		jit.os = "Other"
+	end
 
-jit.os = "Other"
+	_G.system.IsLinux = function()
+		return lin or bsd
+	end
+	
+	_G.system.IsOSX = function()
+		return osx
+	end
+	
+	_G.system.IsWindows = function()
+		return win
+	end
+end
 
 --[[
 	Hooks
@@ -441,7 +489,7 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 		end
 	end
 
-    if not ply:IsValid() or not ply:Alive() then
+    if not IsValid(ply) or not ply:Alive() then
         return
     end
 
@@ -487,7 +535,7 @@ end)
 
 -- Render
 
-cmd.Add("m_render_fov", function(ply, c, args)
+cmd.Add("m_render_fov", function(p, c, args)
 	if not args[1] then
 		args[1] = GetConVar("fov_desired"):GetInt()
 	end
@@ -497,7 +545,7 @@ cmd.Add("m_render_fov", function(ply, c, args)
 	vars["fov"] = args[1]
 end)
 
-cmd.Add("m_render_tracedelay", function(ply, c, args)
+cmd.Add("m_render_tracedelay", function(p, c, args)
 	if not args[1] then
 		args[1] = 3
 	end
@@ -525,12 +573,20 @@ end)
 
 -- Tools
 
-cmd.Add("m_tools_gestureloop_set", function(ply, c, args)
+cmd.Add("m_tools_gestureloop_set", function(p, c, args)
 	vars["gesture"] = args[1] or "dance"
 end)
 
-cmd.Add("m_tools_psay_message", function(ply, c, args)
+cmd.Add("m_tools_psay_message", function(p, c, args)
 	vars["psay_msg"] = args[1] or "message"
+end)
+
+cmd.Add("m_tools_os_set", function(p, c, args)
+	if not args[1] then
+		args[1] = jt.os
+	end
+
+	spoofOS(args[1])
 end)
 
 cmd.Add("m_tools_toggle_gestureloop", function()
@@ -551,9 +607,11 @@ cmd.Add("m_tools_toggle_psay", function()
 	if vars["psay"] then
 		timer.Create(vars["slowtimer"], 1, 0, function()
 			for _, v in ipairs(player.GetAll()) do
-				if v ~= LocalPlayer and v:IsValid() then
-					detours.runconsolecommand("ulx", "psay", v:Name(), vars["psay_msg"])
+				if v == LocalPlayer() or not IsValid(v) then
+					continue
 				end
+
+				detours.runconsolecommand("ulx", "psay", v:Name(), vars["psay_msg"])
 			end
 		end)
 	else
