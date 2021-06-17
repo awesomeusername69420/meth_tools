@@ -426,7 +426,7 @@ grab.Add("PreDrawEffects", tostring({}), function()
             start = bullets[k]["src"],
             endpos = bullets[k]["src"] + bullets[k]["dir"] * bullets[k]["dis"],
             mask = MASK_SHOT,
-            filter = {LocalPlayer()},
+            filter = {},
             ignoreworld = false,
         })
 
