@@ -6,7 +6,8 @@
 	m_render_maxtraces (int)		|		Sets maximum amount of bullet tracers allowed
 	m_render_toggle_antiblind		|		Toggles anti ULX blind
 	m_render_toggle_fullbright		|		Toggles fullbright
-	m_render_toggle_tracers			|		Toggles bullet tracers
+	m_render_toggle_tracers_other		|		Toggles bullet tracers for other people
+	m_render_toggle_tracers_local		|		Toggles bullet tracers for LocalPlayer
 	m_render_toggle_bounce			|		Toggles the attack animation of players
 	m_render_toggle_rgb			|		Toggles rainbow physgun and player
 	
@@ -77,7 +78,8 @@ local vars = {
 	["fov"] = GetConVar("fov_desired"):GetInt(),
 	["fullbright"] = false,
 	["tracedelay"] = 3,
-	["tracers"] = false,
+	["othertracers"] = false,
+	["localtracers"] = false,
 	["maxtraces"] = 1000,
 	["bounce"] = true,
 	["rgb"] = false,
@@ -355,7 +357,7 @@ _G.gui.OpenURL = function(...)
 end
 
 --[[
-	Thing
+	Things
 ]]
 
 local function spoofOS(set)
@@ -389,6 +391,14 @@ local function spoofOS(set)
 	
 	_G.system.IsWindows = function()
 		return win
+	end
+end
+
+local function animReturn()
+	if vars["bounce"] then
+		return
+	else
+		return ACT_INVALID
 	end
 end
 
@@ -478,7 +488,7 @@ end)
 grab.Add("PreDrawEffects", tostring({}), function()
 	render.SetLightingMode(0)
 
-	if not vars["tracers"] then
+	if not vars["othertracers"] and not vars["localtracers"] then
 		return
 	end
 
@@ -498,60 +508,63 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 		return
 	end
 
-	if not vars["tracers"] then
-		if vars["bounce"] then
-			return
-		else
-			return ACT_INVALID
-		end
+	if not vars["othertracers"] and not vars["localtracers"] then
+		return animReturn()
 	end
 
     if not IsValid(ply) or not ply:Alive() then
         return
     end
 
-    if ply ~= LocalPlayer() then
-	if #b < vars["maxtraces"] then
-		if vars["bounce"] then
-			return
-		else
-			return ACT_INVALID
-		end
-	end
-			
-    	local s = tostring(math.random(-123456, 123456)) 
-	
-    	bullets[s] = {
-    	    ["src"] = ply:EyePos(),
-    	    ["dir"] = ply:EyeAngles():Forward(),
-    	    ["dis"] = 32767,
-    	    ["col"] = Color(255, 100, 100, 255)
-    	}
-	
-	local tr = util.TraceLine({
-            start = bullets[s]["src"],
-            endpos = bullets[s]["src"] + bullets[s]["dir"] * bullets[s]["dis"],
-            mask = MASK_SHOT,
-            filter = {LocalPlayer()},
-            ignoreworld = false,
-        })
-			
-	bullets[s]["end"] = tr.HitPos
-			
-    	timer.Simple(vars["tracedelay"], function()
-    	    for k, _ in pairs(bullets) do
-    	        if k == s then
-    	            bullets[k] = nil
-    	        end
-    	    end
-    	end)
+    if vars["othertracers"] then
+    	if ply == LocalPlayer() then
+    		return animReturn()
+    	end
     end
 
-    if vars["bounce"] then
-		return
-	else
-		return ACT_INVALID
+    if vars["localtracers"] then
+    	if ply ~= LocalPlayer() then
+    		return animReturn()
+    	end
+    end
+
+	if #b < vars["maxtraces"] then
+		return animReturn()
 	end
+			
+    local s = tostring(math.random(-123456, 123456)) 
+
+    bullets[s] = {
+        ["src"] = ply:EyePos(),
+        ["dir"] = ply:EyeAngles():Forward(),
+        ["dis"] = 32767
+    }
+
+    if v == LocalPlayer() then
+    	bullets[s]["col"] = Color(100, 255, 100, 255)
+    else
+    	bullets[s]["col"] = Color(255, 100, 100, 255)
+    end
+	
+	local tr = util.TraceLine({
+        start = bullets[s]["src"],
+        endpos = bullets[s]["src"] + bullets[s]["dir"] * bullets[s]["dis"],
+        mask = MASK_SHOT,
+        filter = {LocalPlayer()},
+        ignoreworld = false,
+    })
+			
+	bullets[s]["end"] = tr.HitPos
+		
+    timer.Simple(vars["tracedelay"], function()
+        for k, _ in pairs(bullets) do
+            if k == s then
+                bullets[k] = nil
+            end
+        end
+    end)
+
+    return animReturn()
 end)
 
 --[[
@@ -598,8 +611,12 @@ cmd.Add("m_render_toggle_antiblind", function()
 	vars["antiblind"] = !vars["antiblind"]
 end)
 
-cmd.Add("m_render_toggle_tracers", function()
-	vars["tracers"] = !vars["tracers"]
+cmd.Add("m_render_toggle_tracers_other", function()
+	vars["othertracers"] = !vars["othertracers"]
+end)
+
+cmd.Add("m_render_toggle_tracers_local", function()
+	vars["localtracers"] = !vars["localtracers"]
 end)
 
 cmd.Add("m_render_toggle_bounce", function()
