@@ -567,7 +567,7 @@ cmd.Add("m_render_tracedelay", function(p, c, args)
 
 	args[1] = math.Clamp(args[1], 0, 1337)
 
-	vars["fov"] = args[1]
+	vars["tracedelay"] = args[1]
 end)
 
 cmd.Add("m_render_toggle_fullbright", function()
