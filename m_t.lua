@@ -406,7 +406,7 @@ end
 	Hooks
 ]]
 
-grab.Add("CalcView", tostring({}), function(ply, pos, angles, fov, zn, zf)
+grab.Add("CalcView", "urmom", function(ply, pos, angles, fov, zn, zf)
 	if not IsValid(ply) then 
 		return
 	end
@@ -439,7 +439,7 @@ grab.Add("CalcView", tostring({}), function(ply, pos, angles, fov, zn, zf)
 	return view
 end)
 
-grab.Add("Think", tostring({}), function()
+grab.Add("Think", "urmom", function()
 	if vars["antiblind"] then
 		grab.Remove("HUDPaint", "ulx_blind")
 	end
@@ -458,7 +458,7 @@ grab.Add("Think", tostring({}), function()
 	end
 end)
 
-grab.Add("RenderScene", tostring({}), function()
+grab.Add("RenderScene", "urmom", function()
 	if vars["fullbright"] then
 		for _, v in ipairs(game.GetWorld():GetMaterials()) do
 			Material(v):SetVector("$color", Vector(1, 1, 1))
@@ -473,7 +473,7 @@ grab.Add("RenderScene", tostring({}), function()
 	end
 end)
 
-grab.Add("PostDrawViewModel", tostring({}), function(viewmodel)
+grab.Add("PostDrawViewModel", "urmom", function(viewmodel)
 	if not viewmodel then
 		return
 	end
@@ -485,7 +485,7 @@ grab.Add("PostDrawViewModel", tostring({}), function(viewmodel)
 	end
 end)
 
-grab.Add("PreDrawEffects", tostring({}), function()
+grab.Add("PreDrawEffects", "urmom", function()
 	render.SetLightingMode(0)
 
 	if not vars["othertracers"] and not vars["localtracers"] then
@@ -501,7 +501,7 @@ grab.Add("PreDrawEffects", tostring({}), function()
     end
 end)
 
-grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
+grab.Add("DoAnimationEvent", "urmom", function(ply, evt, data)
 	-- 0 = PLAYERANIMEVENT_ATTACK_PRIMARY
 
 	if not (data == 0 and evt == 0) then
@@ -516,19 +516,18 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
         return
     end
 
-    if vars["othertracers"] then
-    	if ply == LocalPlayer() then
-    		return animReturn()
+    if ply == LocalPlayer() then
+    	if vars["othertracers"] and not vars["localtracers"] then
+    		return
+    	end
+    else
+    	if vars["localtracers"] and not vars["othertracers"] then
+    		return
     	end
     end
 
-    if vars["localtracers"] then
-    	if ply ~= LocalPlayer() then
-    		return animReturn()
-    	end
-    end
-
-	if #bullets < vars["maxtraces"] then
+	if #bullets >= vars["maxtraces"] then
+		print("big")
 		return animReturn()
 	end
 			
@@ -540,7 +539,7 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
         ["dis"] = 32767
     }
 
-    if v == LocalPlayer() then
+    if ply == LocalPlayer() then
     	bullets[s]["col"] = Color(100, 255, 100, 255)
     else
     	bullets[s]["col"] = Color(255, 100, 100, 255)
@@ -550,7 +549,7 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
         start = bullets[s]["src"],
         endpos = bullets[s]["src"] + bullets[s]["dir"] * bullets[s]["dis"],
         mask = MASK_SHOT,
-        filter = {LocalPlayer()},
+        filter = player.GetAll(),
         ignoreworld = false,
     })
 			
@@ -679,4 +678,6 @@ cmd.Add("m_tools_toggle_guiopenurl", function()
 	vars["noguiopenurl"] = !vars["noguiopenurl"]
 end)
 
-methrend.PushAlert("Successfully loaded Swag Tools!!")
+if methrend then
+	methrend.PushAlert("Successfully loaded Swag Tools!!")
+end
