@@ -564,30 +564,20 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 	local start = ply:EyePos()
 	local dir = ply:EyeAngles():Forward()
 
-	--if ply == LocalPlayer() then
-	--	if methutil then
-	--		if methutil.GetAimbotTarget() ~= 0 then
-	--			local target = methutil.GetAimbotTarget()
-	--			local ent = nil
-	--
-	--			for k, v in ipairs(player.GetAll()) do
-	--				if not k or not v then
-	--					continue
-	--				end
---
-	--				if k == target then
-	--					print(v:Name())
-	--					ent = v
-	--					break
-	--				end
-	--			end
-	--
-	--			if IsValid(ent) then
-	--				dir = ent:LocalToWorld(ent:OBBCenter()) - LocalPlayer():GetShootPos()
-	--			end
-	--		end
-	--	end
-	--end
+	if ply == LocalPlayer() then
+		if methutil then
+			if methutil.GetAimbotTarget() ~= 0 then
+				local target = methutil.GetAimbotTarget()
+				local ent = nil
+	
+				ent = ents.GetByIndex(target)
+	
+				if IsValid(ent) and ent:IsPlayer() then
+					dir = ent:LocalToWorld(ent:OBBCenter()) - LocalPlayer():GetShootPos()
+				end
+			end
+		end
+	end
 
 	local tr = util.TraceLine({
         start = start,
