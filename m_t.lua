@@ -41,6 +41,7 @@ local GetConVar = GetConVar
 local grab = hook
 local graphicaluserinterface = gui
 local ipairs = ipairs
+local istable = istable
 local IsValid = IsValid
 local jt = jit
 local LocalPlayer = LocalPlayer
@@ -402,6 +403,20 @@ local function animReturn()
 	end
 end
 
+local function tableSize(tbl)
+	if not istable(tbl) then
+		return 0
+	end
+
+	local c = 0
+
+	for _, v in pairs(tbl) do
+		c = c + 1
+	end
+
+	return c
+end
+
 --[[
 	Hooks
 ]]
@@ -526,8 +541,7 @@ grab.Add("DoAnimationEvent", "urmom", function(ply, evt, data)
     	end
     end
 
-	if #bullets >= vars["maxtraces"] then
-		print("big")
+	if tableSize(bullets) >= vars["maxtraces"] then
 		return animReturn()
 	end
 			
