@@ -425,7 +425,7 @@ end
 	Hooks
 ]]
 
-grab.Add("CalcView", "urmom", function(ply, pos, angles, fov, zn, zf)
+grab.Add("CalcView", tostring({}), function(ply, pos, angles, fov, zn, zf)
 	if not IsValid(ply) then 
 		return
 	end
@@ -458,7 +458,7 @@ grab.Add("CalcView", "urmom", function(ply, pos, angles, fov, zn, zf)
 	return view
 end)
 
-grab.Add("Think", "urmom", function()
+grab.Add("Think", tostring({}), function()
 	if vars["antiblind"] then
 		grab.Remove("HUDPaint", "ulx_blind")
 	end
@@ -477,7 +477,7 @@ grab.Add("Think", "urmom", function()
 	end
 end)
 
-grab.Add("RenderScene", "urmom", function()
+grab.Add("RenderScene", tostring({}), function()
 	if vars["fullbright"] then
 		for _, v in ipairs(game.GetWorld():GetMaterials()) do
 			Material(v):SetVector("$color", Vector(1, 1, 1))
@@ -492,7 +492,7 @@ grab.Add("RenderScene", "urmom", function()
 	end
 end)
 
-grab.Add("PostDrawViewModel", "urmom", function(viewmodel)
+grab.Add("PostDrawViewModel", tostring({}), function(viewmodel)
 	if not viewmodel then
 		return
 	end
@@ -504,7 +504,7 @@ grab.Add("PostDrawViewModel", "urmom", function(viewmodel)
 	end
 end)
 
-grab.Add("PreDrawEffects", "urmom", function()
+grab.Add("PreDrawEffects", tostring({}), function()
 	render.SetLightingMode(0)
 
 	if not vars["othertracers"] and not vars["localtracers"] then
@@ -520,7 +520,7 @@ grab.Add("PreDrawEffects", "urmom", function()
     end
 end)
 
-grab.Add("DoAnimationEvent", "urmom", function(ply, evt, data)
+grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 	-- 0 = PLAYERANIMEVENT_ATTACK_PRIMARY
 
 	if not (data == 0 and evt == 0) then
