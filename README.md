@@ -10,6 +10,7 @@ Commands:
 	m_render_toggle_fullbright		|		Toggles fullbright
 	m_render_toggle_tracers			|		Toggles bullet tracers
 	m_render_toggle_bounce			|		Toggles the attack animation of players
+	m_render_toggle_rgb			|		Toggles rainbow physgun and player
 	
 	m_tools_gestureloop_set (str)		|		Sets action for gestureloop (ex: "dance")
 	m_tools_psay_message (str)		|		Sets message used for ULX psay spammer
