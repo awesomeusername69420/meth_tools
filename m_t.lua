@@ -411,6 +411,10 @@ local function tableSize(tbl)
 	local c = 0
 
 	for _, v in pairs(tbl) do
+		if not v then
+			continue
+		end
+
 		c = c + 1
 	end
 
@@ -507,8 +511,8 @@ grab.Add("PreDrawEffects", "urmom", function()
 		return
 	end
 
-	for k, _ in pairs(bullets) do
-        if not k then
+	for k, v in pairs(bullets) do
+        if not k or not v then
             continue
         end
 			
@@ -542,38 +546,42 @@ grab.Add("DoAnimationEvent", "urmom", function(ply, evt, data)
     end
 
 	if tableSize(bullets) >= vars["maxtraces"] then
-		return animReturn()
+		table.remove(bullets, 1)
 	end
-			
-    local s = tostring(math.random(-123456, 123456)) 
 
-    bullets[s] = {
-        ["src"] = ply:EyePos(),
-        ["dir"] = ply:EyeAngles():Forward(),
-        ["dis"] = 32767
-    }
+	local col = Color(255, 100, 100, 255)
 
-    if ply == LocalPlayer() then
-    	bullets[s]["col"] = Color(100, 255, 100, 255)
-    else
-    	bullets[s]["col"] = Color(255, 100, 100, 255)
+	if ply == LocalPlayer() then
+    	col = Color(100, 255, 100, 255)
     end
-	
+
+	local bend = Vector(0, 0, 0)
+	local start = ply:EyePos()
+	local dir = ply:EyeAngles():Forward()
+
 	local tr = util.TraceLine({
-        start = bullets[s]["src"],
-        endpos = bullets[s]["src"] + bullets[s]["dir"] * bullets[s]["dis"],
+        start = start,
+        endpos = start + dir * 32767,
         mask = MASK_SHOT,
         filter = player.GetAll(),
         ignoreworld = false,
     })
-			
-	bullets[s]["end"] = tr.HitPos
+
+    table.insert(bullets, {
+        ["src"] = start,
+        ["dir"] = dir,
+        ["dis"] = 32767,
+        ["col"] = col,
+        ["end"] = tr.HitPos
+    })
+
+    local thingtoremove = bullets[tableSize(bullets)]
 		
     timer.Simple(vars["tracedelay"], function()
-        for k, _ in pairs(bullets) do
-            if k == s then
-                bullets[k] = nil
-            end
+        for k, v in ipairs(bullets) do
+        	if v == thingtoremove then
+        		table.remove(bullets, k)
+        	end
         end
     end)
 
