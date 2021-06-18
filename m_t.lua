@@ -528,7 +528,7 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
     	end
     end
 
-	if #b < vars["maxtraces"] then
+	if #bullets < vars["maxtraces"] then
 		return animReturn()
 	end
 			
