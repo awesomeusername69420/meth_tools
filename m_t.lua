@@ -7,6 +7,7 @@
 	m_render_toggle_fullbright		|		Toggles fullbright
 	m_render_toggle_tracers			|		Toggles bullet tracers
 	m_render_toggle_bounce			|		Toggles the attack animation of players
+	m_render_toggle_rgb				|		Toggles rainbow physgun and player
 	
 	m_tools_gestureloop_set (str)		|		Sets action for gestureloop (ex: "dance")
 	m_tools_psay_message (str)		|		Sets message used for ULX psay spammer
@@ -77,6 +78,7 @@ local vars = {
 	["tracedelay"] = 3,
 	["tracers"] = false,
 	["bounce"] = true,
+	["rgb"] = false,
 
 	-- Tools
 
@@ -429,6 +431,19 @@ grab.Add("Think", tostring({}), function()
 	if vars["antiblind"] then
 		grab.Remove("HUDPaint", "ulx_blind")
 	end
+
+	if vars["rgb"] then
+		local rgc = HSVToColor(CurTime() % 6 * 60, 1, 1)
+
+		LocalPlayer():SetWeaponColor(Vector(rgc.r / 255, rgc.g / 255, rgc.b / 255))
+		LocalPlayer():SetPlayerColor(Vector(rgc.r / 255, rgc.g / 255, rgc.b / 255))
+	else
+		local wt = string.Split(GetConVar("cl_weaponcolor"):GetString(), " ")
+		local pt = string.Split(GetConVar("cl_playercolor"):GetString(), " ")
+
+		LocalPlayer():SetWeaponColor(Vector(wt[1], wt[2], wt[3]))
+		LocalPlayer():SetPlayerColor(Vector(pt[1], pt[2], pt[3]))
+	end
 end)
 
 grab.Add("RenderScene", tostring({}), function()
@@ -571,6 +586,10 @@ cmd.Add("m_render_toggle_bounce", function()
 	vars["bounce"] = !vars["bounce"]
 end)
 
+cmd.Add("m_render_toggle_rgb", function()
+	vars["rgb"] = !vars["rgb"]
+end)
+
 -- Tools
 
 cmd.Add("m_tools_gestureloop_set", function(p, c, args)
@@ -622,3 +641,5 @@ end)
 cmd.Add("m_tools_toggle_guiopenurl", function()
 	vars["noguiopenurl"] = !vars["noguiopenurl"]
 end)
+
+methrend.PushAlert("Successfully loaded Swag Tools!!")
