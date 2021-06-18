@@ -555,7 +555,7 @@ cmd.Add("m_render_fov", function(p, c, args)
 		args[1] = GetConVar("fov_desired"):GetInt()
 	end
 
-	args[1] = math.Clamp(args[1], 0, 360)
+	args[1] = math.Clamp(args[1], 1, 179)
 
 	vars["fov"] = args[1]
 end)
@@ -565,7 +565,7 @@ cmd.Add("m_render_tracedelay", function(p, c, args)
 		args[1] = 3
 	end
 
-	args[1] = math.Clamp(args[1], 0, 1337)
+	args[1] = math.Clamp(args[1], 1, 1337)
 
 	vars["tracedelay"] = args[1]
 end)
