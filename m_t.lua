@@ -25,10 +25,15 @@
 
 local methapi = meth_lua_api or nil
 local methrend = nil
+local methutil = nil
 
 if methapi then
 	if methapi.render then
 		methrend = methapi.render	
+	end
+
+	if methapi.util then
+		methutil = methapi.util
 	end
 end
 
@@ -559,9 +564,33 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 	local start = ply:EyePos()
 	local dir = ply:EyeAngles():Forward()
 
+	if ply == LocalPlayer() then
+		if methutil then
+			if methutil.GetAimbotTarget() ~= 0 then
+				local target = methutil.GetAimbotTarget()
+				local ent = nil
+	
+				for k, v in ipairs(player.GetAll()) do
+					if not k or not v then
+						continue
+					end
+
+					if k == target then
+						ent = v
+						break
+					end
+				end
+	
+				if IsValid(ent) then
+					dir = ent:LocalToWorld(ent:OBBCenter()) - LocalPlayer():GetShootPos()
+				end
+			end
+		end
+	end
+
 	local tr = util.TraceLine({
         start = start,
-        endpos = start + dir * 32767,
+        endpos = start + (dir * 32767),
         mask = MASK_SHOT,
         filter = player.GetAll(),
         ignoreworld = false,
