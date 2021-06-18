@@ -3,6 +3,7 @@
 
 	m_render_fov (int)			|		Sets FOV
 	m_render_tracedelay (int)		|		Sets bullet tracer lifespan (in seconds)
+	m_render_maxtraces (int)		|		Sets maximum amount of bullet tracers allowed
 	m_render_toggle_antiblind		|		Toggles anti ULX blind
 	m_render_toggle_fullbright		|		Toggles fullbright
 	m_render_toggle_tracers			|		Toggles bullet tracers
@@ -77,6 +78,7 @@ local vars = {
 	["fullbright"] = false,
 	["tracedelay"] = 3,
 	["tracers"] = false,
+	["maxtraces"] = 1000,
 	["bounce"] = true,
 	["rgb"] = false,
 
@@ -509,6 +511,14 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
     end
 
     if ply ~= LocalPlayer() then
+	if #b < vars["maxtraces"] then
+		if vars["bounce"] then
+			return
+		else
+			return ACT_INVALID
+		end
+	end
+			
     	local s = tostring(math.random(-123456, 123456)) 
 	
     	bullets[s] = {
@@ -568,6 +578,16 @@ cmd.Add("m_render_tracedelay", function(p, c, args)
 	args[1] = math.Clamp(args[1], 1, 1337)
 
 	vars["tracedelay"] = args[1]
+end)
+
+cmd.Add("m_render_maxtraces", function(p, c, args)
+	if not args[1] then
+		args[1] = 1000
+	end
+
+	args[1] = math.Clamp(args[1], 1, 32767)
+
+	vars["maxtraces"] = args[1]
 end)
 
 cmd.Add("m_render_toggle_fullbright", function()
