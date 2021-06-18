@@ -9,7 +9,8 @@ Commands:
 	m_render_maxtraces (int)		|		Sets maximum amount of bullet tracers allowed
 	m_render_toggle_antiblind		|		Toggles anti ULX blind
 	m_render_toggle_fullbright		|		Toggles fullbright
-	m_render_toggle_tracers			|		Toggles bullet tracers
+	m_render_toggle_tracers_other		|		Toggles bullet tracers for other people
+	m_render_toggle_tracers_local		|		Toggles bullet tracers for LocalPlayer
 	m_render_toggle_bounce			|		Toggles the attack animation of players
 	m_render_toggle_rgb			|		Toggles rainbow physgun and player
 	
