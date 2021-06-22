@@ -431,7 +431,7 @@ end
 ]]
 
 grab.Add("HUDShouldDraw", tostring({}), function(n) 
-    if n == "CHudDamageIndicator"then 
+    if n == "CHudDamageIndicator" then 
        return false 
     end
 end)
