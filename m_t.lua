@@ -430,6 +430,12 @@ end
 	Hooks
 ]]
 
+grab.Add("HUDShouldDraw", tostring({}), function(n) 
+    if n == "CHudDamageIndicator"then 
+       return false 
+    end
+end)
+
 grab.Add("CalcView", tostring({}), function(ply, pos, angles, fov, zn, zf)
 	if not IsValid(ply) then 
 		return
