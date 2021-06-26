@@ -1,9 +1,9 @@
 --[[
 	Commands:
 
-	m_render_fov (int)			|		Sets FOV
-	m_render_tracedelay (int)		|		Sets bullet tracer lifespan (in seconds)
-	m_render_maxtraces (int)		|		Sets maximum amount of bullet tracers allowed
+	m_render_fov_set (int)			|		Sets FOV
+	m_render_tracedelay_set (int)		|		Sets bullet tracer lifespan (in seconds)
+	m_render_maxtraces_set (int)		|		Sets maximum amount of bullet tracers allowed
 	m_render_toggle_antiblind		|		Toggles anti ULX blind
 	m_render_toggle_fullbright		|		Toggles fullbright
 	m_render_toggle_tracers_other		|		Toggles bullet tracers for other people
@@ -12,7 +12,7 @@
 	m_render_toggle_rgb			|		Toggles rainbow physgun and player
 	
 	m_tools_gestureloop_set (str)		|		Sets action for gestureloop (ex: "dance")
-	m_tools_psay_message (str)		|		Sets message used for ULX psay spammer
+	m_tools_psay_message_set (str)		|		Sets message used for ULX psay spammer
 	m_tools_os_set (str)			|		Sets the OS that will be spoofed (Windows, Linux, OSX, BSD, POSIX, Other)
 	m_tools_toggle_gestureloop		|		Toggles gestureloop
 	m_tools_toggle_psay			|		Toggles ULX psay spammer
@@ -620,7 +620,7 @@ end)
 
 -- Render
 
-cmd.Add("m_render_fov", function(p, c, args)
+cmd.Add("m_render_fov_set", function(p, c, args)
 	if not args[1] then
 		args[1] = GetConVar("fov_desired"):GetInt()
 	end
@@ -630,7 +630,7 @@ cmd.Add("m_render_fov", function(p, c, args)
 	vars["fov"] = args[1]
 end)
 
-cmd.Add("m_render_tracedelay", function(p, c, args)
+cmd.Add("m_render_tracedelay_set", function(p, c, args)
 	if not args[1] then
 		args[1] = 3
 	end
@@ -640,7 +640,7 @@ cmd.Add("m_render_tracedelay", function(p, c, args)
 	vars["tracedelay"] = args[1]
 end)
 
-cmd.Add("m_render_maxtraces", function(p, c, args)
+cmd.Add("m_render_maxtraces_set", function(p, c, args)
 	if not args[1] then
 		args[1] = 1000
 	end
@@ -680,7 +680,7 @@ cmd.Add("m_tools_gestureloop_set", function(p, c, args)
 	vars["gesture"] = args[1] or "dance"
 end)
 
-cmd.Add("m_tools_psay_message", function(p, c, args)
+cmd.Add("m_tools_psay_message_set", function(p, c, args)
 	vars["psay_msg"] = args[1] or "message"
 end)
 
