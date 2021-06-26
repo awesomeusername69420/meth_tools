@@ -5,24 +5,24 @@ Designed to work with https://methamphetamine.solutions/ but will (should) work 
 
 
 Render Commands:
-| Command | Description | Default |
-| --- | --- | --- |
-| m_render_fov (int) | Sets FOV | Whatever your FOV is |
-| m_render_tracedelay (int) | Sets bullet tracer lifespan (in seconds) | `3` |
-| m_render_maxtraces (int) | Sets maximum amount of bullet tracers allowed | `1000` |
-| m_render_toggle_antiblind | Toggles anti ULX blind | |
-| m_render_toggle_fullbright | Toggles fullbright | |
-| m_render_toggle_tracers_other | Toggles bullet tracers for other people | |
-| m_render_toggle_tracers_local | Toggles bullet tracers for LocalPlayer | |
-| m_render_toggle_bounce | Toggles the attack animation of players | |
-| m_render_toggle_rgb | Toggles rainbow physgun and player | |
+| Command | Description | Argument(s) | Default |
+| --- | --- | --- | --- |
+| m_render_fov_set | Sets FOV | `integer` | FOV at load time |
+| m_render_tracedelay_set | Sets bullet tracer lifespan (in seconds) | `integer` | `3` |
+| m_render_maxtraces_set | Sets maximum amount of bullet tracers allowed | `integer` | `1000` |
+| m_render_toggle_antiblind | Toggles anti ULX blind | | `False` |
+| m_render_toggle_fullbright | Toggles fullbright | | `False` |
+| m_render_toggle_tracers_other | Toggles bullet tracers for other people | | `False` |
+| m_render_toggle_tracers_local | Toggles bullet tracers for LocalPlayer | | `False` |
+| m_render_toggle_bounce | Toggles the attack animation of players | | `True` |
+| m_render_toggle_rgb | Toggles rainbow physgun and player | | `False` |
 
 Tool commands:
-| Command | Description | Default |
-| --- | --- | --- |
-| m_tools_gestureloop_set (str) | Sets action for gestureloop | `Dance` |
-| m_tools_psay_message (str) | Sets message used for ULX psay spammer | `Message` |
-| m_tools_os_set (str) | Sets the OS that will be spoofed `(Windows, Linux, OSX, BSD, POSIX, Other)`
-| m_tools_toggle_gestureloop | Toggles gestureloop | |
-| m_tools_toggle_psay | Toggles ULX psay spammer | |
-| m_tools_toggle_guiopenurl | Toggles gui.OpenURL capabilities | |
+ Command | Description | Argument(s) | Default |
+| --- | --- | --- | --- |
+| m_tools_gestureloop_set | Sets gesture for gestureloop | `string` | `Dance` |
+| m_tools_psay_message_set | Sets message for ULX psay spammer | `string` | `message` |
+| m_tools_os_set | Sets the OS that will be spoofed | `string—(Windows, Linux, OSX, BSD, POSIX, Other)` | OS at load time |
+| m_tools_toggle_gestureloop | Toggles gestureloop | | `False` |
+| m_tools_toggle_psay | Toggles ULX psay spammer | | `False` |
+| m_tools_toggle_guiopenurl | Toggles gui.OpenURL capabilities | | `True` |
