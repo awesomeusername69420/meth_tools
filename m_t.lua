@@ -651,27 +651,27 @@ cmd.Add("m_render_maxtraces_set", function(p, c, args)
 end)
 
 cmd.Add("m_render_toggle_fullbright", function()
-	vars["fullbright"] = !vars["fullbright"]
+	vars["fullbright"] = not vars["fullbright"]
 end)
 
 cmd.Add("m_render_toggle_antiblind", function()
-	vars["antiblind"] = !vars["antiblind"]
+	vars["antiblind"] = not vars["antiblind"]
 end)
 
 cmd.Add("m_render_toggle_tracers_other", function()
-	vars["othertracers"] = !vars["othertracers"]
+	vars["othertracers"] = not vars["othertracers"]
 end)
 
 cmd.Add("m_render_toggle_tracers_local", function()
-	vars["localtracers"] = !vars["localtracers"]
+	vars["localtracers"] = not vars["localtracers"]
 end)
 
 cmd.Add("m_render_toggle_bounce", function()
-	vars["bounce"] = !vars["bounce"]
+	vars["bounce"] = not vars["bounce"]
 end)
 
 cmd.Add("m_render_toggle_rgb", function()
-	vars["rgb"] = !vars["rgb"]
+	vars["rgb"] = not vars["rgb"]
 end)
 
 -- Tools
@@ -693,7 +693,7 @@ cmd.Add("m_tools_os_set", function(p, c, args)
 end)
 
 cmd.Add("m_tools_toggle_gestureloop", function()
-	vars["gestureloop"] = !vars["gestureloop"]
+	vars["gestureloop"] = not vars["gestureloop"]
 
 	if vars["gestureloop"] then
 		timer.Create(vars["fasttimer"], 0.1, 0, function()
@@ -705,7 +705,7 @@ cmd.Add("m_tools_toggle_gestureloop", function()
 end)
 
 cmd.Add("m_tools_toggle_psay", function()
-	vars["psay"] = !vars["psay"]
+	vars["psay"] = not vars["psay"]
 
 	if vars["psay"] then
 		timer.Create(vars["slowtimer"], 1, 0, function()
@@ -723,7 +723,7 @@ cmd.Add("m_tools_toggle_psay", function()
 end)
 
 cmd.Add("m_tools_toggle_guiopenurl", function()
-	vars["noguiopenurl"] = !vars["noguiopenurl"]
+	vars["noguiopenurl"] = not vars["noguiopenurl"]
 end)
 
 if methrend then
