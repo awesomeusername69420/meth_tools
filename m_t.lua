@@ -5,6 +5,7 @@
 	m_render_tracedelay_set (int)		|		Sets bullet tracer lifespan (in seconds)
 	m_render_maxtraces_set (int)		|		Sets maximum amount of bullet tracers allowed
 	m_render_toggle_antiblind		|		Toggles anti ULX blind
+	m_render_toggle_antialert		|		Toggles anti on screen alerts
 	m_render_toggle_fullbright		|		Toggles fullbright
 	m_render_toggle_tracers_other		|		Toggles bullet tracers for other people
 	m_render_toggle_tracers_local		|		Toggles bullet tracers for LocalPlayer
@@ -95,6 +96,7 @@ local vars = {
 
 	["antiblind"] = false,
 	["antigag"] = false,
+	["antialert"] = false,
 	["gesture"] = "dance",
 	["gestureloop"] = false,
 	["psay"] = false,
@@ -435,7 +437,11 @@ end
 ]]
 
 grab.Add("HUDShouldDraw", tostring({}), function(n) 
-    if n == "CHudDamageIndicator" then 
+	if n == "CHudGMod" then
+		return not vars["antialert"]
+	end
+
+    if n == "CHudDamageIndicator" then
        return false 
     end
 end)
@@ -489,6 +495,12 @@ grab.Add("Think", tostring({}), function()
 			
 		if LocalPlayer():GetNWBool("Muted", false) then
 			LocalPlayer():SetNWBool("Muted", false)
+		end
+
+		if ulx then
+			if ulx["gagUser"] then
+				ulx["gagUser"](false)
+			end
 		end
 	end
 
@@ -693,6 +705,10 @@ end)
 
 cmd.Add("m_render_toggle_rgb", function()
 	vars["rgb"] = not vars["rgb"]
+end)
+
+cmd.Add("m_render_toggle_antialert", function()
+	vars["antialert"] = not vars["antialert"]
 end)
 
 -- Tools
