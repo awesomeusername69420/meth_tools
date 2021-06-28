@@ -25,5 +25,5 @@ Tool commands:
 | m_tools_os_set | Sets the OS that will be spoofed | `string—(Windows, Linux, OSX, BSD, POSIX, Other)` | OS at load time |
 | m_tools_toggle_gestureloop | Toggles gestureloop | | `False` |
 | m_tools_toggle_psay | Toggles ULX psay spammer | | `False` |
-| m_tools_toggle_guiopenurl | Toggles gui.OpenURL capabilities | | `True` |
+| m_tools_toggle_guiopenurl | Toggles gui.OpenURL detour | | `True` |
 | m_tools_toggle_antigag | Toggles anti ULX gag | | `False` |
