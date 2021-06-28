@@ -17,6 +17,7 @@
 	m_tools_toggle_gestureloop		|		Toggles gestureloop
 	m_tools_toggle_psay			|		Toggles ULX psay spammer
 	m_tools_toggle_guiopenurl		|		Toggles gui.OpenURL capabilities
+	m_tools_toggle_antigag			|		Toggles anti ULX gag
 ]]
 
 --[[
@@ -93,6 +94,7 @@ local vars = {
 	-- Tools
 
 	["antiblind"] = false,
+	["antigag"] = false,
 	["gesture"] = "dance",
 	["gestureloop"] = false,
 	["psay"] = false,
@@ -258,18 +260,6 @@ hook.GetTable = function()
 	return annoyingtable
 end
 
-hook.Add = function(type, name, func)
-	if not name then
-		return true
-	end
-
-	if name == "ulx_blind" then
-		return true
-	end
-	
-	return detours.hookadd(type, name, func)
-end
-
 _G.RunConsoleCommand = function(command, ...)
 	if not command then
 		return true
@@ -408,22 +398,36 @@ local function animReturn()
 	end
 end
 
-local function tableSize(tbl)
+local function tblstr(tbl)
 	if not istable(tbl) then
-		return 0
+		return ""
 	end
 
-	local c = 0
+	local s = ""
 
-	for _, v in pairs(tbl) do
-		if not v then
-			continue
+	if table.IsSequential(tbl) then
+		for k, v in ipairs(tbl) do
+			local f = " "
+	
+			if k == #tbl then
+				f = ""
+			end
+	
+			s = s .. tostring(v) .. f
 		end
+	else
+		for k, v in pairs(tbl) do
+			local f = " "
 
-		c = c + 1
+			if k == #tbl then
+				f = ""
+			end
+
+			s = s .. tostring(v) .. f
+		end
 	end
 
-	return c
+	return s
 end
 
 --[[
@@ -472,6 +476,16 @@ end)
 grab.Add("Think", tostring({}), function()
 	if vars["antiblind"] then
 		grab.Remove("HUDPaint", "ulx_blind")
+	end
+
+	if vars["antigag"] then
+		grab.Remove("PlayerCanHearPlayersVoice", "ULXGag") -- For new ULX
+
+		grab.Remove("PlayerBindPress", "ULXGagForce") -- For old ULX
+
+		if timer.Exists("GagLocalPlayer") then
+			timer.Remove("GagLocalPlayer")
+		end
 	end
 
 	if vars["rgb"] then
@@ -538,7 +552,10 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 		return
 	end
 
-	if not vars["othertracers"] and not vars["localtracers"] then
+	local ot = vars["othertracers"]
+	local lt = vars["localtracers"]
+
+	if not ot and not lt then
 		return animReturn()
 	end
 
@@ -547,16 +564,16 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
     end
 
     if ply == LocalPlayer() then
-    	if vars["othertracers"] and not vars["localtracers"] then
+    	if ot and not lt then
     		return
     	end
     else
-    	if vars["localtracers"] and not vars["othertracers"] then
+    	if lt and not ot then
     		return
     	end
     end
 
-	if tableSize(bullets) >= vars["maxtraces"] then
+	if #bullets >= vars["maxtraces"] then
 		table.remove(bullets, 1)
 	end
 
@@ -601,7 +618,7 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
         ["end"] = tr.HitPos
     })
 
-    local thingtoremove = bullets[tableSize(bullets)]
+    local thingtoremove = bullets[#bullets]
 		
     timer.Simple(vars["tracedelay"], function()
         for k, v in ipairs(bullets) do
@@ -677,11 +694,19 @@ end)
 -- Tools
 
 cmd.Add("m_tools_gestureloop_set", function(p, c, args)
-	vars["gesture"] = args[1] or "dance"
+	if not args[1] then
+		args[1] = "dance"
+	end
+
+	vars["gesture"] = tblstr(args)
 end)
 
 cmd.Add("m_tools_psay_message_set", function(p, c, args)
-	vars["psay_msg"] = args[1] or "message"
+	if not args[1] then
+		args[1] = "message"
+	end
+
+	vars["psay_msg"] = tblstr(args)
 end)
 
 cmd.Add("m_tools_os_set", function(p, c, args)
@@ -726,6 +751,15 @@ cmd.Add("m_tools_toggle_guiopenurl", function()
 	vars["noguiopenurl"] = not vars["noguiopenurl"]
 end)
 
+cmd.Add("m_tools_toggle_antigag", function()
+	vars["antigag"] = not vars["antigag"]
+end)
+
+-----------------------
+
 if methrend then
 	methrend.PushAlert("Successfully loaded Swag Tools!!")
+else
+	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
+	MsgC(Color(255, 100, 100), "Successfully loaded ", Color(100, 255, 255), "Swag Tools", Color(255, 100, 100), "!!\n")
 end
