@@ -486,6 +486,10 @@ grab.Add("Think", tostring({}), function()
 		if timer.Exists("GagLocalPlayer") then
 			timer.Remove("GagLocalPlayer")
 		end
+			
+		if LocalPlayer():GetNWBool("Muted", false) then
+			LocalPlayer():SetNWBool("Muted", false)
+		end
 	end
 
 	if vars["rgb"] then
