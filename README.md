@@ -11,6 +11,7 @@ Render Commands:
 | m_render_tracedelay_set | Sets bullet tracer lifespan (in seconds) | `integer` | `3` |
 | m_render_maxtraces_set | Sets maximum amount of bullet tracers allowed | `integer` | `1000` |
 | m_render_toggle_antiblind | Toggles anti ULX blind | | `False` |
+| m_render_toggle_antialert | Toggles anti on screen alerts | | `False` |
 | m_render_toggle_fullbright | Toggles fullbright | | `False` |
 | m_render_toggle_tracers_other | Toggles bullet tracers for other people | | `False` |
 | m_render_toggle_tracers_local | Toggles bullet tracers for LocalPlayer | | `False` |
