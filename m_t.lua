@@ -48,6 +48,7 @@ local GetConVar = GetConVar
 local grab = hook
 local graphicaluserinterface = gui
 local ipairs = ipairs
+local isfunction = isfunction
 local istable = istable
 local IsValid = IsValid
 local jt = jit
@@ -103,6 +104,37 @@ local vars = {
 	["psay_msg"] = "message",
 	["noguiopenurl"] = true,
 	["os"] = jt.os,
+}
+
+local concmds = {
+	["int"] = {
+		["m_render_fov_set"] = "fov",
+		["m_render_tracedelay_set"] = "tracedelay",
+		["m_render_maxtraces_set"] = "maxtraces",
+	},
+
+	["str"] = {
+		["m_tools_gestureloop_set"] = "gesture",
+		["m_tools_psay_message_set"] = "psay_msg",
+		["m_tools_os_set"] = "os",
+	},
+
+	["toggle"] = {
+		--render
+		["m_render_toggle_antiblind"] = "antiblind",
+		["m_render_toggle_antialert"] = "antialert",
+		["m_render_toggle_fullbright"] = "fullbriwght",
+		["m_render_toggle_tracers_other"] = "othertracers",
+		["m_render_toggle_tracers_local"] = "localtracers",
+		["m_render_toggle_bounce"] = "bounce",
+		["m_render_toggle_rgb"] = "rgb",
+
+		--tools
+		["m_tools_toggle_gestureloop"] = "gestureloop",
+		["m_tools_toggle_psay"] = "psay",
+		["m_tools_toggle_guiopenurl"] = "noguiopenurl",
+		["m_tools_toggle_antigag"] = "antigag",
+	}
 }
 
 --[[
@@ -359,6 +391,12 @@ end
 ]]
 
 local function spoofOS(set)
+	if not set then
+		return
+	end
+
+	set = tostring(set)
+
 	local win = string.StartWith(string.lower(set), "windows") or false
 	local bsd = string.StartWith(string.lower(set), "bsd") or false
 	local lin = string.StartWith(string.lower(set), "linux") or false
@@ -651,131 +689,73 @@ end)
 	Commands
 ]]
 
--- Render
-
-cmd.Add("m_render_fov_set", function(p, c, args)
-	if not args[1] then
-		args[1] = GetConVar("fov_desired"):GetInt()
+for j, l in pairs(concmds) do
+	if not j or not l then
+		continue
 	end
 
-	args[1] = math.Clamp(args[1], 1, 179)
-
-	vars["fov"] = args[1]
-end)
-
-cmd.Add("m_render_tracedelay_set", function(p, c, args)
-	if not args[1] then
-		args[1] = 3
+	if not istable(l) then
+		continue
 	end
 
-	args[1] = math.Clamp(args[1], 1, 1337)
+	for k, v in pairs(l) do
+		local confunc = function() return end
 
-	vars["tracedelay"] = args[1]
-end)
-
-cmd.Add("m_render_maxtraces_set", function(p, c, args)
-	if not args[1] then
-		args[1] = 1000
-	end
-
-	args[1] = math.Clamp(args[1], 1, 32767)
-
-	vars["maxtraces"] = args[1]
-end)
-
-cmd.Add("m_render_toggle_fullbright", function()
-	vars["fullbright"] = not vars["fullbright"]
-end)
-
-cmd.Add("m_render_toggle_antiblind", function()
-	vars["antiblind"] = not vars["antiblind"]
-end)
-
-cmd.Add("m_render_toggle_tracers_other", function()
-	vars["othertracers"] = not vars["othertracers"]
-end)
-
-cmd.Add("m_render_toggle_tracers_local", function()
-	vars["localtracers"] = not vars["localtracers"]
-end)
-
-cmd.Add("m_render_toggle_bounce", function()
-	vars["bounce"] = not vars["bounce"]
-end)
-
-cmd.Add("m_render_toggle_rgb", function()
-	vars["rgb"] = not vars["rgb"]
-end)
-
-cmd.Add("m_render_toggle_antialert", function()
-	vars["antialert"] = not vars["antialert"]
-end)
-
--- Tools
-
-cmd.Add("m_tools_gestureloop_set", function(p, c, args)
-	if not args[1] then
-		args[1] = "dance"
-	end
-
-	vars["gesture"] = tblstr(args)
-end)
-
-cmd.Add("m_tools_psay_message_set", function(p, c, args)
-	if not args[1] then
-		args[1] = "message"
-	end
-
-	vars["psay_msg"] = tblstr(args)
-end)
-
-cmd.Add("m_tools_os_set", function(p, c, args)
-	if not args[1] then
-		args[1] = jt.os
-	end
-
-	spoofOS(args[1])
-end)
-
-cmd.Add("m_tools_toggle_gestureloop", function()
-	vars["gestureloop"] = not vars["gestureloop"]
-
-	if vars["gestureloop"] then
-		timer.Create(vars["fasttimer"], 0.1, 0, function()
-			detours.runconsolecommand("act", vars["gesture"])
-		end)
-	else
-		timer.Remove(vars["fasttimer"])
-	end
-end)
-
-cmd.Add("m_tools_toggle_psay", function()
-	vars["psay"] = not vars["psay"]
-
-	if vars["psay"] then
-		timer.Create(vars["slowtimer"], 1, 0, function()
-			for _, v in ipairs(player.GetAll()) do
-				if v == LocalPlayer() or not IsValid(v) then
-					continue
+		if j == "int" then
+			confunc = function(p, c, args)
+				if not args[1] then
+					args[1] = 1
 				end
 
-				detours.runconsolecommand("ulx", "psay", v:Name(), vars["psay_msg"])
+				vars[v] = math.floor(args[1])
 			end
-		end)
-	else
-		timer.Remove(vars["slowtimer"])
+		elseif j == "str" then
+			confunc = function(p, c, args)
+				if not args[1] then
+					args[1] = "nil"
+				end
+	
+				vars[v] = tostring(args[1])
+			end
+		elseif j == "toggle" then
+			confunc = function()
+				vars[v] = not vars[v]
+			end
+		else
+			continue
+		end
+
+		if isfunction(confunc) then
+			cmd.Add(k, confunc)
+		end
 	end
-end)
-
-cmd.Add("m_tools_toggle_guiopenurl", function()
-	vars["noguiopenurl"] = not vars["noguiopenurl"]
-end)
-
-cmd.Add("m_tools_toggle_antigag", function()
-	vars["antigag"] = not vars["antigag"]
-end)
+end
 
 -----------------------
+
+timer.Create(vars["fasttimer"], 0.1, 0, function()
+	if not vars["gestureloop"] then
+		return
+	end
+
+	detours.runconsolecommand("act", vars["gesture"])
+end)
+
+timer.Create(vars["slowtimer"], 1, 0, function()
+	spoofOS(vars["os"])
+
+	if not vars["psay"] then
+		return
+	end
+
+	for _, v in ipairs(player.GetAll()) do
+		if v == LocalPlayer() or not IsValid(v) then
+			continue
+		end
+
+		detours.runconsolecommand("ulx", "psay", v:Name(), vars["psay_msg"])
+	end
+end)
 
 if methrend then
 	methrend.PushAlert("Successfully loaded Swag Tools!!")
