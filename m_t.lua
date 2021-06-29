@@ -123,7 +123,7 @@ local concmds = {
 		--render
 		["m_render_toggle_antiblind"] = "antiblind",
 		["m_render_toggle_antialert"] = "antialert",
-		["m_render_toggle_fullbright"] = "fullbriwght",
+		["m_render_toggle_fullbright"] = "fullbright",
 		["m_render_toggle_tracers_other"] = "othertracers",
 		["m_render_toggle_tracers_local"] = "localtracers",
 		["m_render_toggle_bounce"] = "bounce",
