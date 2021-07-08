@@ -49,6 +49,7 @@ local grab = hook
 local graphicaluserinterface = gui
 local ipairs = ipairs
 local isfunction = isfunction
+local isstring = isstring
 local istable = istable
 local IsValid = IsValid
 local jt = jit
@@ -714,8 +715,8 @@ for j, l in pairs(concmds) do
 				if not args[1] then
 					args[1] = "nil"
 				end
-	
-				vars[v] = tostring(args[1])
+
+				vars[v] = tblstr(args)
 			end
 		elseif j == "toggle" then
 			confunc = function()
