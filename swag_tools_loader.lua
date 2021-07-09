@@ -1,6 +1,7 @@
 local Color = Color
 local http = http
 local istable = istable
+local jit = jit
 local MsgC = MsgC
 local RunString = RunString
 local surface = surface
@@ -40,3 +41,5 @@ http.Fetch("https://raw.githubusercontent.com/ts03GCZqIsTZtu4/swag_tools/main/m_
 		end
 	end
 )
+
+jit.flush()
