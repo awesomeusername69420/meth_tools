@@ -1,6 +1,7 @@
 local Color = Color
 local http = http
 local istable = istable
+local MsgC = MsgC
 local RunString = RunString
 local surface = surface
 
