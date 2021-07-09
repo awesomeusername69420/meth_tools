@@ -1,10 +1,13 @@
+local tbc = table.Copy
+
 local Color = Color
-local http = http
+local http = tbc(http)
 local istable = istable
-local jit = jit
+local jit = tbc(jit)
 local MsgC = MsgC
+local pairs = pairs
 local RunString = RunString
-local surface = surface
+local surface = tbc(surface)
 
 local methapi = meth_lua_api or nil
 local methutil = nil
