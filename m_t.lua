@@ -596,19 +596,19 @@ grab.Add("PreDrawEffects", tostring({}), function()
 	end
 
 	for k, v in pairs(bullets) do
-        if not k or not v then
-            continue
-        end
+		if not k or not v then
+			continue
+		end
 		
 		if vars["beamtracers"] then
 			cam.Start3D()
 				render.SetMaterial(Material("cable/redlaser"))
         		render.DrawBeam(bullets[k]["src"], bullets[k]["end"], 4, 1, 1, bullets[k]["col"])
         	cam.End3D()
-        else
+		else
         	render.DrawLine(bullets[k]["src"], bullets[k]["end"], bullets[k]["col"], true)
-        end
-    end
+		end
+	end
 end)
 
 grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
@@ -625,19 +625,19 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 		return animReturn()
 	end
 
-    if not IsValid(ply) or not ply:Alive() then
-        return
-    end
+	if not IsValid(ply) or not ply:Alive() then
+		return
+	end
 
-    if ply == LocalPlayer() then
+	if ply == LocalPlayer() then
     	if ot and not lt then
     		return
     	end
-    else
-    	if lt and not ot then
+	else
+		if lt and not ot then
     		return
     	end
-    end
+	end
 
 	if #bullets >= vars["maxtraces"] then
 		table.remove(bullets, 1)
@@ -647,7 +647,7 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 
 	if ply == LocalPlayer() then
     	col = Color(100, 255, 100, 255)
-    end
+   end
 
 	local bend = Vector(0, 0, 0)
 	local start = nil
@@ -706,9 +706,9 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 		
     timer.Simple(vars["tracedelay"], function()
         for k, v in ipairs(bullets) do
-        	if v == thingtoremove then
-        		table.remove(bullets, k)
-        	end
+				if v == thingtoremove then
+					table.remove(bullets, k)
+				end
         end
     end)
 
