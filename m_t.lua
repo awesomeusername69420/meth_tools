@@ -26,20 +26,7 @@
 	Localization
 ]]
 
-local methapi = meth_lua_api or nil
-local methrend = nil
-local methutil = nil
-
-if methapi then
-	if methapi.render then
-		methrend = methapi.render	
-	end
-
-	if methapi.util then
-		methutil = methapi.util
-	end
-end
-
+local Angle = Angle
 local cmd = concommand
 local Color = Color
 local dbug = debug
@@ -67,6 +54,23 @@ local tbl = table
 local timer = timer
 local tostring = tostring
 local util = util
+local Vector = Vector
+
+local methapi = meth_lua_api or nil
+local methrend = nil
+local methutil = nil
+
+if methapi then
+	if istable(methapi) then
+		if methapi.render then
+			methrend = methapi.render	
+		end
+
+		if methapi.util then
+			methutil = methapi.util
+		end
+	end
+end
 
 local pt = FindMetaTable("Player")
 local ccmd = FindMetaTable("CUserCmd")
@@ -479,7 +483,7 @@ end
 	Hooks
 ]]
 
-grab.Add("HUDShouldDraw", tostring({}), function(n) 
+grab.Add("HUDShouldDraw", "deez", function(n) 
 	if n == "CHudGMod" then
 		return not vars["antialert"]
 	end
@@ -489,7 +493,7 @@ grab.Add("HUDShouldDraw", tostring({}), function(n)
     end
 end)
 
-grab.Add("CalcView", tostring({}), function(ply, pos, angles, fov, zn, zf)
+grab.Add("CalcView", "deez", function(ply, pos, angles, fov, zn, zf)
 	if not IsValid(ply) then 
 		return
 	end
@@ -522,7 +526,7 @@ grab.Add("CalcView", tostring({}), function(ply, pos, angles, fov, zn, zf)
 	return view
 end)
 
-grab.Add("Think", tostring({}), function()
+grab.Add("Think", "deez", function()
 	if vars["antiblind"] then
 		grab.Remove("HUDPaint", "ulx_blind")
 	end
@@ -561,7 +565,7 @@ grab.Add("Think", tostring({}), function()
 	end
 end)
 
-grab.Add("RenderScene", tostring({}), function()
+grab.Add("RenderScene", "deez", function()
 	if vars["fullbright"] then
 		for _, v in ipairs(game.GetWorld():GetMaterials()) do
 			Material(v):SetVector("$color", Vector(1, 1, 1))
@@ -576,7 +580,7 @@ grab.Add("RenderScene", tostring({}), function()
 	end
 end)
 
-grab.Add("PostDrawViewModel", tostring({}), function(viewmodel)
+grab.Add("PostDrawViewModel", "deez", function(viewmodel)
 	if not viewmodel then
 		return
 	end
@@ -588,7 +592,7 @@ grab.Add("PostDrawViewModel", tostring({}), function(viewmodel)
 	end
 end)
 
-grab.Add("PreDrawEffects", tostring({}), function()
+grab.Add("PreDrawEffects", "deez", function()
 	render.SetLightingMode(0)
 
 	if not vars["othertracers"] and not vars["localtracers"] then
@@ -611,7 +615,7 @@ grab.Add("PreDrawEffects", tostring({}), function()
 	end
 end)
 
-grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
+grab.Add("DoAnimationEvent", "deez", function(ply, evt, data)
 	-- 0 = PLAYERANIMEVENT_ATTACK_PRIMARY
 
 	if not (data == 0 and evt == 0) then
