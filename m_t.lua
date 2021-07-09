@@ -236,10 +236,7 @@ local detours = {
 	clearmovement = ccmd.ClearMovement,
 	setviewangles = ccmd.SetViewAngles,
 
-	hookadd = grab.Add,
-	hooktable = grab.GetTable,
 	dregcon = dbug.getregistry().Player.ConCommand,
-	jitos = jt.os,
 	openurl = graphicaluserinterface.OpenURL,
 	ptconcommand = pt.ConCommand,
 	runconsolecommand = RunConsoleCommand,
@@ -291,13 +288,13 @@ ccmd.ClearMovement = function(...)
 	return detours.ClearMovement(...)
 end
 
-concommand.GetTable = function()
+_G.concommand.GetTable = function()
 	alertDetour("concommand.GetTable()")
 
 	return annoyingtable
 end
 
-hook.GetTable = function()
+_G.hook.GetTable = function()
 	alertDetour("hook.GetTable()")
 
 	return annoyingtable
@@ -797,3 +794,5 @@ else
 	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 	MsgC(Color(255, 100, 100), "Successfully loaded ", Color(100, 255, 255), "Swag Tools", Color(255, 100, 100), "!!\n")
 end
+
+jt.flush()
