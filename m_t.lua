@@ -7,6 +7,7 @@
 	m_render_toggle_antiblind		|		Toggles anti ULX blind
 	m_render_toggle_antialert		|		Toggles anti on screen alerts
 	m_render_toggle_fullbright		|		Toggles fullbright
+	m_render_toggle_tracers_beam		|		Toggles bullet tracer beam effect
 	m_render_toggle_tracers_other		|		Toggles bullet tracers for other people
 	m_render_toggle_tracers_local		|		Toggles bullet tracers for LocalPlayer
 	m_render_toggle_bounce			|		Toggles the attack animation of players
@@ -54,6 +55,7 @@ local istable = istable
 local IsValid = IsValid
 local jt = jit
 local LocalPlayer = LocalPlayer
+local Material = Material
 local math = math
 local MsgC = MsgC
 local pairs = pairs
@@ -88,6 +90,7 @@ local vars = {
 	["fov"] = GetConVar("fov_desired"):GetInt(),
 	["fullbright"] = false,
 	["tracedelay"] = 3,
+	["beamtracers"] = false,
 	["othertracers"] = false,
 	["localtracers"] = false,
 	["maxtraces"] = 1000,
@@ -125,6 +128,7 @@ local concmds = {
 		["m_render_toggle_antiblind"] = "antiblind",
 		["m_render_toggle_antialert"] = "antialert",
 		["m_render_toggle_fullbright"] = "fullbright",
+		["m_render_toggle_tracers_beam"] = "beamtracers",
 		["m_render_toggle_tracers_other"] = "othertracers",
 		["m_render_toggle_tracers_local"] = "localtracers",
 		["m_render_toggle_bounce"] = "bounce",
@@ -595,8 +599,15 @@ grab.Add("PreDrawEffects", tostring({}), function()
         if not k or not v then
             continue
         end
-			
-        render.DrawLine(bullets[k]["src"], bullets[k]["end"], bullets[k]["col"], true)
+		
+		if vars["beamtracers"] then
+			cam.Start3D()
+				render.SetMaterial(Material("cable/redlaser"))
+        		render.DrawBeam(bullets[k]["src"], bullets[k]["end"], 4, 1, 1, bullets[k]["col"])
+        	cam.End3D()
+        else
+        	render.DrawLine(bullets[k]["src"], bullets[k]["end"], bullets[k]["col"], true)
+        end
     end
 end)
 
@@ -639,8 +650,26 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
     end
 
 	local bend = Vector(0, 0, 0)
-	local start = ply:EyePos()
+	local start = nil
 	local dir = ply:EyeAngles():Forward()
+	local sc = true
+
+	if ply == LocalPlayer() and not LocalPlayer():ShouldDrawLocalPlayer() then
+		sc = false
+	end
+
+	if sc then
+		for i = 0, ply:GetBoneCount() - 1 do
+			if string.find(string.lower(ply:GetBoneName(i)), "head") then
+				start = ply:GetBoneMatrix(i):GetTranslation() + (ply:EyeAngles():Forward() * 2)
+				break
+			end
+		end
+	end
+
+	if not start then
+		start = ply:EyePos()
+	end
 
 	if ply == LocalPlayer() then
 		if methutil then
