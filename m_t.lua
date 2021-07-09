@@ -483,7 +483,7 @@ end
 	Hooks
 ]]
 
-grab.Add("HUDShouldDraw", "deez", function(n) 
+grab.Add("HUDShouldDraw", tostring({}), function(n) 
 	if n == "CHudGMod" then
 		return not vars["antialert"]
 	end
@@ -493,7 +493,7 @@ grab.Add("HUDShouldDraw", "deez", function(n)
     end
 end)
 
-grab.Add("CalcView", "deez", function(ply, pos, angles, fov, zn, zf)
+grab.Add("CalcView", tostring({}), function(ply, pos, angles, fov, zn, zf)
 	if not IsValid(ply) then 
 		return
 	end
@@ -526,7 +526,7 @@ grab.Add("CalcView", "deez", function(ply, pos, angles, fov, zn, zf)
 	return view
 end)
 
-grab.Add("Think", "deez", function()
+grab.Add("Think", tostring({}), function()
 	if vars["antiblind"] then
 		grab.Remove("HUDPaint", "ulx_blind")
 	end
@@ -565,7 +565,7 @@ grab.Add("Think", "deez", function()
 	end
 end)
 
-grab.Add("RenderScene", "deez", function()
+grab.Add("RenderScene", tostring({}), function()
 	if vars["fullbright"] then
 		for _, v in ipairs(game.GetWorld():GetMaterials()) do
 			Material(v):SetVector("$color", Vector(1, 1, 1))
@@ -580,7 +580,7 @@ grab.Add("RenderScene", "deez", function()
 	end
 end)
 
-grab.Add("PostDrawViewModel", "deez", function(viewmodel)
+grab.Add("PostDrawViewModel", tostring({}), function(viewmodel)
 	if not viewmodel then
 		return
 	end
@@ -592,7 +592,7 @@ grab.Add("PostDrawViewModel", "deez", function(viewmodel)
 	end
 end)
 
-grab.Add("PreDrawEffects", "deez", function()
+grab.Add("PreDrawEffects", tostring({}), function()
 	render.SetLightingMode(0)
 
 	if not vars["othertracers"] and not vars["localtracers"] then
@@ -615,7 +615,7 @@ grab.Add("PreDrawEffects", "deez", function()
 	end
 end)
 
-grab.Add("DoAnimationEvent", "deez", function(ply, evt, data)
+grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 	-- 0 = PLAYERANIMEVENT_ATTACK_PRIMARY
 
 	if not (data == 0 and evt == 0) then
