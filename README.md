@@ -1,6 +1,6 @@
 # swag_tools
 
-Probably has typos. \
+Probably has typos, expect jank.\
 Designed to work with https://methamphetamine.solutions/ but will (should) work without it.
 
 
