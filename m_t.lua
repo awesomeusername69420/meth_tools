@@ -26,34 +26,38 @@
 	Localization
 ]]
 
+local tbc = table.Copy
+
 local Angle = Angle
-local cmd = concommand
+local cmd = tbc(concommand)
 local Color = Color
-local dbug = debug
+local dbug = tbc(debug)
 local FindMetaTable = FindMetaTable
-local game = game
+local game = tbc(game)
 local GetConVar = GetConVar
-local grab = hook
-local graphicaluserinterface = gui
+local grab = tbc(hook)
+local graphicaluserinterface = tbc(gui)
 local ipairs = ipairs
 local isfunction = isfunction
 local isstring = isstring
 local istable = istable
 local IsValid = IsValid
-local jt = jit
+local jt = tbc(jit)
 local LocalPlayer = LocalPlayer
 local Material = Material
-local math = math
+local math = tbc(math)
 local MsgC = MsgC
 local pairs = pairs
-local render = render
-local string = string
-local surface = surface
-local sys = system
-local tbl = table
-local timer = timer
+local render = tbc(render)
+local ScrH = ScrH
+local ScrW = ScrW
+local string = tbc(string)
+local surface = tbc(surface)
+local sys = tbc(system)
+local tbl = tbc(table)
+local timer = tbc(timer)
 local tostring = tostring
-local util = util
+local util = tbc(util)
 local Vector = Vector
 
 local methapi = meth_lua_api or nil
