@@ -448,38 +448,6 @@ local function animReturn()
 	end
 end
 
-local function tblstr(tbl)
-	if not istable(tbl) then
-		return ""
-	end
-
-	local s = ""
-
-	if table.IsSequential(tbl) then
-		for k, v in ipairs(tbl) do
-			local f = " "
-	
-			if k == #tbl then
-				f = ""
-			end
-	
-			s = s .. tostring(v) .. f
-		end
-	else
-		for k, v in pairs(tbl) do
-			local f = " "
-
-			if k == #tbl then
-				f = ""
-			end
-
-			s = s .. tostring(v) .. f
-		end
-	end
-
-	return s
-end
-
 --[[
 	Hooks
 ]]
@@ -745,12 +713,12 @@ for j, l in pairs(concmds) do
 				vars[v] = math.floor(args[1])
 			end
 		elseif j == "str" then
-			confunc = function(p, c, args)
-				if not args[1] then
-					args[1] = "nil"
+			confunc = function(p, c, args, argstr)
+				if not argstr then
+					argstr = "nil"
 				end
 
-				vars[v] = tblstr(args)
+				vars[v] = argstr
 			end
 		elseif j == "toggle" then
 			confunc = function()
