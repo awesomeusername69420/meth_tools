@@ -25,7 +25,7 @@ if methapi then
 	end
 end
 
-http.Fetch("https://raw.githubusercontent.com/ts03GCZqIsTZtu4/swag_tools/main/m_t.lua",
+http.Fetch("https://raw.githubusercontent.com/ts03GCZqIsTZtu4/swag_tools/main/swag_tools.lua",
 	function(b)
 		if methutil then
 			methutil.RunString(b)
