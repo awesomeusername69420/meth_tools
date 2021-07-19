@@ -1,4 +1,4 @@
-# swag_tools
+# Meth Tools
 
 Probably has typos, expect jank.
 
@@ -6,6 +6,11 @@ Designed to work with https://methamphetamine.solutions/ but will (should) work 
 *If you are using meth and something breaks, try it without safe mode.*
 
 ---
+
+<h3>Swag Tools Commands</h3>
+
+---
+
 <details>
  <summary>Render Commands</summary>
  
