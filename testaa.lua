@@ -85,7 +85,7 @@ local function faa()
 	end
 end
 
-hook.Add("CreateMove", "a", function(ccmd)
+hook.Add("CreateMove", "", function(ccmd)
 	if cmd.CommandNumber(ccmd) == 0 then
 		return
 	end
