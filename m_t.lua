@@ -26,38 +26,38 @@
 	Localization
 ]]
 
-local tbc = table.Copy
+local table = table.Copy(table)
 
 local Angle = Angle
-local cmd = tbc(concommand)
+local cmd = table.Copy(concommand)
 local Color = Color
-local dbug = tbc(debug)
+local dbug = table.Copy(debug)
 local FindMetaTable = FindMetaTable
-local game = tbc(game)
+local game = table.Copy(game)
 local GetConVar = GetConVar
-local grab = tbc(hook)
-local graphicaluserinterface = tbc(gui)
+local grab = table.Copy(hook)
+local graphicaluserinterface = table.Copy(gui)
 local ipairs = ipairs
 local isfunction = isfunction
 local isstring = isstring
 local istable = istable
 local IsValid = IsValid
-local jt = tbc(jit)
+local jt = table.Copy(jit)
 local LocalPlayer = LocalPlayer
 local Material = Material
-local math = tbc(math)
+local math = table.Copy(math)
 local MsgC = MsgC
 local pairs = pairs
-local render = tbc(render)
+local render = table.Copy(render)
 local ScrH = ScrH
 local ScrW = ScrW
-local string = tbc(string)
-local surface = tbc(surface)
-local sys = tbc(system)
-local tbl = tbc(table)
-local timer = tbc(timer)
+local string = table.Copy(string)
+local surface = table.Copy(surface)
+local sys = table.Copy(system)
+local tbl = table.Copy(table)
+local timer = table.Copy(timer)
 local tostring = tostring
-local util = tbc(util)
+local util = table.Copy(util)
 local Vector = Vector
 
 local methapi = meth_lua_api or nil
@@ -233,6 +233,29 @@ local badcmds = {
 	"say",
 	"screenshot",
 	"startmovie",
+}
+
+local badweps = {
+	"bomb",
+	"bugbait",
+	"c4",
+	"camera",
+	"climb",
+	"crowbar",
+	"fist",
+	"frag",
+	"gravity gun",
+	"grenade",
+	"hand",
+	"ied",
+	"knife",
+	"medkit",
+	"physcannon",
+	"physgun",
+	"physics gun",
+	"slam",
+	"stunstick",
+	"sword",
 }
 
 local detours = {
@@ -448,6 +471,31 @@ local function animReturn()
 	end
 end
 
+local function badWep(w)
+	if not w then
+		return true
+	end
+
+	if not IsValid(w) then
+		return true
+	end
+
+	local class = w:GetClass()
+	local pname = w:GetPrintName()
+
+	for _, v in pairs(badweps) do
+		if string.find(class, v) then
+			return true
+		end
+
+		if string.find(pname, v) then
+			return true
+		end
+	end
+
+	return false
+end
+
 --[[
 	Hooks
 ]]
@@ -610,6 +658,10 @@ grab.Add("DoAnimationEvent", tostring({}), function(ply, evt, data)
 		if lt and not ot then
     		return
     	end
+	end
+
+	if badWep(ply:GetActiveWeapon()) then
+		return animReturn()
 	end
 
 	if #bullets >= vars["maxtraces"] then
