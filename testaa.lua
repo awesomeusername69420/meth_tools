@@ -24,10 +24,12 @@ if methapi then
 	if istable(methapi) then
 		if methapi.var then
 			mvar = methapi.var
-		else
-			return
 		end
 	end
+end
+
+if not mvar then
+	return
 end
 
 -- Variables
