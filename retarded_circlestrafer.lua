@@ -1,24 +1,33 @@
 local table = table.Copy(table)
 
-local Angle = Angle
+local debug = table.Copy(debug)
 local engine = table.Copy(engine)
 local hook = table.Copy(hook)
-local IsValid = IsValid
 local LocalPlayer = LocalPlayer
 local math = table.Copy(math)
-local util = table.Copy(util)
-local Vector = Vector
+
+local meta_cd = debug.getregistry()["CUserCmd"]
+local meta_en = debug.getregistry()["Entity"]
+local meta_pl = debug.getregistry()["Player"]
+local meta_vc = debug.getregistry()["Vector"]
+
+local IN_JUMP = 2
+local IN_MOVELEFT = 512
+local IN_MOVERIGHT = 1024
+local MOVETYPE_LADDER = 9
+local MOVETYPE_NOCLIP = 8
+local MOVETYPE_OBSERVER = 10
 
 local r = 1
 local s = 0
 
 hook.Add("CreateMove", "a", function(cmd)
-	if cmd:CommandNumber() == 0 then
+	if meta_cd.CommandNumber(cmd) == 0 then
 		return
 	end
 
-	local right = cmd:KeyDown(IN_MOVERIGHT)
-	local left = cmd:KeyDown(IN_MOVELEFT)
+	local right = meta_cd.KeyDown(cmd, IN_MOVERIGHT)
+	local left = meta_cd.KeyDown(cmd, IN_MOVELEFT)
 
 	if right then
 		r = 1
@@ -28,12 +37,12 @@ hook.Add("CreateMove", "a", function(cmd)
 		r = -1
 	end
 
-	local mvtyp = LocalPlayer():GetMoveType()
-	local v = LocalPlayer():GetVehicle()
+	local mvtyp = meta_en.GetMoveType(LocalPlayer())
+	local v = meta_pl.GetVehicle(LocalPlayer())
 
-	if (right or left) and cmd:KeyDown(IN_JUMP) and (mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and LocalPlayer():WaterLevel() == 0 and not IsValid(v)) then
-		local vel = LocalPlayer():GetVelocity()
-		local spd = vel:Length2D()
+	if (right or left) and meta_cd.KeyDown(cmd, IN_JUMP) and (mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER and meta_en.WaterLevel(LocalPlayer()) == 0 and not meta_en.IsValid(v)) then
+		local vel = meta_en.GetVelocity(LocalPlayer())
+		local spd = meta_vc.Length2D(vel)
 
 		if spd < 300 then
 			spd = 300
@@ -45,8 +54,8 @@ hook.Add("CreateMove", "a", function(cmd)
 		local dela = r * math.min(del, 15)
 		s = s + dela
 
-		cmd:SetForwardMove(math.cos((s + 90 * r) * (math.pi / 180)) * 450)
-		cmd:SetSideMove(math.sin((s + 90 * r) * (math.pi / 180)) * 450)
+		meta_cd.SetForwardMove(cmd, math.cos((s + 90 * r) * (math.pi / 180)) * 450)
+		meta_cd.SetSideMove(cmd, math.sin((s + 90 * r) * (math.pi / 180)) * 450)
 	else
 		if s ~= 0 then
 			s = 0
