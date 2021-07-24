@@ -21,7 +21,7 @@ local MOVETYPE_OBSERVER = 10
 local r = 1
 local s = 0
 
-hook.Add("CreateMove", "a", function(cmd)
+hook.Add("CreateMove", "", function(cmd)
 	if meta_cd.CommandNumber(cmd) == 0 then
 		return
 	end
