@@ -2,6 +2,7 @@ local table = table.Copy(table)
 
 local Angle = Angle
 local engine = table.Copy(engine)
+local hook = table.Copy(hook)
 local LocalPlayer = LocalPlayer
 local math = table.Copy(math)
 local util = table.Copy(util)
