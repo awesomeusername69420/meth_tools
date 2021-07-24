@@ -3,6 +3,7 @@ local table = table.Copy(table)
 local Angle = Angle
 local engine = table.Copy(engine)
 local hook = table.Copy(hook)
+local IsValid = IsValid
 local LocalPlayer = LocalPlayer
 local math = table.Copy(math)
 local util = table.Copy(util)
@@ -27,7 +28,10 @@ hook.Add("CreateMove", "a", function(cmd)
 		r = -1
 	end
 
-	if (right or left) and cmd:KeyDown(IN_JUMP) then
+	local mvtyp = LocalPlayer():GetMoveType()
+	local v = LocalPlayer():GetVehicle()
+
+	if (right or left) and cmd:KeyDown(IN_JUMP) and (mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and LocalPlayer():WaterLevel() == 0 and not IsValid(v)) then
 		local vel = LocalPlayer():GetVelocity()
 		local spd = vel:Length2D()
 
