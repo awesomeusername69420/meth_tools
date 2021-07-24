@@ -1,11 +1,13 @@
 local table = table.Copy(table)
 
+local concommand = table.Copy(concommand)
 local debug = table.Copy(debug)
 local engine = table.Copy(engine)
 local hook = table.Copy(hook)
 local input = table.Copy(input)
 local LocalPlayer = LocalPlayer
 local math = table.Copy(math)
+local tonumber = tonumber
 
 local meta_cd = debug.getregistry()["CUserCmd"]
 local meta_en = debug.getregistry()["Entity"]
@@ -28,6 +30,7 @@ end
 
 local r = 1
 local s = 0
+local ss = 5
 
 hook.Add("CreateMove", "", function(cmd)
 	if meta_cd.CommandNumber(cmd) == 0 then
@@ -63,7 +66,7 @@ hook.Add("CreateMove", "", function(cmd)
 		end
 
 		local rt = 5.9 + (spd / 1500) * 5
-		local del = (275 / spd) * (2 / 5) * (128 / (1.7 / engine.TickInterval())) * rt
+		local del = (275 / spd) * (2 / ss) * (128 / (1.7 / engine.TickInterval())) * rt
 	
 		local dela = r * math.min(del, 15)
 		s = s + dela
@@ -71,8 +74,17 @@ hook.Add("CreateMove", "", function(cmd)
 		meta_cd.SetForwardMove(cmd, math.cos((s + 90 * r) * (math.pi / 180)) * 450)
 		meta_cd.SetSideMove(cmd, math.sin((s + 90 * r) * (math.pi / 180)) * 450)
 	else
-		if s ~= 0 then
+		if isstrafe then
 			s = 0
+			isstrafe = false
 		end
 	end
+end)
+
+concommand.Add("r_cs_size", function(p, c, args)
+	if not args[1] then
+		args[1] = 5
+	end
+
+	ss = tonumber(args[1])
 end)
