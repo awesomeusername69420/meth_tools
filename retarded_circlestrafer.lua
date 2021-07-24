@@ -3,6 +3,7 @@ local table = table.Copy(table)
 local debug = table.Copy(debug)
 local engine = table.Copy(engine)
 local hook = table.Copy(hook)
+local input = table.Copy(input)
 local LocalPlayer = LocalPlayer
 local math = table.Copy(math)
 
@@ -14,9 +15,16 @@ local meta_vc = debug.getregistry()["Vector"]
 local IN_JUMP = 2
 local IN_MOVELEFT = 512
 local IN_MOVERIGHT = 1024
+local KEY_SPACE = 65
 local MOVETYPE_LADDER = 9
 local MOVETYPE_NOCLIP = 8
 local MOVETYPE_OBSERVER = 10
+
+local ismeth = false
+
+if meth_lua_api then
+	ismeth = true
+end
 
 local r = 1
 local s = 0
@@ -37,10 +45,16 @@ hook.Add("CreateMove", "", function(cmd)
 		r = -1
 	end
 
-	local mvtyp = meta_en.GetMoveType(LocalPlayer())
-	local v = meta_pl.GetVehicle(LocalPlayer())
+	local mvtyp = meta_en.GetMoveType(LocalPlayer()) or 0
+	local v = meta_pl.GetVehicle(LocalPlayer()) or nil
 
-	if (right or left) and meta_cd.KeyDown(cmd, IN_JUMP) and (mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER and meta_en.WaterLevel(LocalPlayer()) == 0 and not meta_en.IsValid(v)) then
+	local j = meta_cd.KeyDown(cmd, IN_JUMP)
+
+	if ismeth then
+		j = input.IsKeyDown(KEY_SPACE)
+	end
+
+	if (right or left) and j and (mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER and meta_en.WaterLevel(LocalPlayer()) == 0 and not meta_en.IsValid(v)) then
 		local vel = meta_en.GetVelocity(LocalPlayer())
 		local spd = meta_vc.Length2D(vel)
 
