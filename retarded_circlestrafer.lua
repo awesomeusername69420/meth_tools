@@ -28,12 +28,11 @@ hook.Add("CreateMove", "a", function(cmd)
 	end
 
 	if (right or left) and cmd:KeyDown(IN_JUMP) then
-		local vel = Vector(300, 300, 0)
+		local vel = LocalPlayer():GetVelocity()
 		local spd = vel:Length2D()
-		local lpos = LocalPlayer():GetPos()
 
-		if spd < 45 then
-			spd = 45
+		if spd < 300 then
+			spd = 300
 		end
 
 		local rt = 5.9 + (spd / 1500) * 5
