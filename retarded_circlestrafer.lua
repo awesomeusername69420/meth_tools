@@ -49,27 +49,27 @@ hook.Add("CreateMove", "", function(cmd)
 		return
 	end
 
-	local j = meta_cd.KeyDown(cmd, IN_JUMP)
-
-	if ismeth then
-		j = input.IsKeyDown(KEY_SPACE)
-	end
-
-	local right = meta_cd.KeyDown(cmd, IN_MOVERIGHT)
-	local left = meta_cd.KeyDown(cmd, IN_MOVELEFT)
-
-	if right then
-		r = 1
-	end
-
-	if left then
-		r = -1
-	end
-
 	local mvtyp = meta_en.GetMoveType(LocalPlayer()) or 0
 	local v = meta_pl.GetVehicle(LocalPlayer()) or nil
 
 	if mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER and meta_en.WaterLevel(LocalPlayer()) == 0 and not meta_en.IsValid(v) then
+		local j = meta_cd.KeyDown(cmd, IN_JUMP)
+
+		if ismeth then
+			j = input.IsKeyDown(KEY_SPACE)
+		end
+	
+		local right = meta_cd.KeyDown(cmd, IN_MOVERIGHT)
+		local left = meta_cd.KeyDown(cmd, IN_MOVELEFT)
+	
+		if right then
+			r = 1
+		end
+	
+		if left then
+			r = -1
+		end
+
 		if vars["ahop"] and j and not meta_en.IsOnGround(LocalPlayer()) then
 			meta_cd.SetButtons(cmd, bit.band(meta_cd.GetButtons(cmd), bit.bnot(IN_JUMP)))
 		end
