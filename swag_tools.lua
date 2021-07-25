@@ -1,178 +1,142 @@
 --[[
-	Commands:
-
-	m_render_fov_set (int)			|		Sets FOV
-	m_render_tracedelay_set (int)		|		Sets bullet tracer lifespan (in seconds)
-	m_render_maxtraces_set (int)		|		Sets maximum amount of bullet tracers allowed
-	m_render_toggle_antiblind		|		Toggles anti ULX blind
-	m_render_toggle_antialert		|		Toggles anti on screen alerts
-	m_render_toggle_fullbright		|		Toggles fullbright
-	m_render_toggle_tracers_beam		|		Toggles bullet tracer beam effect
-	m_render_toggle_tracers_other		|		Toggles bullet tracers for other people
-	m_render_toggle_tracers_local		|		Toggles bullet tracers for LocalPlayer
-	m_render_toggle_bounce			|		Toggles the attack animation of players
-	m_render_toggle_rgb			|		Toggles rainbow physgun and player
-	
-	m_tools_gestureloop_set (str)		|		Sets action for gestureloop (ex: "dance")
-	m_tools_psay_message_set (str)		|		Sets message used for ULX psay spammer
-	m_tools_os_set (str)			|		Sets the OS that will be spoofed (Windows, Linux, OSX, BSD, POSIX, Other)
-	m_tools_toggle_gestureloop		|		Toggles gestureloop
-	m_tools_toggle_psay			|		Toggles ULX psay spammer
-	m_tools_toggle_guiopenurl		|		Toggles gui.OpenURL detour
-	m_tools_toggle_antigag			|		Toggles anti ULX gag
-]]
-
---[[
-	Localization
+	Locales
 ]]
 
 local table = table.Copy(table)
 
-local Angle = Angle
-local cmd = table.Copy(concommand)
+local cam = table.Copy(cam)
 local Color = Color
-local dbug = table.Copy(debug)
-local FindMetaTable = FindMetaTable
-local game = table.Copy(game)
+local concommand = table.Copy(concommand)
+local debug = table.Copy(debug)
+local ents = table.Copy(ents)
+local game = game
 local GetConVar = GetConVar
-local grab = table.Copy(hook)
-local graphicaluserinterface = table.Copy(gui)
+local gui = table.Copy(gui)
+local hook = table.Copy(hook)
+local HSVToColor = HSVToColor
 local ipairs = ipairs
-local isfunction = isfunction
-local isstring = isstring
-local istable = istable
 local IsValid = IsValid
-local jt = table.Copy(jit)
+local jit = table.Copy(jit)
 local LocalPlayer = LocalPlayer
 local Material = Material
 local math = table.Copy(math)
 local MsgC = MsgC
 local pairs = pairs
+local player = table.Copy(player)
 local render = table.Copy(render)
-local ScrH = ScrH
-local ScrW = ScrW
+local RunConsoleCommand = RunConsoleCommand
 local string = table.Copy(string)
 local surface = table.Copy(surface)
-local sys = table.Copy(system)
-local tbl = table.Copy(table)
 local timer = table.Copy(timer)
+local tobool = tobool
 local tostring = tostring
+local type = type
+local UnPredictedCurTime = UnPredictedCurTime
 local util = table.Copy(util)
-local Vector = Vector
 
-local methapi = meth_lua_api or nil
-local methrend = nil
-local methutil = nil
+local meta_an = debug.getregistry()["Angle"]
+local meta_cd = debug.getregistry()["CUserCmd"]
+local meta_cv = debug.getregistry()["ConVar"]
+local meta_en = debug.getregistry()["Entity"]
+local meta_pl = debug.getregistry()["Player"]
+local meta_vc = debug.getregistry()["Vector"]
+local meta_vm = debug.getregistry()["VMatrix"]
 
-if methapi then
-	if istable(methapi) then
-		if methapi.render then
-			methrend = methapi.render	
-		end
+local MASK_SHOT = 1174421507
+local MATERIAL_FOG_NONE = 0
+local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
 
-		if methapi.util then
-			methutil = methapi.util
-		end
+math.randomseed(math.random(-123456, 123456))
+
+-- Meth stuff
+
+local mrend, mutil
+
+if meth_lua_api then
+	if meth_lua_api.render then
+		mrend = meth_lua_api.render
+	end
+
+	if meth_lua_api.util then
+		mutil = meth_lua_api.util
 	end
 end
 
-local pt = FindMetaTable("Player")
-local ccmd = FindMetaTable("CUserCmd")
-
 --[[
-	Variables
+	Varzzzzz
 ]]
-
-local annoyingtable = {["whats the max tabs you can have open on a vpn"] = {nil}, ["how many vpns does it take to stop a ddos"] = {nil}, ["whats better analog or garrys mod"] = {nil}, ["whats the time"] = {nil}, ["is it possible to make a clock in binary"] = {nil}, ["how many cars can you drive at once"] = {nil}, ["did you know there's more planes on the ground than there is submarines in the air"] = {nil}, ["how many busses can you fit on 1 bus"] = {nil}, ["how many tables does it take to support a chair"] = {nil}, ["how many doors does it take to screw a screw"] = {nil}, ["how long can you hold your eyes closed in bed"] = {nil}, ["how long can you hold your breath for under spagetti"] = {nil}, ["whats the fastest time to deliver the mail as mail man"] = {nil}, ["how many bees does it take to make a wasp make honey"] = {nil}, ["If I paint the sun blue will it turn blue"] = {nil}, ["how many beavers does it take to build a dam"] = {nil}, ["how much wood does it take to build a computer"] = {nil}, ["can i have ur credit card number"] = {nil}, ["is it possible to blink and jump at the same time"] = {nil}, ["did you know that dinosaurs were,  on average,  large"] = {nil}, ["how many thursdays does it take to paint an elephant purple"] = {nil}, ["if cars could talk how fast would they go"] = {nil}, ["did you know theres no oxygen in space"] = {nil}, ["do toilets flush the other way in australia"] = {nil}, ["if i finger paint will i get a splinter"] = {nil}, ["can you build me an ant farm"] = {nil}, ["did you know australia hosts 4 out of 6 of the deadliest spiders in the world"] = {nil}, ["is it possible to ride a bike in space"] = {nil}, ["can i make a movie based around your life"] = {nil}, ["how many pants can you put on while wearing pants"] = {nil}, ["if I paint a car red can it wear pants"] = {nil}, ["how come no matter what colour the liquid is the froth is always white"] = {nil}, ["can a hearse driver drive a corpse in the car pool lane"] = {nil}, ["how come the sun is cold at night"] = {nil}, ["why is it called a TV set when there is only one"] = {nil}, ["if i blend strawberries can i have ur number"] = {nil}, ["if I touch the moon will it be as hot as the sun"] = {nil}, ["did u know ur dad is always older than u"] = {nil}, ["did u know the burger king logo spells burger king"] = {nil}, ["did uknow if u chew on broken glass for a few mins,  it starts to taste like blood"] = {nil}, ["did u know running is faster than walking"] = {nil}, ["did u kno the colur blue is called blue because its blue"] = {nil}, ["did you know a shooting star isnt a star"] = {nil}, ["did u know shooting stars dont actually have guns"] = {nil}, ["did u kno the great wall of china is in china"] = {nil}, ["statistictal fact: 100% of non smokers die"] = {nil}, ["did you kmow if you eat you poop it out"] = {nil}, ["did u know rain clouds r called rain clouds cus they are clouds that rain"] = {nil}, ["if cows drink milk is that cow a cannibal"] = {nil}, ["did u know you cant win a staring contest with a stuffed animal"] = {nil}, ["did u know if a race car is at peak speed and hits someone they'll die"] = {nil}, ["did u know the distance between the sun and earth is the same distance as the distance between the earth and the sun"] = {nil}, ["did u kno flat screen tvs arent flat"] = {nil}, ["did u know aeroplane mode on ur phone doesnt make ur phone fly"] = {nil}, ["did u kno too many britdhays can kill you"] = {nil}, ["did u know rock music isnt for rocks"] = {nil}, ["did u know if you eat enough ice you can stop global warming"] = {nil}, ["if ww2 happened before vietnam would that make vietnam world war 2"] = {nil}, ["did you know 3.14 isn't a real pie"] = {nil}, ["did u know 100% of stair accidents happen on stairs"] = {nil}, ["can vampires get AIDS"] = {nil}, ["what type of bird was a dodo"] = {nil}, ["did u know dog backwards is god"] = {nil}, ["did you know on average a dog barks more than a cat"] = {nil}}
 
 local bullets = {}
 
 local vars = {
-	-- Timers
-
-	["fasttimer"] = tostring(math.random(-2147483648, 2147483647)),
-	["slowtimer"] = tostring(math.random(-2147483648, 2147483647)),
+	-- Cunt
+	["hookname"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
+	["timer_fast"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
+	["timer_slow"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
 
 	-- Render
-
-	["fov"] = GetConVar("fov_desired"):GetInt(),
-	["fullbright"] = false,
-	["tracedelay"] = 3,
+	["antiblind"] = false,
 	["beamtracers"] = false,
-	["othertracers"] = false,
-	["localtracers"] = false,
-	["maxtraces"] = 1000,
-	["bounce"] = true,
+	["cfov"] = meta_cv.GetInt(GetConVar("fov_desired")),
+	["fog"] = true,
+	["fullbright"] = false,
+	["maxtracers"] = 1000,
+	["reddeath"] = true,
 	["rgb"] = false,
+	["tracerlife"] = 3,
+	["tracers_local"] = false,
+	["tracers_other"] = false,
 
 	-- Tools
-
-	["antiblind"] = false,
 	["antigag"] = false,
-	["antialert"] = false,
 	["gesture"] = "dance",
-	["gestureloop"] = false,
-	["psay"] = false,
-	["psay_msg"] = "message",
-	["noguiopenurl"] = true,
-	["os"] = jt.os,
+	["gesture_loop"] = false,
+	["gopen"] = true,
+	["psays"] = false,
+	["psays_message"] = "message",
 }
 
-local concmds = {
-	["int"] = {
-		["m_render_fov_set"] = "fov",
-		["m_render_tracedelay_set"] = "tracedelay",
-		["m_render_maxtraces_set"] = "maxtraces",
+local concommands = {
+	["integer"] = {
+		-- Render
+		["st_render_fov_set"] = "cfov",
+		["st_render_tracers_life_set"] = "tracerlife",
+		["st_render_tracers_max_set"] = "maxtracers",
+
+		-- Tools
 	},
 
-	["str"] = {
-		["m_tools_gestureloop_set"] = "gesture",
-		["m_tools_psay_message_set"] = "psay_msg",
-		["m_tools_os_set"] = "os",
+	["string"] = {
+		-- Render
+
+		-- Tools
+		["st_tools_gesture_set"] = "gesture",
+		["st_tools_psay_spam_set"] = "psays_message"
 	},
 
-	["toggle"] = {
-		--render
-		["m_render_toggle_antiblind"] = "antiblind",
-		["m_render_toggle_antialert"] = "antialert",
-		["m_render_toggle_fullbright"] = "fullbright",
-		["m_render_toggle_tracers_beam"] = "beamtracers",
-		["m_render_toggle_tracers_other"] = "othertracers",
-		["m_render_toggle_tracers_local"] = "localtracers",
-		["m_render_toggle_bounce"] = "bounce",
-		["m_render_toggle_rgb"] = "rgb",
+	["boolean"] = {
+		-- Render
+		["st_render_antiblind"] = "antiblind",
+		["st_render_fog"] = "fog",
+		["st_render_fullbright"] = "fullbright",
+		["st_render_rgb"] = "rgb",
+		["st_render_tracers_beam"] = "beamtracers",
+		["st_render_tracers_local"] = "tracers_local",
+		["st_render_tracers_other"] = "tracers",
 
-		--tools
-		["m_tools_toggle_gestureloop"] = "gestureloop",
-		["m_tools_toggle_psay"] = "psay",
-		["m_tools_toggle_guiopenurl"] = "noguiopenurl",
-		["m_tools_toggle_antigag"] = "antigag",
+		-- Tools
+		["st_tools_allow_guiopenurl"] = "gopen",
+		["st_tools_antigag"] = "antigag",
+		["st_tools_gesture_loop"] = "gesture_loop",
+		["st_tools_psay_spam"] = "psays",
 	}
 }
 
---[[
-	Detours
-]]
+local addedCommands = {}
 
-local alertDetour = function(evt, data)
-	if not evt then
-		evt = "UNKNOWN_EVENT"
-	end
+-- nonozone
 
-	if methrend then
-		methrend.PushAlert("Blocked " .. tostring(evt) .. "(" .. tostring(data) .. ")")
-	else
-		surface.PlaySound("garrysmod/balloon_pop_cute.wav")
-	
-		if not data then
-			MsgC(Color(255, 100, 100), "Blocked ", Color(100, 255, 255), tostring(evt), Color(255, 100, 100), ".\n")
-		else
-			MsgC(Color(255, 100, 100), "Blocked ", Color(100, 255, 255), tostring(evt) .. "(" .. tostring(data) .. ")", Color(255, 100, 100), ".\n")
-		end
-	end
-end
-
-local badcmds = {
+local badCommands = {
 	"+back",
 	"+forward",
 	"+jump",
@@ -235,7 +199,7 @@ local badcmds = {
 	"startmovie",
 }
 
-local badweps = {
+local badWeapons = {
 	"bomb",
 	"bugbait",
 	"c4",
@@ -258,237 +222,42 @@ local badweps = {
 	"sword",
 }
 
-local detours = {
-	clearbuttons = ccmd.ClearButtons,
-	clearmovement = ccmd.ClearMovement,
-	setviewangles = ccmd.SetViewAngles,
-
-	dregcon = dbug.getregistry().Player.ConCommand,
-	openurl = graphicaluserinterface.OpenURL,
-	ptconcommand = pt.ConCommand,
-	runconsolecommand = RunConsoleCommand,
-	syslin = sys.IsLinux,
-	sysosx = sys.IsOSX,
-	syswin = sys.IsWindows,
-	tableempty = tbl.Empty,
-}
-
-ccmd.SetViewAngles = function(...)
-	if not ... then
-		return true
-	end
-
-	local s = string.lower(dbug.getinfo(2).short_src)
-
-	if string.find(s, "taunt_camera") then
-		return true
-	end
-
-	return detours.setviewangles(...)
-end
-
-ccmd.ClearButtons = function(...)
-	if not ... then
-		return true
-	end
-
-	local s = string.lower(dbug.getinfo(2).short_src)
-
-	if string.find(s, "taunt_camera") then
-		return true
-	end
-
-	return detours.ClearButtons(...)
-end
-
-ccmd.ClearMovement = function(...)
-	if not ... then
-		return true
-	end
-
-	local s = string.lower(dbug.getinfo(2).short_src)
-
-	if string.find(s, "taunt_camera") then
-		return true
-	end
-
-	return detours.ClearMovement(...)
-end
-
-_G.concommand.GetTable = function()
-	alertDetour("concommand.GetTable()")
-
-	return annoyingtable
-end
-
-_G.hook.GetTable = function()
-	alertDetour("hook.GetTable()")
-
-	return annoyingtable
-end
-
-_G.RunConsoleCommand = function(command, ...)
-	if not command then
-		return true
-	end
-
-	for _, v in pairs(badcmds) do
-		if not v then
-			continue
-		end
-		
-		if string.find(command, v) then
-			if ... then
-				alertDetour("RunConsoleCommand", command .. " " .. tostring(...))
-			else
-				alertDetour("RunConsoleCommand", command)
-			end
-
-			return true
-		end
-	end
-
-	return detours.runconsolecommand(command, ...)
-end
-
-pt.ConCommand = function(command)
-	if not command then
-		return true
-	end
-
-	for _, v in pairs(badcmds) do
-		if not v then
-			continue
-		end
-		
-		if string.find(tostring(command), v) then
-			alertDetour("ConCommand", command)
-
-			return true
-		end
-	end
-
-	return detours.ptconcommand(command)
-end
-
-dbug.getregistry().Player.ConCommand = function(command)
-	if not command then
-		return true
-	end
-
-	for _, v in pairs(badcmds) do
-		if not v then
-			continue
-		end
-		
-		if string.find(tostring(command), v) then
-			alertDetour("ConCommand", command)
-
-			return true
-		end
-	end
-
-	return detours.dregcon(command)
-end
-
-_G.table.Empty = function(targ)
-	if not targ then
-		return {}
-	end
-
-	if string.find(tostring(targ), "_G") then
-		alertDetour("table.Empty", targ)
-
-		return {}
-	end
-
-	return detours.tableempty(targ)
-end
-
-_G.gui.OpenURL = function(...)
-	if not ... then
-		return true
-	end
-
-	if vars["noguiopenurl"] then
-		alertDetour("gui.OpenURL", tostring(...))
-
-		return true
-	end
-	
-	return detours.openurl(...)
-end
-
 --[[
-	Things
+	Fuccncs
 ]]
 
-local function spoofOS(set)
-	if not set then
-		return
+local alert = function(event, data)
+	if not event then
+		event = ""
 	end
 
-	set = tostring(set)
+	if not data then
+		data = ""
+	end
 
-	local win = string.StartWith(string.lower(set), "windows") or false
-	local bsd = string.StartWith(string.lower(set), "bsd") or false
-	local lin = string.StartWith(string.lower(set), "linux") or false
-	local osx = string.StartWith(string.lower(set), "osx") or false
-	local psx = string.StartWith(string.lower(set), "posix") or false
-
-	if win then
-		jit.os = "Windows"
-	elseif lin then
-		jit.os = "Linux"
-	elseif osx then
-		jit.os = "OSX"
-	elseif bsd then
-		jit.os = "BSD"
-	elseif psx then
-		jit.os = "POSIX"
+	if mrend then
+		mrend.PushAlert("Blocked " .. tostring(event) .. "(" .. tostring(data) .. ")")
 	else
-		jit.os = "Other"
-	end
+		surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 
-	_G.system.IsLinux = function()
-		return lin or bsd
-	end
-	
-	_G.system.IsOSX = function()
-		return osx
-	end
-	
-	_G.system.IsWindows = function()
-		return win
+		MsgC(Color(255, 100, 100), "[$W467001Z] ", Color(222, 222, 222), "Blocked ", Color(255, 100, 100), tostring(event) .. "(" .. tostring(data) .. ")", Color(222, 222, 222), "\n")
 	end
 end
 
-local function animReturn()
-	if vars["bounce"] then
-		return
-	else
-		return ACT_INVALID
-	end
-end
-
-local function badWep(w)
-	if not w then
+local function isBadWeapon(weapon)
+	if not weapon or not meta_en.IsValid(weapon) then
 		return true
 	end
 
-	if not IsValid(w) then
+	local class = weapon:GetClass()
+	local pname = weapon:GetPrintName()
+
+	if not class or not pname then
 		return true
 	end
 
-	local class = w:GetClass()
-	local pname = w:GetPrintName()
-
-	for _, v in pairs(badweps) do
-		if string.find(class, v) then
-			return true
-		end
-
-		if string.find(pname, v) then
+	for _, v in ipairs(badWeapons) do
+		if string.find(class, v) or string.find(pname, v) then
 			return true
 		end
 	end
@@ -497,94 +266,328 @@ local function badWep(w)
 end
 
 --[[
-	Hooks
+	Deeztourz (funy)
 ]]
 
-grab.Add("HUDShouldDraw", "", function(n) 
-	if n == "CHudGMod" then
-		return not vars["antialert"]
-	end
+local safefuncs = {
+	cb = meta_cd.ClearButtons,
+	cm = meta_cd.ClearMovement,
+	sva = meta_cd.SetViewAngles,
 
-    if n == "CHudDamageIndicator" then
-       return false 
-    end
-end)
+	msgc = MsgC,
+	cremove = concommand.Remove,
+	ctable = concommand.GetTable,
+	gcv = GetConVar,
+	gopen = gui.OpenURL,
+	htable = hook.GetTable,
+	pcon = meta_pl.ConCommand,
+	rcon = RunConsoleCommand,
+	tempty = table.Empty,
+	texists = timer.Exists,
+}
 
-grab.Add("CalcView", "", function(ply, pos, angles, fov, zn, zf)
-	if not IsValid(ply) then 
+meta_cd.ClearButtons = function(...)
+	if not ... then
 		return
 	end
 
-	local v = ply:GetVehicle()
-	local w = ply:GetActiveWeapon()
-
-	fov = fov + (vars["fov"] - GetConVar("fov_desired"):GetInt())
-
-	local view = {
-		origin = pos,
-		angles = angles,
-		fov = fov,
-		znear = zn,
-		zfar = zf
-	}
-
-	if IsValid(v) then
-		return grab.Run("CalcVehicleView", v, ply, view)
+	if string.find(string.lower(debug.getinfo(2).short_src), "taunt_camera") then
+		return
 	end
 
-	if IsValid(w) then
-		local wf = w.CalcView
-	
-		if wf then
-			view.origin, view.angles, view.fov = wf(w, ply, pos * 1, angles * 1, fov)
+	return safefuncs.cb(...)
+end
+
+meta_cd.ClearMovement = function(...)
+	if not ... then
+		return
+	end
+
+	if string.find(string.lower(debug.getinfo(2).short_src), "taunt_camera") then
+		return
+	end
+
+	return safefuncs.cm(...)
+end
+
+meta_cd.SetViewAngles = function(...)
+	if not ... then
+		return
+	end
+
+	if string.find(string.lower(debug.getinfo(2).short_src), "taunt_camera") then
+		return
+	end
+
+	return safefuncs.sva(...)
+end
+
+_G.GetConVar = function(var)
+	if not var or type(var) ~= "string" then
+		return
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("GetConVar", var)
+
+			return
 		end
 	end
 
-	return view
-end)
+	return safefuncs.gcv(var)
+end
 
-grab.Add("Think", "", function()
-	if vars["antiblind"] then
-		grab.Remove("HUDPaint", "ulx_blind")
+_G.concommand.GetTable = function(...)
+	local nt, ac = safefuncs.ctable()
+
+	for k, _ in pairs(nt) do
+		if table.HasValue(addedCommands, k) then
+			nt[k] = nil
+		end
 	end
 
-	if vars["antigag"] then
-		grab.Remove("PlayerCanHearPlayersVoice", "ULXGag") -- For new ULX
+	alert("concommand.GetTable")
 
-		grab.Remove("PlayerBindPress", "ULXGagForce") -- For old ULX
+	return nt, ac
+end
 
-		if timer.Exists("GagLocalPlayer") then
-			timer.Remove("GagLocalPlayer")
+_G.concommand.Remove = function(var)
+	if not var or type(var) ~= "string" then
+		return
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("concommand.Remove", var)
+
+			return
 		end
-			
-		if LocalPlayer():GetNWBool("Muted", false) then
-			LocalPlayer():SetNWBool("Muted", false)
-		end
+	end
 
-		if ulx then
-			if ulx["gagUser"] then
-				ulx["gagUser"](false)
+	return safefuncs.cremove(var)
+end
+
+_G.hook.GetTable = function(...)
+	local nt = safefuncs.htable()
+
+	for h, ht in pairs(nt) do
+		if type(ht) == "table" then
+			for k, _ in pairs(ht) do
+				if k == vars["hookname"] then
+					ht[k] = nil
+				end
+			end
+
+			if table.Count(ht) == 0 then
+				nt[h] = nil
 			end
 		end
 	end
 
-	if vars["rgb"] then
-		local rgc = HSVToColor(CurTime() % 6 * 60, 1, 1)
+	alert("hook.GetTable")
 
-		LocalPlayer():SetWeaponColor(Vector(rgc.r / 255, rgc.g / 255, rgc.b / 255))
-		LocalPlayer():SetPlayerColor(Vector(rgc.r / 255, rgc.g / 255, rgc.b / 255))
-	else
-		local wt = string.Split(GetConVar("cl_weaponcolor"):GetString(), " ")
-		local pt = string.Split(GetConVar("cl_playercolor"):GetString(), " ")
+	return nt
+end
 
-		LocalPlayer():SetWeaponColor(Vector(wt[1], wt[2], wt[3]))
-		LocalPlayer():SetPlayerColor(Vector(pt[1], pt[2], pt[3]))
+_G.table.Empty = function(tbl)
+	if not tbl or type(tbl) ~= "table" then
+		return
+	end
+
+	if tbl == _G then
+		alert("table.Empty", "_G")
+
+		return
+	end
+
+	return safefuncs.tempty(tbl)
+end
+
+_G.gui.OpenURL = function(url)
+	if not url or type(url) ~= "string" then
+		return
+	end
+
+	if not vars["gopen"] then
+		alert("gui.OpenURL", "\"" .. url .. "\"")
+
+		return
+	end
+
+	return safefuncs.gopen(url)
+end
+
+_G.timer.Exists = function(n)
+	if not n or type(n) ~= "string" then
+		return false
+	end
+
+	if n == vars["timer_fast"] or n == vars["timer_slow"] then
+		return false
+	end
+
+	return safefuncs.texists(n)
+end
+
+_G.RunConsoleCommand = function(cmd, ...)
+	if not cmd or type(cmd) ~= "string" then
+		return
+	end
+
+	local conc = ""
+
+	if ... then
+		conc = " " .. ...
+	end
+
+	for _, v in ipairs(badCommands) do
+		if string.find(cmd, v) then
+			alert("RunConsoleCommand", "\"" .. cmd .. conc .. "\"")
+
+			return
+		end
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(cmd, v) then
+			alert("RunConsoleCommand", "\"" .. cmd .. conc .. "\"")
+
+			return
+		end
+	end
+
+	return safefuncs.rcon(cmd, ...)
+end
+
+meta_pl.ConCommand = function(cmd)
+	if not cmd or type(cmd) ~= "string" then
+		return
+	end
+
+	for _, v in ipairs(badCommands) do
+		if string.find(cmd, v) then
+			alert("LocalPlayer():ConCommand", "\"" .. cmd .. "\"")
+
+			return
+		end
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(cmd, v) then
+			alert("LocalPlayer():ConCommand", "\"" .. cmd .. "\"")
+
+			return
+		end
+	end
+
+	return safefuncs.pcon(cmd)
+end
+
+--[[
+	The Hooks!!
+]]
+
+hook.Add("HUDShouldDraw", vars["hookname"], function(n)
+	if n == "CHudDamageIndicator" and not vars["reddeath"] then
+		return false
 	end
 end)
 
-grab.Add("RenderScene", "", function()
+hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
+	if not meta_en.IsValid(ply) then
+		return
+	end
+
+	local v = meta_pl.GetVehicle(ply)
+	local w = meta_pl.GetActiveWeapon(ply)
+
+	local nfov = fov + (math.Clamp(vars["cfov"], 1, 179) - meta_cv.GetInt(GetConVar("fov_desired")))
+
+	if meta_pl.ShouldDrawLocalPlayer(ply) then
+		pos = pos + (meta_an.Forward(ang) * -150)
+	end
+
+	local nview = {
+		origin = pos,
+		angles = ang,
+		fov = nfov,
+		zneaf = zn,
+		zfar = zf
+	}
+
+	if meta_en.IsValid(v) then
+		return hook.Run("CalcVehicleView", v, ply, nview)
+	end
+
+	if meta_en.IsValid(w) then
+		local wcv = w.CalcView
+
+		if wcv then
+			nview.origin, nview.angles, nview.fov = wcv(w, ply, pos * 1, ang * 1, fov)
+		end
+	end
+
+	return nview
+end)
+
+hook.Add("HUDPaint", vars["hookname"], function()
+	if vars["antiblind"] then
+		hook.Remove("HUDPaint", "ulx_blind")
+		hook.Remove("HUDPaintBackground", "ulx_blind")
+	end
+end)
+
+hook.Add("Think", vars["hookname"], function()
+	if vars["antigag"] then
+		hook.Remove("PlayerCanHearPlayersVoice", "ULXGag")
+		hook.Remove("PlayerBindPress", "ULXGagForce")
+		timer.Remove("GagLocalPlayer")
+
+		meta_pl.SetNWBool(LocalPlayer(), "Muted", false)
+
+		if ulx and ulx["gagUser"] then
+			ulx["gagUser"](false)
+		end
+	end
+
+	if vars["rgb"] then
+		local rgc = HSVToColor(UnPredictedCurTime() % 6 * 60, 1, 1)
+
+		meta_pl.SetWeaponColor(LocalPlayer(), Vector(rgc.r / 255, rgc.g / 255, rgc.b / 255))
+		meta_pl.SetPlayerColor(LocalPlayer(), Vector(rgc.r / 255, rgc.g / 255, rgc.b / 255))
+	else
+		local wc = string.Split(meta_cv.GetString(GetConVar("cl_weaponcolor")), " ")
+		local pc = string.Split(meta_cv.GetString(GetConVar("cl_playercolor")), " ")
+
+		meta_pl.SetWeaponColor(LocalPlayer(), Vector(wc[1], wc[2], wc[3]))
+		meta_pl.SetPlayerColor(LocalPlayer(), Vector(pc[1], pc[2], pc[3]))
+	end
+end)
+
+hook.Add("SetupSkyboxFog", vars["hookname"], function()
+	local f = vars["fog"]
+
+	if not f then
+		render.FogMode(MATERIAL_FOG_NONE)
+	end
+
+	return not f
+end)
+
+hook.Add("SetupWorldFog", vars["hookname"], function()
+	local f = vars["fog"]
+
+	if not f then
+		render.FogMode(MATERIAL_FOG_NONE)
+	end
+
+	return not f
+end)
+
+hook.Add("RenderScene", vars["hookname"], function()
 	if vars["fullbright"] then
-		for _, v in ipairs(game.GetWorld():GetMaterials()) do
+		for _, v in ipairs(meta_en.GetMaterials(game:GetWorld())) do
 			Material(v):SetVector("$color", Vector(1, 1, 1))
 		end
 
@@ -597,174 +600,158 @@ grab.Add("RenderScene", "", function()
 	end
 end)
 
-grab.Add("PostDrawViewModel", "", function(viewmodel)
-	if not viewmodel then
+hook.Add("PreDrawViewModel", vars["hookname"], function(vm)
+	if not vm then
+		return
+	end
+
+	render.SetLightingMode(0)
+end)
+
+hook.Add('PostDrawViewModel', vars["hookname"], function(vm)
+	if not vm then
 		return
 	end
 
 	render.SetLightingMode(0)
 
-	for k, _ in ipairs(viewmodel:GetMaterials()) do
+	for k, _ in ipairs(meta_en.GetMaterials(vm)) do
 		render.MaterialOverrideByIndex(k - 1, nil)
 	end
 end)
 
-grab.Add("PreDrawEffects", "", function()
+hook.Add("PreDrawEffects", vars["hookname"], function()
 	render.SetLightingMode(0)
 
-	if not vars["othertracers"] and not vars["localtracers"] then
+	if not vars["tracers"] then
 		return
 	end
 
-	for k, v in pairs(bullets) do
+	for k, v in ipairs(bullets) do
 		if not k or not v then
 			continue
 		end
-		
+
 		if vars["beamtracers"] then
 			cam.Start3D()
 				render.SetMaterial(Material("cable/redlaser"))
-        		render.DrawBeam(bullets[k]["src"], bullets[k]["end"], 4, 1, 1, bullets[k]["col"])
-        	cam.End3D()
+				render.DrawBeam(bullets[k].s, bullets[k].e, 4, 1, 1, Color(255, 255, 255, 255))
+			cam.End3D()
 		else
-        	render.DrawLine(bullets[k]["src"], bullets[k]["end"], bullets[k]["col"], true)
+			render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
 		end
 	end
 end)
 
-grab.Add("DoAnimationEvent", "", function(ply, evt, data)
-	-- 0 = PLAYERANIMEVENT_ATTACK_PRIMARY
-
-	if not (data == 0 and evt == 0) then
+hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
+	if not (event == PLAYERANIMEVENT_ATTACK_PRIMARY and data == PLAYERANIMEVENT_ATTACK_PRIMARY) then
 		return
 	end
 
-	local ot = vars["othertracers"]
-	local lt = vars["localtracers"]
+	local en = vars["tracers_other"]
+	local len = vars["tracers_local"]
 
-	if not ot and not lt then
-		return animReturn()
-	end
-
-	if not IsValid(ply) or not ply:Alive() then
+	if (not en and not len) or not meta_en.IsValid(ply) or not meta_pl.Alive(ply) or isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
 		return
 	end
 
-	if ply == LocalPlayer() then
-    	if ot and not lt then
-    		return
-    	end
+	local isloc = ply == LocalPlayer()
+
+	if isloc then
+		if en and not len then
+			return
+		end
 	else
-		if lt and not ot then
-    		return
-    	end
+		if len and not en then
+			return
+		end
 	end
 
-	if badWep(ply:GetActiveWeapon()) then
-		return animReturn()
-	end
-
-	if #bullets >= vars["maxtraces"] then
+	if table.Count(bullets) > vars["maxtracers"] then
 		table.remove(bullets, 1)
 	end
 
+	local usebones = true
+	local startpos = meta_en.EyePos(ply)
+	local dir = meta_an.Forward(meta_en.EyeAngles(ply))
 	local col = Color(255, 100, 100, 255)
 
-	if ply == LocalPlayer() then
-    	col = Color(100, 255, 100, 255)
-   end
+	if isloc then
+		col = Color(100, 255, 100, 255)
 
-	local bend = Vector(0, 0, 0)
-	local start = nil
-	local dir = ply:EyeAngles():Forward()
-	local sc = true
+		if not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
+			usebones = false
+		end
 
-	if ply == LocalPlayer() and not LocalPlayer():ShouldDrawLocalPlayer() then
-		sc = false
+		if mutil then
+			local at = mutil.GetAimbotTarget()
+
+			if at ~= 0 then
+				local ent = ents.GetByIndex(at)
+
+				if meta_en.IsPlayer(ent) and meta_en.IsValid(ent) then
+					dir = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - startpos
+				end
+			end
+		end
 	end
 
-	if sc then
-		for i = 0, ply:GetBoneCount() - 1 do
-			if string.find(string.lower(ply:GetBoneName(i)), "head") then
-				start = ply:GetBoneMatrix(i):GetTranslation() + (ply:EyeAngles():Forward() * 2)
+	if usebones then
+		for i = 0, meta_en.GetBoneCount(ply) - 1 do
+			if string.find(string.lower(meta_en.GetBoneName(ply, i)), "head") then
+				startpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ply, i)) + (dir * 2)
+	
 				break
 			end
 		end
 	end
 
-	if not start then
-		start = ply:EyePos()
-	end
-
-	if ply == LocalPlayer() then
-		if methutil then
-			if methutil.GetAimbotTarget() ~= 0 then
-				local target = methutil.GetAimbotTarget()
-				local ent = nil
-	
-				ent = ents.GetByIndex(target)
-	
-				if IsValid(ent) and ent:IsPlayer() then
-					dir = ent:LocalToWorld(ent:OBBCenter()) - LocalPlayer():GetShootPos()
-				end
-			end
-		end
-	end
-
 	local tr = util.TraceLine({
-        start = start,
-        endpos = start + (dir * 32767),
-        mask = MASK_SHOT,
-        filter = player.GetAll(),
-        ignoreworld = false,
-    })
+		start = startpos,
+		endpos = startpos + (dir * 32767),
+		filter = ply,
+		ignoreworld = false,
+		mask = MASK_SHOT,
+	})
 
-    table.insert(bullets, {
-        ["src"] = start,
-        ["dir"] = dir,
-        ["dis"] = 32767,
-        ["col"] = col,
-        ["end"] = tr.HitPos
-    })
+	table.insert(bullets, {
+		["s"] = startpos,
+		["e"] = tr.HitPos,
+		["c"] = col,
+	})
 
-    local thingtoremove = bullets[#bullets]
-		
-    timer.Simple(vars["tracedelay"], function()
-        for k, v in ipairs(bullets) do
-				if v == thingtoremove then
-					table.remove(bullets, k)
-				end
-        end
-    end)
+	local ttr = bullets[table.Count(bullets)]
 
-    return animReturn()
+	timer.Simple(vars["tracerlife"], function()
+		table.RemoveByValue(bullets, ttr)
+	end)
 end)
 
 --[[
-	Commands
+	The rest
 ]]
 
-for j, l in pairs(concmds) do
+for j, l in pairs(concommands) do
 	if not j or not l then
 		continue
 	end
 
-	if not istable(l) then
+	if not type(l) == "table" then
 		continue
 	end
 
 	for k, v in pairs(l) do
 		local confunc = function() return end
 
-		if j == "int" then
+		if j == "integer" then
 			confunc = function(p, c, args)
-				if not args[1] then
+				if not args[1] or type(args[1]) ~= "number" then
 					args[1] = 1
 				end
 
 				vars[v] = math.floor(args[1])
 			end
-		elseif j == "str" then
+		elseif j == "string" then
 			confunc = function(p, c, args, argstr)
 				if not argstr then
 					argstr = "nil"
@@ -772,51 +759,47 @@ for j, l in pairs(concmds) do
 
 				vars[v] = argstr
 			end
-		elseif j == "toggle" then
-			confunc = function()
-				vars[v] = not vars[v]
+		elseif j == "boolean" then
+			confunc = function(p, c, args)
+				if not args[1] then
+					args[1] = false
+				end
+
+				vars[v] = tobool(args[1])
 			end
 		else
 			continue
 		end
 
-		if isfunction(confunc) then
-			cmd.Add(k, confunc)
-		end
+		concommand.Add(k, confunc, nil, nil, 0)
+		table.insert(addedCommands, k)
 	end
 end
 
------------------------
-
-timer.Create(vars["fasttimer"], 0.1, 0, function()
-	if not vars["gestureloop"] then
-		return
+timer.Create(vars["timer_fast"], 0.1, 0, function()
+	if vars["gesture_loop"] then
+		safefuncs.RunConsoleCommand("act", vars["gesture"])
 	end
-
-	detours.runconsolecommand("act", vars["gesture"])
 end)
 
-timer.Create(vars["slowtimer"], 1, 0, function()
-	spoofOS(vars["os"])
+timer.Create(vars["timer_slow"], 1, 0, function()
+	if vars["psays"] then
+		for _, v in ipairs(player.GetAll()) do
+			if not meta_en.IsValid(v) or v == LocalPlayer() then
+				continue
+			end
 
-	if not vars["psay"] then
-		return
-	end
-
-	for _, v in ipairs(player.GetAll()) do
-		if v == LocalPlayer() or not IsValid(v) then
-			continue
+			safefuncs.RunConsoleCommand("ulx", "psay", v:Name(), vars["psays_message"])
 		end
-
-		detours.runconsolecommand("ulx", "psay", v:Name(), vars["psay_msg"])
 	end
 end)
 
-if methrend then
-	methrend.PushAlert("Successfully loaded Swag Tools!!")
+if mrend then
+	mrend.PushAlert("Successfully loaded Swag Tools!")
 else
 	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
-	MsgC(Color(255, 100, 100), "Successfully loaded ", Color(100, 255, 255), "Swag Tools", Color(255, 100, 100), "!!\n")
+
+	MsgC(Color(255, 100, 100), "[$W467001Z] ", Color(222, 222, 222), "Loaded Successfully!\n")
 end
 
-jt.flush()
+jit.flush()
