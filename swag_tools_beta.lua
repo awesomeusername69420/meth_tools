@@ -552,7 +552,6 @@ hook.Add("CreateMove", "a", function(cmd)
 			local yaw = math.rad(ang.y - lang.y)
 
 			if math.floor(dis) > 45 or meta_pl.IsSprinting(tply) then
-				print(dis)
 				if not meta_cd.KeyDown(cmd, IN_SPEED) then
 					meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 				end
