@@ -492,7 +492,7 @@ end
 ]]
 
 hook.Add("HUDShouldDraw", vars["hookname"], function(n)
-	if n == "CHudDamageIndicator" and not vars["reddeath"] then
+	if n == "CHudDamageIndicator" then
 		return false
 	end
 end)
@@ -611,6 +611,10 @@ hook.Add("PreDrawViewModel", vars["hookname"], function(vm)
 	end
 
 	render.SetLightingMode(0)
+
+	if vars["fullbright"] then
+		render.SuppressEngineLighting(true)
+	end
 end)
 
 hook.Add('PostDrawViewModel', vars["hookname"], function(vm)
@@ -622,6 +626,10 @@ hook.Add('PostDrawViewModel', vars["hookname"], function(vm)
 
 	for k, _ in ipairs(meta_en.GetMaterials(vm)) do
 		render.MaterialOverrideByIndex(k - 1, nil)
+	end
+
+	if vars["fullbright"] then
+		render.SuppressEngineLighting(true)
 	end
 end)
 
