@@ -614,6 +614,8 @@ hook.Add("PreDrawViewModel", vars["hookname"], function(vm)
 
 	if vars["fullbright"] then
 		render.SuppressEngineLighting(true)
+	else
+		render.SuppressEngineLighting(false)
 	end
 end)
 
@@ -630,6 +632,8 @@ hook.Add('PostDrawViewModel', vars["hookname"], function(vm)
 
 	if vars["fullbright"] then
 		render.SuppressEngineLighting(true)
+	else
+		render.SuppressEngineLighting(false)
 	end
 end)
 
