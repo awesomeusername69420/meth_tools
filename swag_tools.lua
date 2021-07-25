@@ -575,6 +575,9 @@ hook.Add("SetupSkyboxFog", vars["hookname"], function()
 
 	if not f then
 		render.FogMode(MATERIAL_FOG_NONE)
+		render.FogStart(0)
+		render.FogEnd(1)
+		render.FogMaxDensity(0)
 	end
 
 	return not f
@@ -585,12 +588,23 @@ hook.Add("SetupWorldFog", vars["hookname"], function()
 
 	if not f then
 		render.FogMode(MATERIAL_FOG_NONE)
+		render.FogStart(0)
+		render.FogEnd(1)
+		render.FogMaxDensity(0)
 	end
 
 	return not f
 end)
 
 hook.Add("RenderScene", vars["hookname"], function()
+	if vars["fog"] then
+		MATERIAL_FOG_LINEAR = 1
+		MATERIAL_FOG_LINEAR_BELOW_FOG_Z	= 2
+	else
+		MATERIAL_FOG_LINEAR = 0
+		MATERIAL_FOG_LINEAR_BELOW_FOG_Z	= 0
+	end
+
 	if vars["fullbright"] then
 		for _, v in ipairs(meta_en.GetMaterials(game:GetWorld())) do
 			Material(v):SetVector("$color", Vector(1, 1, 1))
