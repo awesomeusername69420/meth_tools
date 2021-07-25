@@ -1,4 +1,10 @@
 --[[
+
+	WARNING: THIS IS A BETA BUILD, EXPECT JANK
+
+]]
+
+--[[
 	Locales
 ]]
 
