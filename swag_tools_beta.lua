@@ -249,7 +249,7 @@ local alert = function(event, data)
 	else
 		surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 
-		MsgC(Color(255, 100, 100), "[$W467001Z] ", Color(222, 222, 222), "Blocked ", Color(255, 100, 100), tostring(event) .. "(" .. tostring(data) .. ")", Color(222, 222, 222), "\n")
+		MsgC(Color(255, 100, 100), "[$W467001Z_8374] ", Color(222, 222, 222), "Blocked ", Color(255, 100, 100), tostring(event) .. "(" .. tostring(data) .. ")", Color(222, 222, 222), "\n")
 	end
 end
 
@@ -844,11 +844,11 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 end)
 
 if mrend then
-	mrend.PushAlert("Successfully loaded Swag Tools!")
+	mrend.PushAlert("Successfully loaded Swag Tools Beta!")
 else
 	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 
-	MsgC(Color(255, 100, 100), "[$W467001Z] ", Color(222, 222, 222), "Loaded Successfully!\n")
+	MsgC(Color(255, 100, 100), "[$W467001Z_8374] ", Color(222, 222, 222), "Loaded Successfully!\n")
 end
 
 jit.flush()
