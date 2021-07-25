@@ -49,6 +49,8 @@ local meta_pl = debug.getregistry()["Player"]
 local meta_vc = debug.getregistry()["Vector"]
 local meta_vm = debug.getregistry()["VMatrix"]
 
+local IN_RELOAD = 8192
+local IN_SPEED = 131072
 local MASK_SHOT = 1174421507
 local MATERIAL_FOG_NONE = 0
 local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
@@ -97,6 +99,8 @@ local vars = {
 
 	-- Tools
 	["antigag"] = false,
+	["followbot"] = false,
+	["followtarg"] = LocalPlayer(),
 	["gesture"] = "dance",
 	["gesture_loop"] = false,
 	["gopen"] = true,
@@ -136,6 +140,7 @@ local concommands = {
 		-- Tools
 		["st_tools_allow_guiopenurl"] = "gopen",
 		["st_tools_antigag"] = "antigag",
+		["st_tools_followbot"] = "followbot",
 		["st_tools_gesture_loop"] = "gesture_loop",
 		["st_tools_psay_spam"] = "psays",
 	}
@@ -272,6 +277,26 @@ local function isBadWeapon(weapon)
 	end
 
 	return false
+end
+
+local function getClosest()
+	local d = math.huge
+	local cur = LocalPlayer()
+
+	for _, v in ipairs(player.GetAll()) do
+		if v == LocalPlayer() or not meta_pl.Alive(v) or not meta_en.IsValid(v) or meta_pl.GetObserverMode(v) ~= 0 or meta_pl.Team(v) == 1002 or meta_en.IsDormant(v) then
+			continue
+		end
+
+		local dist = meta_vc.Distance(meta_en.GetPos(v), meta_en.GetPos(LocalPlayer()))
+
+		if dist < d then
+			d = dist
+			cur = v
+		end
+	end
+
+	return cur
 end
 
 --[[
@@ -503,6 +528,40 @@ hook.Add("HUDShouldDraw", vars["hookname"], function(n)
 	end
 end)
 
+hook.Add("CreateMove", vars["hookname"], function(cmd)
+	if meta_cd.CommandNumber(cmd) == 0 then
+		return
+	end
+
+	if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) then
+		local tply = vars["followtarg"]
+
+		if tply ~= LocalPlayer() and IsValid(tply) then
+			local tpos =  meta_en.GetPos(tply)
+			local lpos = meta_en.GetPos(LocalPlayer())
+			local lang = meta_cd.GetViewAngles(cmd)
+
+			local dir = tpos - lpos
+			local dis = meta_vc.Distance(tpos, lpos)
+			local mvec = Vector(dir.x, dir.y, 0)
+			local ang = meta_vc.Angle(mvec)
+
+			local yaw = math.rad(ang.y - lang.y)
+			
+			if dis > 40 or meta_pl.IsSprinting(tply) then
+				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
+			end
+	
+			meta_cd.SetForwardMove(cmd, math.cos(yaw) * 10^4)
+			meta_cd.SetSideMove(cmd, 0 - math.sin(yaw) * 10^4)
+		else
+			vars["followtarg"] = getClosest()
+		end
+	else
+		vars["followtarg"] = nil
+	end
+end)
+
 hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	if not meta_en.IsValid(ply) then
 		return
@@ -555,7 +614,7 @@ hook.Add("Think", vars["hookname"], function()
 		hook.Remove("PlayerBindPress", "ULXGagForce")
 		timer.Remove("GagLocalPlayer")
 
-		meta_pl.SetNWBool(LocalPlayer(), "Muted", false)
+		meta_en.SetNWBool(LocalPlayer(), "Muted", false)
 
 		if ulx and ulx["gagUser"] then
 			ulx["gagUser"](false)
