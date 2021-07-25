@@ -33,6 +33,7 @@ local tostring = tostring
 local type = type
 local UnPredictedCurTime = UnPredictedCurTime
 local util = table.Copy(util)
+local Vector = Vector
 
 local meta_an = debug.getregistry()["Angle"]
 local meta_cd = debug.getregistry()["CUserCmd"]
