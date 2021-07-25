@@ -83,6 +83,7 @@ local vars = {
 	["maxtracers"] = 1000,
 	["reddeath"] = true,
 	["rgb"] = false,
+	["thirdpersonfix"] = false,
 	["tracerlife"] = 3,
 	["tracers_local"] = false,
 	["tracers_other"] = false,
@@ -117,6 +118,7 @@ local concommands = {
 	["boolean"] = {
 		-- Render
 		["st_render_antiblind"] = "antiblind",
+		["st_render_fixthirdperson"] = "thirdpersonfix",
 		["st_render_fog"] = "fog",
 		["st_render_fullbright"] = "fullbright",
 		["st_render_rgb"] = "rgb",
@@ -504,8 +506,10 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 
 	local nfov = fov + (math.Clamp(vars["cfov"], 1, 179) - meta_cv.GetInt(GetConVar("fov_desired")))
 
-	if meta_pl.ShouldDrawLocalPlayer(ply) then
-		pos = pos + (meta_an.Forward(ang) * -150)
+	if vars["thirdpersonfix"] then
+		if meta_pl.ShouldDrawLocalPlayer(ply) then
+			pos = pos + (meta_an.Forward(ang) * -150)
+		end
 	end
 
 	local nview = {
