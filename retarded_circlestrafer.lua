@@ -55,18 +55,6 @@ hook.Add("CreateMove", "", function(cmd)
 		j = input.IsKeyDown(KEY_SPACE)
 	end
 
-	if vars["ahop"] and j and not meta_en.IsOnGround(LocalPlayer()) then
-		meta_cd.SetButtons(cmd, bit.band(meta_cd.GetButtons(cmd), bit.bnot(IN_JUMP)))
-	end
-
-	if vars["astrafe"] and j and not isstrafe then
-		if meta_cd.GetMouseX(cmd) > 0 then
-			meta_cd.SetSideMove(cmd, 10^4)
-		elseif meta_cd.GetMouseX(cmd) < 0 then
-			meta_cd.SetSideMove(cmd, 0 - 10^4)
-		end
-	end
-
 	local right = meta_cd.KeyDown(cmd, IN_MOVERIGHT)
 	local left = meta_cd.KeyDown(cmd, IN_MOVELEFT)
 
@@ -81,28 +69,42 @@ hook.Add("CreateMove", "", function(cmd)
 	local mvtyp = meta_en.GetMoveType(LocalPlayer()) or 0
 	local v = meta_pl.GetVehicle(LocalPlayer()) or nil
 
-	if (right or left) and j and (mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER and meta_en.WaterLevel(LocalPlayer()) == 0 and not meta_en.IsValid(v)) then
-		isstrafe = true
-
-		local vel = meta_en.GetVelocity(LocalPlayer())
-		local spd = meta_vc.Length2D(vel)
-
-		if spd < 300 then
-			spd = 300
+	if mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER and meta_en.WaterLevel(LocalPlayer()) == 0 and not meta_en.IsValid(v) then
+		if vars["ahop"] and j and not meta_en.IsOnGround(LocalPlayer()) then
+			meta_cd.SetButtons(cmd, bit.band(meta_cd.GetButtons(cmd), bit.bnot(IN_JUMP)))
+		end
+	
+		if vars["astrafe"] and not meta_en.IsOnGround(LocalPlayer()) and not isstrafe then
+			if meta_cd.GetMouseX(cmd) > 0 then
+				meta_cd.SetSideMove(cmd, 10^4)
+			elseif meta_cd.GetMouseX(cmd) < 0 then
+				meta_cd.SetSideMove(cmd, 0 - 10^4)
+			end
 		end
 
-		local rt = 5.9 + (spd / 1500) * 5
-		local del = (275 / spd) * (2 / vars["csize"]) * (128 / (1.7 / engine.TickInterval())) * rt
+		if (right or left) and j then
+			isstrafe = true
 	
-		local dela = r * math.min(del, 15)
-		s = s + dela
-
-		meta_cd.SetForwardMove(cmd, math.cos((s + 90 * r) * (math.pi / 180)) * 450)
-		meta_cd.SetSideMove(cmd, math.sin((s + 90 * r) * (math.pi / 180)) * 450)
-	else
-		if isstrafe then
-			s = 0
-			isstrafe = false
+			local vel = meta_en.GetVelocity(LocalPlayer())
+			local spd = meta_vc.Length2D(vel)
+	
+			if spd < 300 then
+				spd = 300
+			end
+	
+			local rt = 5.9 + (spd / 1500) * 5
+			local del = (275 / spd) * (2 / vars["csize"]) * (128 / (1.7 / engine.TickInterval())) * rt
+		
+			local dela = r * math.min(del, 15)
+			s = s + dela
+	
+			meta_cd.SetForwardMove(cmd, math.cos((s + 90 * r) * (math.pi / 180)) * 450)
+			meta_cd.SetSideMove(cmd, math.sin((s + 90 * r) * (math.pi / 180)) * 450)
+		else
+			if isstrafe then
+				s = 0
+				isstrafe = false
+			end
 		end
 	end
 end)
