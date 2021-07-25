@@ -16,30 +16,28 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  
  | Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
- | m_render_fov_set | Sets FOV | `integer` | FOV at load time |
- | m_render_tracedelay_set | Sets bullet tracer lifespan (in seconds) | `integer` | `3` |
- | m_render_maxtraces_set | Sets maximum amount of bullet tracers allowed | `integer` | `1000` |
- | m_render_toggle_antiblind | Toggles anti ULX blind | `boolean` | `false` |
- | m_render_toggle_antialert | Toggles anti on screen alerts | `boolean` | `false` |
- | m_render_toggle_fullbright | Toggles fullbright | `boolean` | `false` |
- | m_render_toggle_tracers_beam | Toggles bullet tracer beam effect | `boolean` | `false` |
- | m_render_toggle_tracers_other | Toggles bullet tracers for other people | `boolean` | `false` |
- | m_render_toggle_tracers_local | Toggles bullet tracers for LocalPlayer | `boolean` | `false` |
- | m_render_toggle_bounce | Toggles the attack animation of players | `boolean` | `true` |
- | m_render_toggle_rgb | Toggles rainbow physgun and player | `boolean` | `false` |
+ | st_render_fov_set | Sets FOV | `integer` | FOV at load time |
+ | st_render_tracers_life_set | Sets bullet tracer lifespan (in seconds) | `integer` | `3` |
+ | st_render_tracers_max_set | Sets maximum amount of bullet tracers allowed | `integer` | `1000` |
+ | st_render_antiblind | Toggles anti ULX blind | `boolean` | `false` |
+ | st_render_fog | Toggles fog rendering | `boolean` | `true` |
+ | st_render_fullbright | Toggles fullbright | `boolean` | `false` |
+ | st_render_tracers_beam | Toggles bullet tracers being a beam instead of a line | `boolean` | `false` |
+ | st_render_tracers_other | Toggles bullet tracers for other players | `boolean` | `false` |
+ | st_render_tracers_local | Toggles bullet tracers for LocalPlayer | `boolean` | `false` |
+ | st_render_rgb | Toggles rgb for the LocalPlayer | `boolean` | `false` |
 </details>
 <details>
  <summary>Tool Commands</summary>
  
  Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
- | m_tools_gestureloop_set | Sets gesture for gestureloop | `string` | `Dance` |
- | m_tools_psay_message_set | Sets message for ULX psay spammer | `string` | `message` |
- | m_tools_os_set | Sets the OS that will be spoofed | `string—(Windows, Linux, OSX, BSD, POSIX, Other)` | OS at load time |
- | m_tools_toggle_gestureloop | Toggles gestureloop | `boolean` | `false` |
- | m_tools_toggle_psay | Toggles ULX psay spammer | `boolean` | `false` |
- | m_tools_toggle_guiopenurl | Toggles gui.OpenURL detour | `boolean` | `true` |
- | m_tools_toggle_antigag | Toggles anti ULX gag | `boolean` | `false` |
+ | st_tools_gesture_set | Sets gesture for the gestureloop | `string` | `Dance` |
+ | st_tools_psay_spam_set | Sets message for ULX psay spammer | `string` | `message` |
+ | st_tools_gesture_loop | Toggles gestureloop | `boolean` | `false` |
+ | st_tools_psay_spam | Toggles ULX psay spammer | `boolean` | `false` |
+ | st_tools_allow_guiopenurl | Toggles gui.OpenURL capabilities | `boolean` | `true` |
+ | st_tools_antigag | Toggles anti ULX gag | `boolean` | `false` |
 </details>
 
 ---
