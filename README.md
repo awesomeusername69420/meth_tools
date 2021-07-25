@@ -33,7 +33,7 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  
  Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
- | st_tools_gesture_set | Sets gesture for the gestureloop | `string` | `Dance` |
+ | st_tools_gesture_set | Sets gesture for the gestureloop | `string` | `dance` |
  | st_tools_psay_spam_set | Sets message for ULX psay spammer | `string` | `message` |
  | st_tools_allow_guiopenurl | Toggles gui.OpenURL capabilities | `boolean` | `true` |
  | st_tools_antigag | Toggles anti ULX gag | `boolean` | `false` |
