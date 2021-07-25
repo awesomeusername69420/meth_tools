@@ -528,7 +528,7 @@ hook.Add("HUDShouldDraw", vars["hookname"], function(n)
 	end
 end)
 
-hook.Add("CreateMove", vars["hookname"], function(cmd)
+hook.Add("CreateMove", "a", function(cmd)
 	if meta_cd.CommandNumber(cmd) == 0 then
 		return
 	end
@@ -541,19 +541,25 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			local lpos = meta_en.GetPos(LocalPlayer())
 			local lang = meta_cd.GetViewAngles(cmd)
 
+			local lposnz = Vector(lpos.x, lpos.y, 0)
+			local tposnz = Vector(tpos.x, tpos.y, 0)
+
 			local dir = tpos - lpos
-			local dis = meta_vc.Distance(tpos, lpos)
+			local dis = meta_vc.Distance(lposnz, tposnz)
 			local mvec = Vector(dir.x, dir.y, 0)
 			local ang = meta_vc.Angle(mvec)
 
 			local yaw = math.rad(ang.y - lang.y)
-			
-			if dis > 40 or meta_pl.IsSprinting(tply) then
-				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
+
+			if math.floor(dis) > 45 or meta_pl.IsSprinting(tply) then
+				print(dis)
+				if not meta_cd.KeyDown(cmd, IN_SPEED) then
+					meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
+				end
 			end
 	
 			meta_cd.SetForwardMove(cmd, math.cos(yaw) * 10^4)
-			meta_cd.SetSideMove(cmd, 0 - math.sin(yaw) * 10^4)
+			meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * 10^4)
 		else
 			vars["followtarg"] = getClosest()
 		end
