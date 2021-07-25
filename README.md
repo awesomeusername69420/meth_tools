@@ -22,10 +22,11 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | st_render_antiblind | Toggles anti ULX blind | `boolean` | `false` |
  | st_render_fog | Toggles fog rendering | `boolean` | `true` |
  | st_render_fullbright | Toggles fullbright | `boolean` | `false` |
- | st_render_tracers_beam | Toggles bullet tracers being a beam instead of a line | `boolean` | `false` |
- | st_render_tracers_other | Toggles bullet tracers for other players | `boolean` | `false` |
- | st_render_tracers_local | Toggles bullet tracers for LocalPlayer | `boolean` | `false` |
  | st_render_rgb | Toggles rgb for the LocalPlayer | `boolean` | `false` |
+ | st_render_tracers_beam | Toggles bullet tracers being a beam instead of a line | `boolean` | `false` |
+ | st_render_tracers_local | Toggles bullet tracers for LocalPlayer | `boolean` | `false` |
+ | st_render_tracers_other | Toggles bullet tracers for other players | `boolean` | `false` |
+ | st_render_fixthirdperson | Toggles thirdperson fix | `boolean` | `false` |
 </details>
 <details>
  <summary>Tool Commands</summary>
@@ -34,10 +35,10 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | --- | --- | --- | --- |
  | st_tools_gesture_set | Sets gesture for the gestureloop | `string` | `Dance` |
  | st_tools_psay_spam_set | Sets message for ULX psay spammer | `string` | `message` |
- | st_tools_gesture_loop | Toggles gestureloop | `boolean` | `false` |
- | st_tools_psay_spam | Toggles ULX psay spammer | `boolean` | `false` |
  | st_tools_allow_guiopenurl | Toggles gui.OpenURL capabilities | `boolean` | `true` |
  | st_tools_antigag | Toggles anti ULX gag | `boolean` | `false` |
+ | st_tools_gesture_loop | Toggles gestureloop | `boolean` | `false` |
+ | st_tools_psay_spam | Toggles ULX psay spammer | `boolean` | `false` |
 </details>
 
 ---
