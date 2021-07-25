@@ -778,7 +778,7 @@ end
 
 timer.Create(vars["timer_fast"], 0.1, 0, function()
 	if vars["gesture_loop"] then
-		safefuncs.RunConsoleCommand("act", vars["gesture"])
+		safefuncs.rcon("act", vars["gesture"])
 	end
 end)
 
@@ -789,7 +789,7 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 				continue
 			end
 
-			safefuncs.RunConsoleCommand("ulx", "psay", v:Name(), vars["psays_message"])
+			safefuncs.rcon("ulx", "psay", v:Name(), vars["psays_message"])
 		end
 	end
 end)
