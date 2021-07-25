@@ -92,6 +92,7 @@ local vars = {
 	["maxtracers"] = 1000,
 	["reddeath"] = true,
 	["rgb"] = false,
+	["silentviz"] = false,
 	["thirdpersonfix"] = false,
 	["tracerlife"] = 3,
 	["tracers_local"] = false,
@@ -136,6 +137,7 @@ local concommands = {
 		["st_render_tracers_beam"] = "beamtracers",
 		["st_render_tracers_local"] = "tracers_local",
 		["st_render_tracers_other"] = "tracers",
+		["st_render_visualize_silent"] = "silentviz",
 
 		-- Tools
 		["st_tools_allow_guiopenurl"] = "gopen",
@@ -551,11 +553,14 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 
 			local yaw = math.rad(ang.y - lang.y)
 
-			if not meta_cd.KeyDown(cmd, IN_SPEED) then
+			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) then
 				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 			end
 	
-			meta_cd.SetForwardMove(cmd, math.cos(yaw) * 10^4)
+			if meta_en.GetGroundEntity(LocalPlayer()) == tply then
+				meta_cd.SetForwardMove(cmd, math.cos(yaw) * 10^4)
+			end
+			
 			meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * 10^4)
 		else
 			vars["followtarg"] = getClosest()
@@ -602,6 +607,25 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	end
 
 	return nview
+end)
+
+hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, pos, ang)
+	if not mutil or not vars["silentviz"] then
+		return pos, ang
+	end
+
+	local npos = pos
+	local at = mutil.GetAimbotTarget()
+
+	if at ~= 0 then
+		local ent = ents.GetByIndex(at)
+
+		if meta_en.IsPlayer(ent) and meta_en.IsValid(ent) then
+			npos = meta_en.EyePos(at) - meta_en.EyePos(LocalPlayer())
+		end
+	end
+
+	return pos, npos:Angle()
 end)
 
 hook.Add("HUDPaint", vars["hookname"], function()
