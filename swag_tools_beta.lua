@@ -528,7 +528,7 @@ hook.Add("HUDShouldDraw", vars["hookname"], function(n)
 	end
 end)
 
-hook.Add("CreateMove", "a", function(cmd)
+hook.Add("CreateMove", vars["hookname"], function(cmd)
 	if meta_cd.CommandNumber(cmd) == 0 then
 		return
 	end
