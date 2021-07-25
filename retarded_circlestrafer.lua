@@ -1,5 +1,6 @@
 local table = table.Copy(table)
 
+local bit = table.Copy(bit)
 local concommand = table.Copy(concommand)
 local debug = table.Copy(debug)
 local engine = table.Copy(engine)
@@ -7,6 +8,7 @@ local hook = table.Copy(hook)
 local input = table.Copy(input)
 local LocalPlayer = LocalPlayer
 local math = table.Copy(math)
+local tobool = tobool
 local tonumber = tonumber
 
 local meta_cd = debug.getregistry()["CUserCmd"]
@@ -22,19 +24,47 @@ local MOVETYPE_LADDER = 9
 local MOVETYPE_NOCLIP = 8
 local MOVETYPE_OBSERVER = 10
 
+--
+
 local ismeth = false
 
 if meth_lua_api then
 	ismeth = true
 end
 
+local vars = {
+	["csize"] = 5,
+	["ahop"] = false,
+	["astrafe"] = false,
+}
+
+--
+
 local r = 1
 local s = 0
-local ss = 5
+local isstrafe = false
 
 hook.Add("CreateMove", "", function(cmd)
 	if meta_cd.CommandNumber(cmd) == 0 then
 		return
+	end
+
+	local j = meta_cd.KeyDown(cmd, IN_JUMP)
+
+	if ismeth then
+		j = input.IsKeyDown(KEY_SPACE)
+	end
+
+	if vars["ahop"] and j and not meta_en.IsOnGround(LocalPlayer()) then
+		meta_cd.SetButtons(cmd, bit.band(meta_cd.GetButtons(cmd), bit.bnot(IN_JUMP)))
+	end
+
+	if vars["astrafe"] and j and not isstrafe then
+		if meta_cd.GetMouseX(cmd) > 0 then
+			meta_cd.SetSideMove(cmd, 10^4)
+		elseif meta_cd.GetMouseX(cmd) < 0 then
+			meta_cd.SetSideMove(cmd, 0 - 10^4)
+		end
 	end
 
 	local right = meta_cd.KeyDown(cmd, IN_MOVERIGHT)
@@ -51,13 +81,9 @@ hook.Add("CreateMove", "", function(cmd)
 	local mvtyp = meta_en.GetMoveType(LocalPlayer()) or 0
 	local v = meta_pl.GetVehicle(LocalPlayer()) or nil
 
-	local j = meta_cd.KeyDown(cmd, IN_JUMP)
-
-	if ismeth then
-		j = input.IsKeyDown(KEY_SPACE)
-	end
-
 	if (right or left) and j and (mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER and meta_en.WaterLevel(LocalPlayer()) == 0 and not meta_en.IsValid(v)) then
+		isstrafe = true
+
 		local vel = meta_en.GetVelocity(LocalPlayer())
 		local spd = meta_vc.Length2D(vel)
 
@@ -66,7 +92,7 @@ hook.Add("CreateMove", "", function(cmd)
 		end
 
 		local rt = 5.9 + (spd / 1500) * 5
-		local del = (275 / spd) * (2 / ss) * (128 / (1.7 / engine.TickInterval())) * rt
+		local del = (275 / spd) * (2 / vars["csize"]) * (128 / (1.7 / engine.TickInterval())) * rt
 	
 		local dela = r * math.min(del, 15)
 		s = s + dela
@@ -81,10 +107,28 @@ hook.Add("CreateMove", "", function(cmd)
 	end
 end)
 
+--
+
 concommand.Add("r_cs_size", function(p, c, args)
 	if not args[1] then
 		args[1] = 5
 	end
 
-	ss = tonumber(args[1])
+	vars["csize"] = tonumber(args[1])
+end)
+
+concommand.Add("r_cs_ahop", function(p, c, args)
+	if not args[1] then
+		args[1] = false
+	end
+
+	vars["ahop"] = tobool(args[1])
+end)
+
+concommand.Add("r_cs_astrafe", function(p, c, args)
+	if not args[1] then
+		args[1] = false
+	end
+
+	vars["astrafe"] = tobool(args[1])
 end)
