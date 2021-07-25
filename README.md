@@ -59,3 +59,19 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | testaa_autodir | Toggles antiaim auto direction | `boolean` | `false` |
  | testaa_invert | Inverts the antiaim (flips 180 degrees) | | |
 </details>
+
+---
+
+<h3>Retarded Circle Strafer Commands</h3>
+
+---
+
+<details>
+ <summary>Commands</summary>
+ 
+ Command | Description | Argument(s) | Default |
+ | --- | --- | --- | --- |
+ | r_cs_size | Changes strafe circle size | `integer` | `5` |
+ | r_cs_ahop | Toggles auto bhop | `boolean` | `false` |
+ | r_cs_astrafe | Toggles auto strafer | `boolean` | `false` |
+</details>
