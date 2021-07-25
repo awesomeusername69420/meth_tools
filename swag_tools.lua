@@ -549,7 +549,7 @@ hook.Add("Think", vars["hookname"], function()
 		hook.Remove("PlayerBindPress", "ULXGagForce")
 		timer.Remove("GagLocalPlayer")
 
-		meta_pl.SetNWBool(LocalPlayer(), "Muted", false)
+		meta_en.SetNWBool(LocalPlayer(), "Muted", false)
 
 		if ulx and ulx["gagUser"] then
 			ulx["gagUser"](false)
