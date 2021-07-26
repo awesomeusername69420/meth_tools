@@ -160,7 +160,7 @@ local concommands = {
 		
 		-- Thing
 		["st_alerts"] = "alerts",
-		["st_alerts_sounds"] = "alerts_sound",
+		["st_alerts_sound"] = "alerts_sound",
 	}
 }
 
