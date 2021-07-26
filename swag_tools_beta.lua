@@ -616,7 +616,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 
 			local yaw = math.rad(ang.y - lang.y)
 
-			if (dis > 50 not meta_cd.KeyDown(cmd, IN_SPEED)) and not meta_pl.Crouching(tply) then
+			if dis > 50 and not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) then
 				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 			end
 	
