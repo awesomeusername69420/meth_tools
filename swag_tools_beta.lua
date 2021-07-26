@@ -608,7 +608,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			local lposnz = Vector(lpos.x, lpos.y, 0)
 			local tposnz = Vector(tpos.x, tpos.y, 0)
 
-			local max = meta_pl.GetRunSpeed(LocalPlayer()) * 10
+			local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
 			local dir = tpos - lpos
 			local dis = meta_vc.Distance(lposnz, tposnz)
 			local mvec = Vector(dir.x, dir.y, 0)
@@ -618,7 +618,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 
 			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) then
 				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
-			end
+			end`
 	
 			if ontop then
 				meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
