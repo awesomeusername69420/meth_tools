@@ -608,6 +608,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			local lposnz = Vector(lpos.x, lpos.y, 0)
 			local tposnz = Vector(tpos.x, tpos.y, 0)
 
+			local tvel = meta_en.GetVelocity(tply)
 			local dir = tpos - lpos
 			local dis = meta_vc.Distance(lposnz, tposnz)
 			local mvec = Vector(dir.x, dir.y, 0)
@@ -615,15 +616,15 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 
 			local yaw = math.rad(ang.y - lang.y)
 
-			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) then
+			if (dis > 50 not meta_cd.KeyDown(cmd, IN_SPEED)) and not meta_pl.Crouching(tply) then
 				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 			end
 	
 			if ontop then
-				meta_cd.SetForwardMove(cmd, math.cos(yaw) * 10^4)
+				meta_cd.SetForwardMove(cmd, math.cos(yaw) * tvel)
 			end
 			
-			meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * 10^4)
+			meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * tvel)
 		else
 			vars["followtarg"] = getClosest()
 		end
