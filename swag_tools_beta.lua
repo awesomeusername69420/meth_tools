@@ -608,7 +608,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			local lposnz = Vector(lpos.x, lpos.y, 0)
 			local tposnz = Vector(tpos.x, tpos.y, 0)
 
-			local tvel = metha_vc.Length2D(meta_en.GetVelocity(tply))
+			local tvel = meta_vc.Length2D(meta_en.GetVelocity(tply))
 			local dir = tpos - lpos
 			local dis = meta_vc.Distance(lposnz, tposnz)
 			local mvec = Vector(dir.x, dir.y, 0)
