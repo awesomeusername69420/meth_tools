@@ -584,7 +584,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 		local tply = vars["followtarg"]
 
 		if tply ~= LocalPlayer() and IsValid(tply) then
-			if meta_cd.KeyDown(cmd, IN_FORWARD) or meta_cd.KeyDown(cmd, IN_BACK) or meta.cd.KeyDown(cmd, IN_MOVELEFT) or meta_cd.KeyDown(cmd, IN_MOVERIGHT) then
+			if meta_cd.KeyDown(cmd, IN_FORWARD) or meta_cd.KeyDown(cmd, IN_BACK) or meta_cd.KeyDown(cmd, IN_MOVELEFT) or meta_cd.KeyDown(cmd, IN_MOVERIGHT) then
 				vars["following"] = false
 				
 				return
