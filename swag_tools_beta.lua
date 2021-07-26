@@ -695,6 +695,8 @@ hook.Add("HUDPaint", vars["hookname"], function()
 	if vars["antiblind"] then
 		hook.Remove("HUDPaint", "ulx_blind")
 		hook.Remove("HUDPaintBackground", "ulx_blind")
+		hook.Remove("RenderScreenspaceEffects", "CSGOSmokeBlind")
+		hook.Remove("RenderScreenspaceEffects", "TFA_CSGO_FLASHBANG")
 	end
 end)
 
@@ -702,6 +704,7 @@ hook.Add("Think", vars["hookname"], function()
 	if vars["antigag"] then
 		hook.Remove("PlayerCanHearPlayersVoice", "ULXGag")
 		hook.Remove("PlayerBindPress", "ULXGagForce")
+		hook.Remove("PlayerAuthed", "ULXCC_SetPGagData")
 		timer.Remove("GagLocalPlayer")
 
 		meta_en.SetNWBool(LocalPlayer(), "Muted", false)
