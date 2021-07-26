@@ -19,7 +19,7 @@ if meth_lua_api then
 	end
 end
 
-http.Fetch("https://raw.githubusercontent.com/ts03GCZqIsTZtu4/meth_tools/main/swag_tools.lua",
+http.Fetch("https://raw.githubusercontent.com/awesomeusername69420/meth_tools/main/swag_tools.lua",
 	function(b)
 		if mutil then
 			mutil.RunString(b)
