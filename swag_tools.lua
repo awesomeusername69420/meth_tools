@@ -7,10 +7,14 @@ local table = table.Copy(table)
 local cam = table.Copy(cam)
 local Color = Color
 local concommand = table.Copy(concommand)
+local cvars = table.Copy(cvars)
 local debug = table.Copy(debug)
 local ents = table.Copy(ents)
 local game = game
 local GetConVar = GetConVar
+local GetConVarNumber = GetConVarNumber
+local GetConVarString = GetConVarString
+local GetConVar_Internal = GetConVar_Internal
 local gui = table.Copy(gui)
 local hook = table.Copy(hook)
 local HSVToColor = HSVToColor
@@ -30,6 +34,7 @@ local string = table.Copy(string)
 local surface = table.Copy(surface)
 local timer = table.Copy(timer)
 local tobool = tobool
+local tonumber = tonumber
 local tostring = tostring
 local type = type
 local UnPredictedCurTime = UnPredictedCurTime
@@ -148,7 +153,7 @@ local concommands = {
 		["st_render_rgb"] = "rgb",
 		["st_render_tracers_beam"] = "beamtracers",
 		["st_render_tracers_local"] = "tracers_local",
-		["st_render_tracers_other"] = "tracers",
+		["st_render_tracers_other"] = "tracers_other",
 		["st_render_visualize_silent"] = "silentviz",
 
 		-- Tools
@@ -332,12 +337,21 @@ local safefuncs = {
 	cm = meta_cd.ClearMovement,
 	sva = meta_cd.SetViewAngles,
 
-	msgc = MsgC,
 	cremove = concommand.Remove,
 	ctable = concommand.GetTable,
+	cvs_acb = cvars.AddChangeCallback,
+	cvs_bool = cvars.Bool,
+	cvs_gcvcb = cvars.GetConVarCallbacks,
+	cvs_number = cvars.Number,
+	cvs_rcb = cvars.RemoveChangeCallack,
+	cvs_string = cvars.String,
 	gcv = GetConVar,
+	gcvn = GetConVarNumber,
+	gcvs = GetConVarString,
+	gcv_i = GetConVar_Internal,
 	gopen = gui.OpenURL,
 	htable = hook.GetTable,
+	msgc = MsgC,
 	pcon = meta_pl.ConCommand,
 	rcon = RunConsoleCommand,
 	tempty = table.Empty,
@@ -380,6 +394,118 @@ meta_cd.SetViewAngles = function(...)
 	return safefuncs.sva(...)
 end
 
+_G.cvars.AddChangeCallback = function(var, ...)
+	if not var or type(var) ~= "string" or not ... then
+		return
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.AddChangeCallback", var)
+
+			return
+		end
+	end
+
+	return safefuncs.cvs_acb(var, ...)
+end
+
+_G.cvars.Bool = function(var, def)
+	if not def or type(def) ~= "boolean" then
+		def = false
+	end
+
+	if not var or type(var) ~= "string" then
+		return def
+	end
+	
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.Bool", var)
+
+			return
+		end
+	end
+
+	return safefuncs.cvs_bool(var, def)
+end
+
+_G.cvars.GetConVarCallbacks = function(var, cinf)
+	if not cinf or type(cinf) ~= "boolean" then
+		cinf = false
+	end
+	
+	if not var or type(var) ~= "string" then
+		return
+	end
+	
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.GetConVarCallbacks", var)
+
+			return
+		end
+	end
+	
+	return safefuncs.cvs_gcvcb(var, cinf)
+end
+
+_G.cvars.Number = function(var, def)
+	if not def then
+		def = nil
+	end
+
+	if not var or type(var) ~= "string" then
+		return def
+	end
+	
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.Number", var)
+
+			return
+		end
+	end
+
+	return safefuncs.cvs_number(var, def)
+end
+
+_G.cvars.RemoveChangeCallack = function(var, cb)
+	if not var or type(var) ~= "string" or not cb then
+		return
+	end
+	
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.RemoveChangeCallack", var)
+
+			return
+		end
+	end
+
+	return safefuncs.cvs_rcb(var, cb)
+end
+
+_G.cvars.String = function(var, def)
+	if not def then
+		def = nil
+	end
+
+	if not var or type(var) ~= "string" then
+		return def
+	end
+	
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.String", var)
+
+			return
+		end
+	end
+
+	return safefuncs.cvs_string(var, def)
+end
+
 _G.GetConVar = function(var)
 	if not var or type(var) ~= "string" then
 		return
@@ -394,6 +520,54 @@ _G.GetConVar = function(var)
 	end
 
 	return safefuncs.gcv(var)
+end
+
+_G.GetConVar_Internal = function(var)
+	if not var or type(var) ~= "string" then
+		return
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("GetConVar_Internal", var)
+
+			return
+		end
+	end
+
+	return safefuncs.gcv_i(var)
+end
+
+_G.GetConVarNumber = function(var)
+	if not var or type(var) ~= "string" then
+		return
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("GetConVarNumber", var)
+
+			return
+		end
+	end
+
+	return safefuncs.gcvn(var)
+end
+
+_G.GetConVarString = function(var)
+	if not var or type(var) ~= "string" then
+		return
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("GetConVarString", var)
+
+			return
+		end
+	end
+
+	return safefuncs.gcvs(var)
 end
 
 _G.concommand.GetTable = function(...)
@@ -562,6 +736,25 @@ if mcall then
 				surface.DrawText(text)
 			end
 		end
+		
+		if not vars["tracers_other"] and not vars["tracers_local"] then
+			return
+		end
+	
+		for k, v in ipairs(bullets) do
+			if not k or not v then
+				continue
+			end
+	
+			cam.Start3D()
+				if vars["beamtracers"] then
+					render.SetMaterial(Material("cable/redlaser"))
+					render.DrawBeam(bullets[k].s, bullets[k].e, 4, 1, 1, Color(255, 255, 255, 255))
+				else
+					render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
+				end
+			cam.End3D()
+		end
 	end)
 end
 
@@ -641,7 +834,7 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	local v = meta_pl.GetVehicle(ply)
 	local w = meta_pl.GetActiveWeapon(ply)
 
-	local nfov = fov + (math.Clamp(vars["cfov"], 1, 179) - meta_cv.GetInt(GetConVar("fov_desired")))
+	local nfov = math.Clamp(fov + (vars["cfov"] - meta_cv.GetInt(GetConVar("fov_desired"))), 0, 179)
 
 	if vars["thirdpersonfix"] then
 		if meta_pl.ShouldDrawLocalPlayer(ply) then
@@ -823,22 +1016,22 @@ end)
 hook.Add("PreDrawEffects", vars["hookname"], function()
 	render.SetLightingMode(0)
 
-	if not vars["tracers"] then
-		return
-	end
-
-	for k, v in ipairs(bullets) do
-		if not k or not v then
-			continue
+	if not mcall then
+		if not vars["tracers_other"] and not vars["tracers_local"] then
+			return
 		end
-
-		if vars["beamtracers"] then
-			cam.Start3D()
+	
+		for k, v in ipairs(bullets) do
+			if not k or not v then
+				continue
+			end
+	
+			if vars["beamtracers"] then
 				render.SetMaterial(Material("cable/redlaser"))
 				render.DrawBeam(bullets[k].s, bullets[k].e, 4, 1, 1, Color(255, 255, 255, 255))
-			cam.End3D()
-		else
-			render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
+			else
+				render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
+			end
 		end
 	end
 end)
@@ -858,11 +1051,11 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 	local isloc = ply == LocalPlayer()
 
 	if isloc then
-		if en and not len then
+		if not len then
 			return
 		end
 	else
-		if len and not en then
+		if not en then
 			return
 		end
 	end
@@ -945,11 +1138,17 @@ for j, l in pairs(concommands) do
 
 		if j == "integer" then
 			confunc = function(p, c, args)
-				if not args[1] or type(args[1]) ~= "number" then
-					args[1] = 1
+				local new = args[1]
+			
+				if not new then
+					new = 1
+				end
+				
+				if not type(new) == "number" then
+					new = tonumber(new)
 				end
 
-				vars[v] = math.floor(args[1])
+				vars[v] = math.floor(new)
 			end
 		elseif j == "string" then
 			confunc = function(p, c, args, argstr)
@@ -961,11 +1160,13 @@ for j, l in pairs(concommands) do
 			end
 		elseif j == "boolean" then
 			confunc = function(p, c, args)
-				if not args[1] then
-					args[1] = false
+				local new = args[1]
+			
+				if not new then
+					new = false
 				end
 
-				vars[v] = tobool(args[1])
+				vars[v] = tobool(new)
 			end
 		else
 			continue
