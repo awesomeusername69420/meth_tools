@@ -39,7 +39,16 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | st_tools_antigag | Toggles anti ULX gag | `boolean` | `false` |
  | st_tools_gesture_loop | Toggles gestureloop | `boolean` | `false` |
  | st_tools_psay_spam | Toggles ULX psay spammer | `boolean` | `false` |
+ | st_tools_followbot | Toggles block bot/follow bot | `boolean` | `false` |
 </details>
+<details>
+ <summary>Misc Commands</summary>
+ 
+ Command | Description | Argument(s) | Default |
+ | --- | --- | --- | --- |
+ | st_alerts | Toggles detour alerts | `boolean` | `true` |
+</details>
+
 
 ---
 
