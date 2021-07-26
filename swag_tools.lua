@@ -25,6 +25,7 @@ local pairs = pairs
 local player = table.Copy(player)
 local render = table.Copy(render)
 local RunConsoleCommand = RunConsoleCommand
+local ScrW = ScrW
 local string = table.Copy(string)
 local surface = table.Copy(surface)
 local timer = table.Copy(timer)
@@ -43,15 +44,24 @@ local meta_pl = debug.getregistry()["Player"]
 local meta_vc = debug.getregistry()["Vector"]
 local meta_vm = debug.getregistry()["VMatrix"]
 
+local IN_BACK = 16
+local IN_FORWARD = 8
+local IN_MOVELEFT = 512
+local IN_MOVERIGHT = 1024
+local IN_RELOAD = 8192
+local IN_SPEED = 131072
 local MASK_SHOT = 1174421507
 local MATERIAL_FOG_NONE = 0
+local MOVETYPE_LADDER = 9
+local MOVETYPE_NOCLIP = 8
+local MOVETYPE_OBSERVER = 10
 local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
 
 math.randomseed(math.random(-123456, 123456))
 
 -- Meth stuff
 
-local mrend, mutil
+local mrend, mutil, mcall
 
 if meth_lua_api then
 	if meth_lua_api.render then
@@ -60,6 +70,10 @@ if meth_lua_api then
 
 	if meth_lua_api.util then
 		mutil = meth_lua_api.util
+	end
+	
+	if meth_lua_api.callbacks then
+		mcall = meth_lua_api.callbacks
 	end
 end
 
@@ -84,6 +98,7 @@ local vars = {
 	["maxtracers"] = 1000,
 	["reddeath"] = true,
 	["rgb"] = false,
+	["silentviz"] = false,
 	["thirdpersonfix"] = false,
 	["tracerlife"] = 3,
 	["tracers_local"] = false,
@@ -91,11 +106,18 @@ local vars = {
 
 	-- Tools
 	["antigag"] = false,
+	["followang"] = Angle(0, 0, 0),
+	["followbot"] = false,
+	["following"] = false,
+	["followtarg"] = LocalPlayer(),
 	["gesture"] = "dance",
 	["gesture_loop"] = false,
 	["gopen"] = true,
 	["psays"] = false,
 	["psays_message"] = "message",
+	
+	-- Thing
+	["alerts"] = true,
 }
 
 local concommands = {
@@ -126,12 +148,17 @@ local concommands = {
 		["st_render_tracers_beam"] = "beamtracers",
 		["st_render_tracers_local"] = "tracers_local",
 		["st_render_tracers_other"] = "tracers",
+		["st_render_visualize_silent"] = "silentviz",
 
 		-- Tools
 		["st_tools_allow_guiopenurl"] = "gopen",
 		["st_tools_antigag"] = "antigag",
+		["st_tools_followbot"] = "followbot",
 		["st_tools_gesture_loop"] = "gesture_loop",
 		["st_tools_psay_spam"] = "psays",
+		
+		-- Thing
+		["st_alerts"] = "alerts",
 	}
 }
 
@@ -230,6 +257,10 @@ local badWeapons = {
 ]]
 
 local alert = function(event, data)
+	if not vars["alerts"] then
+		return
+	end
+
 	if not event then
 		event = ""
 	end
@@ -266,6 +297,26 @@ local function isBadWeapon(weapon)
 	end
 
 	return false
+end
+
+local function getClosest()
+	local d = math.huge
+	local cur = LocalPlayer()
+
+	for _, v in ipairs(player.GetAll()) do
+		if v == LocalPlayer() or not meta_pl.Alive(v) or not meta_en.IsValid(v) or meta_pl.GetObserverMode(v) ~= 0 or meta_pl.Team(v) == 1002 or meta_en.IsDormant(v) then
+			continue
+		end
+
+		local dist = meta_vc.Distance(meta_en.GetPos(v), meta_en.GetPos(LocalPlayer()))
+
+		if dist < d then
+			d = dist
+			cur = v
+		end
+	end
+
+	return cur
 end
 
 --[[
@@ -491,9 +542,90 @@ end
 	The Hooks!!
 ]]
 
+if mcall then
+	mcall.Add("OnHUDPaint", vars["hookname"], function()
+		if vars["followbot"] then
+			local tply = vars["followtarg"]
+		
+			if tply ~= LocalPlayer() and IsValid(tply) then
+				local text = "Following: " .. tply:Name()
+				
+				surface.SetFont("BudgetLabel")
+				local tw, th = surface.GetTextSize(text)
+				
+				surface.SetTextColor(255, 255, 255, 255)
+				surface.SetTextPos((ScrW() / 2) - (tw / 2), 15)
+				surface.DrawText(text)
+			end
+		end
+	end)
+end
+
 hook.Add("HUDShouldDraw", vars["hookname"], function(n)
 	if n == "CHudDamageIndicator" then
 		return false
+	end
+end)
+
+hook.Add("CreateMove", vars["hookname"], function(cmd)
+	if meta_cd.CommandNumber(cmd) == 0 then
+		return
+	end
+
+	local mvtyp =  meta_en.GetMoveType(LocalPlayer())
+
+	if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) and mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER then
+		local tply = vars["followtarg"]
+
+		if tply ~= LocalPlayer() and IsValid(tply) then
+			if meta_cd.KeyDown(cmd, IN_FORWARD) or meta_cd.KeyDown(cmd, IN_BACK) or meta_cd.KeyDown(cmd, IN_MOVELEFT) or meta_cd.KeyDown(cmd, IN_MOVERIGHT) then
+				vars["following"] = false
+				
+				return
+			end
+		
+			local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
+			local tpos =  meta_en.GetPos(tply)
+			local lpos = meta_en.GetPos(LocalPlayer())
+			
+			local lang
+			
+			if ontop or not vars["following"] then
+				lang = meta_cd.GetViewAngles(cmd)
+				vars["followang"] = lang
+				
+				vars["following"] = true
+			else
+				lang = vars["followang"]
+			end
+
+			local lposnz = Vector(lpos.x, lpos.y, 0)
+			local tposnz = Vector(tpos.x, tpos.y, 0)
+
+			local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
+			local dir = tpos - lpos
+			local dis = meta_vc.Distance(lposnz, tposnz)
+			local mvec = Vector(dir.x, dir.y, 0)
+			local ang = meta_vc.Angle(mvec)
+
+			local yaw = math.rad(ang.y - lang.y)
+
+			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) then
+				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
+			end
+	
+			if ontop then
+				meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
+			end
+			
+			meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
+		else
+			vars["followtarg"] = getClosest()
+		end
+	else
+		vars["followtarg"] = nil
+		vars["following"] = false
+		vars["followang"] = Angle(0, 0, 0)
 	end
 end)
 
@@ -536,10 +668,30 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	return nview
 end)
 
+hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, pos, ang)
+	if not mutil or not vars["silentviz"] then
+		return
+	end
+
+	local at = mutil.GetAimbotTarget()
+
+	if at ~= 0 then
+		local ent = ents.GetByIndex(at)
+		
+		if IsValid(ent) and meta_pl.Alive(ent) then
+			local npos = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - meta_en.EyePos(LocalPlayer())
+			
+			return pos, npos:Angle()
+		end
+	end
+end)
+
 hook.Add("HUDPaint", vars["hookname"], function()
 	if vars["antiblind"] then
 		hook.Remove("HUDPaint", "ulx_blind")
 		hook.Remove("HUDPaintBackground", "ulx_blind")
+		hook.Remove("RenderScreenspaceEffects", "CSGOSmokeBlind")
+		hook.Remove("RenderScreenspaceEffects", "TFA_CSGO_FLASHBANG")
 	end
 end)
 
@@ -547,6 +699,7 @@ hook.Add("Think", vars["hookname"], function()
 	if vars["antigag"] then
 		hook.Remove("PlayerCanHearPlayersVoice", "ULXGag")
 		hook.Remove("PlayerBindPress", "ULXGagForce")
+		hook.Remove("PlayerAuthed", "ULXCC_SetPGagData")
 		timer.Remove("GagLocalPlayer")
 
 		meta_en.SetNWBool(LocalPlayer(), "Muted", false)
@@ -578,6 +731,12 @@ hook.Add("SetupSkyboxFog", vars["hookname"], function()
 		render.FogStart(0)
 		render.FogEnd(1)
 		render.FogMaxDensity(0)
+
+		if meta_en.WaterLevel(LocalPlayer()) == 3 then
+			render.SetLightingMode(1)
+		else
+			render.SetLightingMode(0)
+		end
 	end
 
 	return not f
@@ -591,6 +750,12 @@ hook.Add("SetupWorldFog", vars["hookname"], function()
 		render.FogStart(0)
 		render.FogEnd(1)
 		render.FogMaxDensity(0)
+
+		if meta_en.WaterLevel(LocalPlayer()) == 3 then
+			render.SetLightingMode(1)
+		else
+			render.SetLightingMode(0)
+		end
 	end
 
 	return not f
