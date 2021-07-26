@@ -570,6 +570,9 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 		local tply = vars["followtarg"]
 
 		if tply ~= LocalPlayer() and IsValid(tply) then
+			safefuncs.cb(cmd)
+			safefuncs.cm(cmd
+		
 			local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
 			local tpos =  meta_en.GetPos(tply)
 			local lpos = meta_en.GetPos(LocalPlayer())
