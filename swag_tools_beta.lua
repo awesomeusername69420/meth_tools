@@ -13,10 +13,14 @@ local table = table.Copy(table)
 local cam = table.Copy(cam)
 local Color = Color
 local concommand = table.Copy(concommand)
+local cvars = table.Copy(cvars)
 local debug = table.Copy(debug)
 local ents = table.Copy(ents)
 local game = game
 local GetConVar = GetConVar
+local GetConVarNumber = GetConVarNumber
+local GetConVarString = GetConVarString
+local GetConVar_Internal = GetConVar_Internal
 local gui = table.Copy(gui)
 local hook = table.Copy(hook)
 local HSVToColor = HSVToColor
@@ -334,12 +338,21 @@ local safefuncs = {
 	cm = meta_cd.ClearMovement,
 	sva = meta_cd.SetViewAngles,
 
-	msgc = MsgC,
 	cremove = concommand.Remove,
 	ctable = concommand.GetTable,
+	cvs_acb = cvars.AddChangeCallback,
+	cvs_bool = cvars.Bool,
+	cvs_gcvcb = cvars.GetConVarCallbacks,
+	cvs_number = cvars.Number,
+	cvs_rcb = cvars.RemoveChangeCallack,
+	cvs_string = cvars.String,
 	gcv = GetConVar,
+	gcvn = GetConVarNumber,
+	gcvs = GetConVarString,
+	gcv_i = GetConVar_Internal,
 	gopen = gui.OpenURL,
 	htable = hook.GetTable,
+	msgc = MsgC,
 	pcon = meta_pl.ConCommand,
 	rcon = RunConsoleCommand,
 	tempty = table.Empty,
@@ -382,6 +395,118 @@ meta_cd.SetViewAngles = function(...)
 	return safefuncs.sva(...)
 end
 
+_G.cvars.AddChangeCallback = function(var, ...)
+	if not var or type(var) ~= "string" or not ... then
+		return
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.AddChangeCallback", var)
+
+			return
+		end
+	end
+
+	return safefuncs.cvs_acb(var, ...)
+end
+
+_G.cvars.Bool = function(var, def)
+	if not def or type(def) ~= "boolean" then
+		def = false
+	end
+
+	if not var or type(var) ~= "string" then
+		return def
+	end
+	
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.Bool", var)
+
+			return
+		end
+	end
+
+	return safefuncs.cvs_bool(var, def)
+end
+
+_G.cvars.GetConVarCallbacks = function(var, cinf)
+	if not cinf or type(cinf) ~= "boolean" then
+		cinf = false
+	end
+	
+	if not var or type(var) ~= "string" then
+		return
+	end
+	
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.GetConVarCallbacks", var)
+
+			return
+		end
+	end
+	
+	return safefuncs.cvs_gcvcb(var, cinf)
+end
+
+_G.cvars.Number = function(var, def)
+	if not def then
+		def = nil
+	end
+
+	if not var or type(var) ~= "string" then
+		return def
+	end
+	
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.Number", var)
+
+			return
+		end
+	end
+
+	return safefuncs.cvs_number(var, def)
+end
+
+_G.cvars.RemoveChangeCallack = function(var, cb)
+	if not var or type(var) ~= "string" or not cb then
+		return
+	end
+	
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.RemoveChangeCallack", var)
+
+			return
+		end
+	end
+
+	return safefuncs.cvs_rcb(var, cb)
+end
+
+_G.cvars.String = function(var, def)
+	if not def then
+		def = nil
+	end
+
+	if not var or type(var) ~= "string" then
+		return def
+	end
+	
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("cvars.String", var)
+
+			return
+		end
+	end
+
+	return safefuncs.cvs_string(var, def)
+end
+
 _G.GetConVar = function(var)
 	if not var or type(var) ~= "string" then
 		return
@@ -396,6 +521,54 @@ _G.GetConVar = function(var)
 	end
 
 	return safefuncs.gcv(var)
+end
+
+_G.GetConVar_Internal = function(var)
+	if not var or type(var) ~= "string" then
+		return
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("GetConVar_Internal", var)
+
+			return
+		end
+	end
+
+	return safefuncs.gcv_i(var)
+end
+
+_G.GetConVarNumber = function(var)
+	if not var or type(var) ~= "string" then
+		return
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("GetConVarNumber", var)
+
+			return
+		end
+	end
+
+	return safefuncs.gcvn(var)
+end
+
+_G.GetConVarString = function(var)
+	if not var or type(var) ~= "string" then
+		return
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("GetConVarString", var)
+
+			return
+		end
+	end
+
+	return safefuncs.gcvs(var)
 end
 
 _G.concommand.GetTable = function(...)
