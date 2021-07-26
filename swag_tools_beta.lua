@@ -53,6 +53,9 @@ local IN_RELOAD = 8192
 local IN_SPEED = 131072
 local MASK_SHOT = 1174421507
 local MATERIAL_FOG_NONE = 0
+local MOVETYPE_LADDER = 9
+local MOVETYPE_NOCLIP = 8
+local MOVETYPE_OBSERVER = 10
 local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
 
 math.randomseed(math.random(-123456, 123456))
@@ -535,7 +538,9 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 		return
 	end
 
-	if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) then
+	local mvtyp =  meta_en.GetMoveType(LocalPlayer())
+
+	if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) and mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER then
 		local tply = vars["followtarg"]
 
 		if tply ~= LocalPlayer() and IsValid(tply) then
@@ -625,7 +630,11 @@ hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, po
 		end
 	end
 
-	return pos, npos:Angle()
+	if npos == pos then
+		return pos, npos:Angle()
+	else
+		return pos, ang
+	end
 end)
 
 hook.Add("HUDPaint", vars["hookname"], function()
