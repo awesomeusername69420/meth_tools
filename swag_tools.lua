@@ -118,6 +118,7 @@ local vars = {
 	
 	-- Thing
 	["alerts"] = true,
+	["alerts_sound"] = true,
 }
 
 local concommands = {
@@ -272,7 +273,9 @@ local alert = function(event, data)
 	if mrend then
 		mrend.PushAlert("Blocked " .. tostring(event) .. "(" .. tostring(data) .. ")")
 	else
-		surface.PlaySound("garrysmod/balloon_pop_cute.wav")
+		if vars["alerts_sound"] then
+			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
+		end
 
 		MsgC(Color(255, 100, 100), "[$W467001Z] ", Color(222, 222, 222), "Blocked ", Color(255, 100, 100), tostring(event) .. "(" .. tostring(data) .. ")", Color(222, 222, 222), "\n")
 	end
