@@ -117,6 +117,9 @@ local vars = {
 	["gopen"] = true,
 	["psays"] = false,
 	["psays_message"] = "message",
+	
+	-- Thing
+	["alerts"] = true,
 }
 
 local concommands = {
@@ -155,6 +158,9 @@ local concommands = {
 		["st_tools_followbot"] = "followbot",
 		["st_tools_gesture_loop"] = "gesture_loop",
 		["st_tools_psay_spam"] = "psays",
+		
+		-- Thing
+		["st_alerts"] = "alerts",
 	}
 }
 
@@ -253,6 +259,10 @@ local badWeapons = {
 ]]
 
 local alert = function(event, data)
+	if not vars["alerts"] then
+		return
+	end
+
 	if not event then
 		event = ""
 	end
@@ -570,7 +580,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 		local tply = vars["followtarg"]
 
 		if tply ~= LocalPlayer() and IsValid(tply) then
-			safefuncs.cb(cmd)
+			meta_cd.ClearButtons(cmd)
 		
 			local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
 			local tpos =  meta_en.GetPos(tply)
