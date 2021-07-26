@@ -1065,7 +1065,7 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 	end
 
 	local usebones = true
-	local startpos = meta_en.EyePos(ply)
+	local startpos = meta_pl.GetShootPos(ply)
 	local dir = meta_an.Forward(meta_en.EyeAngles(ply))
 	local col = Color(255, 100, 100, 255)
 
@@ -1078,11 +1078,11 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 
 		if mutil then
 			local at = mutil.GetAimbotTarget()
-
+		
 			if at ~= 0 then
 				local ent = ents.GetByIndex(at)
-
-				if meta_en.IsPlayer(ent) and meta_en.IsValid(ent) then
+				
+				if IsValid(ent) and meta_pl.Alive(ent) then
 					dir = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - startpos
 				end
 			end
