@@ -570,12 +570,13 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 		local tply = vars["followtarg"]
 
 		if tply ~= LocalPlayer() and IsValid(tply) then
+			local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
 			local tpos =  meta_en.GetPos(tply)
 			local lpos = meta_en.GetPos(LocalPlayer())
 			
 			local lang
 			
-			if not vars["following"] then
+			if not vars["following"] or ontop then
 				lang = meta_cd.GetViewAngles(cmd)
 				vars["followang"] = lang
 				
@@ -598,7 +599,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 			end
 	
-			if meta_en.GetGroundEntity(LocalPlayer()) == tply then
+			if ontop then
 				meta_cd.SetForwardMove(cmd, math.cos(yaw) * 10^4)
 			end
 			
