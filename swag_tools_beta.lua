@@ -608,6 +608,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			local lposnz = Vector(lpos.x, lpos.y, 0)
 			local tposnz = Vector(tpos.x, tpos.y, 0)
 
+			local max = meta_pl.GetRunSpeed(LocalPlayer) * 10
 			local dir = tpos - lpos
 			local dis = meta_vc.Distance(lposnz, tposnz)
 			local mvec = Vector(dir.x, dir.y, 0)
@@ -620,10 +621,10 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			end
 	
 			if ontop then
-				meta_cd.SetForwardMove(cmd, math.cos(yaw) * 10^4)
+				meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
 			end
 			
-			meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * 10^4)
+			meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
 		else
 			vars["followtarg"] = getClosest()
 		end
