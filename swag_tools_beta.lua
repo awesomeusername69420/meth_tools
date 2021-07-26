@@ -571,7 +571,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 
 		if tply ~= LocalPlayer() and IsValid(tply) then
 			safefuncs.cb(cmd)
-			safefuncs.cm(cmd
+			safefuncs.cm(cmd)
 		
 			local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
 			local tpos =  meta_en.GetPos(tply)
