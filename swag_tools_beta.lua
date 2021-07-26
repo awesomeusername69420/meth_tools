@@ -626,14 +626,10 @@ hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, po
 		local ent = ents.GetByIndex(at)
 
 		if meta_en.IsPlayer(ent) and meta_en.IsValid(ent) then
-			npos = meta_en.EyePos(at) - meta_en.EyePos(LocalPlayer())
+			npos = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - meta_en.EyePos(LocalPlayer())
+			
+			return pos, npos:Angle()
 		end
-	end
-
-	if npos == pos then
-		return pos, npos:Angle()
-	else
-		return pos, ang
 	end
 end)
 
