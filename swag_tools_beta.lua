@@ -608,7 +608,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			local lposnz = Vector(lpos.x, lpos.y, 0)
 			local tposnz = Vector(tpos.x, tpos.y, 0)
 
-			local max = meta_pl.GetRunSpeed(LocalPlayer) * 10
+			local max = meta_pl.GetRunSpeed(LocalPlayer()) * 10
 			local dir = tpos - lpos
 			local dis = meta_vc.Distance(lposnz, tposnz)
 			local mvec = Vector(dir.x, dir.y, 0)
