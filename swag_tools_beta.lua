@@ -1071,7 +1071,7 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 	end
 
 	local usebones = true
-	local startpos = meta_pl.ShootPos(ply)
+	local startpos = meta_pl.GetShootPos(ply)
 	local dir = meta_an.Forward(meta_en.EyeAngles(ply))
 	local col = Color(255, 100, 100, 255)
 
