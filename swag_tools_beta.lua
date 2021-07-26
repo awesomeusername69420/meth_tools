@@ -741,8 +741,6 @@ if mcall then
 		if not vars["tracers_other"] and not vars["tracers_local"] then
 			return
 		end
-		
-		print("in meth!")
 	
 		for k, v in ipairs(bullets) do
 			if not k or not v then
