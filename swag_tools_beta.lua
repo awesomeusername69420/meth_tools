@@ -1084,12 +1084,16 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 
 		if mutil then
 			local at = mutil.GetAimbotTarget()
-
+	
 			if at ~= 0 then
 				local ent = ents.GetByIndex(at)
-
-				if meta_en.IsPlayer(ent) and meta_en.IsValid(ent) then
-					dir = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - startpos
+			
+				if IsValid(ent) and meta_pl.Alive(ent) then
+					local ent = ents.GetByIndex(at)
+	
+					if meta_en.IsPlayer(ent) and meta_en.IsValid(ent) then
+						dir = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - startpos
+					end
 				end
 			end
 		end
