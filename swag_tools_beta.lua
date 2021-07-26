@@ -40,6 +40,7 @@ local string = table.Copy(string)
 local surface = table.Copy(surface)
 local timer = table.Copy(timer)
 local tobool = tobool
+local tonumber = tonumber
 local tostring = tostring
 local type = type
 local UnPredictedCurTime = UnPredictedCurTime
@@ -128,6 +129,7 @@ local vars = {
 	
 	-- Thing
 	["alerts"] = true,
+	["alerts_sound"] = true,
 }
 
 local concommands = {
@@ -169,6 +171,7 @@ local concommands = {
 		
 		-- Thing
 		["st_alerts"] = "alerts",
+		["st_alerts_sound"] = "alerts_sound",
 	}
 }
 
@@ -282,7 +285,9 @@ local alert = function(event, data)
 	if mrend then
 		mrend.PushAlert("Blocked " .. tostring(event) .. "(" .. tostring(data) .. ")")
 	else
-		surface.PlaySound("garrysmod/balloon_pop_cute.wav")
+		if vars["alerts_sound"] then
+			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
+		end
 
 		MsgC(Color(255, 100, 100), "[$W467001Z_8374] ", Color(222, 222, 222), "Blocked ", Color(255, 100, 100), tostring(event) .. "(" .. tostring(data) .. ")", Color(222, 222, 222), "\n")
 	end
@@ -835,7 +840,7 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	local v = meta_pl.GetVehicle(ply)
 	local w = meta_pl.GetActiveWeapon(ply)
 
-	local nfov = fov + (math.Clamp(vars["cfov"], 1, 179) - meta_cv.GetInt(GetConVar("fov_desired")))
+	local nfov = math.Clamp(fov + (vars["cfov"] - meta_cv.GetInt(GetConVar("fov_desired"))), 0, 179)
 
 	if vars["thirdpersonfix"] then
 		if meta_pl.ShouldDrawLocalPlayer(ply) then
@@ -1139,11 +1144,17 @@ for j, l in pairs(concommands) do
 
 		if j == "integer" then
 			confunc = function(p, c, args)
-				if not args[1] or type(args[1]) ~= "number" then
-					args[1] = 1
+				local new = args[1]
+			
+				if not new then
+					new = 1
+				end
+				
+				if not type(new) == "number" then
+					new = tonumber(new)
 				end
 
-				vars[v] = math.floor(args[1])
+				vars[v] = math.floor(new)
 			end
 		elseif j == "string" then
 			confunc = function(p, c, args, argstr)
@@ -1155,11 +1166,13 @@ for j, l in pairs(concommands) do
 			end
 		elseif j == "boolean" then
 			confunc = function(p, c, args)
-				if not args[1] then
-					args[1] = false
+				local new = args[1]
+			
+				if not new then
+					new = false
 				end
 
-				vars[v] = tobool(args[1])
+				vars[v] = tobool(new)
 			end
 		else
 			continue
