@@ -576,7 +576,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			
 			local lang
 			
-			if not vars["following"] or ontop then
+			if ontop or not vars["following"] then
 				lang = meta_cd.GetViewAngles(cmd)
 				vars["followang"] = lang
 				
