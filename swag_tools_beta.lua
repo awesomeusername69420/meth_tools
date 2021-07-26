@@ -103,7 +103,9 @@ local vars = {
 
 	-- Tools
 	["antigag"] = false,
+	["followang"] = Angle(0, 0, 0),
 	["followbot"] = false,
+	["following"] = false,
 	["followtarg"] = LocalPlayer(),
 	["gesture"] = "dance",
 	["gesture_loop"] = false,
@@ -546,7 +548,17 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 		if tply ~= LocalPlayer() and IsValid(tply) then
 			local tpos =  meta_en.GetPos(tply)
 			local lpos = meta_en.GetPos(LocalPlayer())
-			local lang = meta_cd.GetViewAngles(cmd)
+			
+			local lang
+			
+			if not vars["following"] then
+				lang = meta_cd.GetViewAngles(cmd)
+				vars["followang"] = lang
+				
+				vars["following"] = true
+			else
+				lang = vars["followang"]
+			end
 
 			local lposnz = Vector(lpos.x, lpos.y, 0)
 			local tposnz = Vector(tpos.x, tpos.y, 0)
@@ -568,9 +580,11 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			
 			meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * 10^4)
 		else
+			vars["following"] = false
 			vars["followtarg"] = getClosest()
 		end
 	else
+		vars["following"] = false
 		vars["followtarg"] = nil
 	end
 end)
