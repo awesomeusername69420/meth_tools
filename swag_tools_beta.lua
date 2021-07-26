@@ -50,6 +50,10 @@ local meta_pl = debug.getregistry()["Player"]
 local meta_vc = debug.getregistry()["Vector"]
 local meta_vm = debug.getregistry()["VMatrix"]
 
+local IN_BACK = 16
+local IN_FORWARD = 8
+local IN_MOVELEFT = 512
+local IN_MOVERIGHT = 1024
 local IN_RELOAD = 8192
 local IN_SPEED = 131072
 local MASK_SHOT = 1174421507
@@ -580,7 +584,11 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 		local tply = vars["followtarg"]
 
 		if tply ~= LocalPlayer() and IsValid(tply) then
-			meta_cd.ClearButtons(cmd)
+			if meta_cd.KeyDown(cmd, IN_FORWARD) or meta_cd.KeyDown(cmd, IN_BACK) or meta.cd.KeyDown(cmd, IN_MOVELEFT) or meta_cd.KeyDown(cmd, IN_MOVERIGHT) then
+				vars["following"] = false
+				
+				return
+			end
 		
 			local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
 			local tpos =  meta_en.GetPos(tply)
