@@ -616,17 +616,16 @@ end)
 
 hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, pos, ang)
 	if not mutil or not vars["silentviz"] then
-		return pos, ang
+		return
 	end
 
-	local npos = pos
 	local at = mutil.GetAimbotTarget()
 
 	if at ~= 0 then
 		local ent = ents.GetByIndex(at)
-
-		if meta_en.IsPlayer(ent) and meta_en.IsValid(ent) then
-			npos = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - meta_en.EyePos(LocalPlayer())
+		
+		if IsValid(ent) and meta_pl.Alive(ent) then
+			local npos = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - meta_en.EyePos(LocalPlayer())
 			
 			return pos, npos:Angle()
 		end
