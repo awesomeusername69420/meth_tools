@@ -31,6 +31,7 @@ local pairs = pairs
 local player = table.Copy(player)
 local render = table.Copy(render)
 local RunConsoleCommand = RunConsoleCommand
+local ScrW = ScrW
 local string = table.Copy(string)
 local surface = table.Copy(surface)
 local timer = table.Copy(timer)
@@ -62,7 +63,7 @@ math.randomseed(math.random(-123456, 123456))
 
 -- Meth stuff
 
-local mrend, mutil
+local mrend, mutil, mcall
 
 if meth_lua_api then
 	if meth_lua_api.render then
@@ -71,6 +72,10 @@ if meth_lua_api then
 
 	if meth_lua_api.util then
 		mutil = meth_lua_api.util
+	end
+	
+	if meth_lua_api.callbacks then
+		mcall = meth_lua_api.callbacks
 	end
 end
 
@@ -104,6 +109,7 @@ local vars = {
 	-- Tools
 	["antigag"] = false,
 	["followbot"] = false,
+	["following"] = false,
 	["followtarg"] = LocalPlayer(),
 	["gesture"] = "dance",
 	["gesture_loop"] = false,
@@ -527,6 +533,25 @@ end
 	The Hooks!!
 ]]
 
+if mcall then
+	mcall.Add("OnHUDPaint", vars["hookname"], function()
+		if vars["followbot"] then
+			local tply = vars["followtarg"]
+		
+			if tply ~= LocalPlayer() and IsValid(tply) then
+				local text = "Following: " .. tply:Name()
+				
+				surface.SetFont("BudgetLabel")
+				local tw, th = surface.GetTextSize(text)
+				
+				surface.SetTextColor(255, 255, 255, 255)
+				surface.SetTextPos((ScrW() / 2) - (tw / 2), 15)
+				surface.DrawText(text)
+			end
+		end
+	end)
+end
+
 hook.Add("HUDShouldDraw", vars["hookname"], function(n)
 	if n == "CHudDamageIndicator" then
 		return false
@@ -544,6 +569,8 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 		local tply = vars["followtarg"]
 
 		if tply ~= LocalPlayer() and IsValid(tply) then
+			vars["following"] = true
+		
 			local tpos =  meta_en.GetPos(tply)
 			local lpos = meta_en.GetPos(LocalPlayer())
 			local lang = meta_cd.GetViewAngles(cmd)
@@ -572,6 +599,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 		end
 	else
 		vars["followtarg"] = nil
+		vars["following"] = false
 	end
 end)
 
