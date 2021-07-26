@@ -157,7 +157,7 @@ local concommands = {
 		["st_render_rgb"] = "rgb",
 		["st_render_tracers_beam"] = "beamtracers",
 		["st_render_tracers_local"] = "tracers_local",
-		["st_render_tracers_other"] = "tracers",
+		["st_render_tracers_other"] = "tracers_other",
 		["st_render_visualize_silent"] = "silentviz",
 
 		-- Tools
@@ -737,6 +737,27 @@ if mcall then
 				surface.DrawText(text)
 			end
 		end
+		
+		if not vars["tracers_other"] and not vars["tracers_local"] then
+			return
+		end
+		
+		print("in meth!")
+	
+		for k, v in ipairs(bullets) do
+			if not k or not v then
+				continue
+			end
+	
+			cam.Start3D()
+				if vars["beamtracers"] then
+					render.SetMaterial(Material("cable/redlaser"))
+					render.DrawBeam(bullets[k].s, bullets[k].e, 4, 1, 1, Color(255, 255, 255, 255))
+				else
+					render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
+				end
+			cam.End3D()
+		end
 	end)
 end
 
@@ -998,22 +1019,22 @@ end)
 hook.Add("PreDrawEffects", vars["hookname"], function()
 	render.SetLightingMode(0)
 
-	if not vars["tracers"] then
-		return
-	end
-
-	for k, v in ipairs(bullets) do
-		if not k or not v then
-			continue
+	if not mcall then
+		if not vars["tracers_other"] and not vars["tracers_local"] then
+			return
 		end
-
-		if vars["beamtracers"] then
-			cam.Start3D()
+	
+		for k, v in ipairs(bullets) do
+			if not k or not v then
+				continue
+			end
+	
+			if vars["beamtracers"] then
 				render.SetMaterial(Material("cable/redlaser"))
 				render.DrawBeam(bullets[k].s, bullets[k].e, 4, 1, 1, Color(255, 255, 255, 255))
-			cam.End3D()
-		else
-			render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
+			else
+				render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
+			end
 		end
 	end
 end)
@@ -1033,11 +1054,11 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 	local isloc = ply == LocalPlayer()
 
 	if isloc then
-		if en and not len then
+		if not len then
 			return
 		end
 	else
-		if len and not en then
+		if not en then
 			return
 		end
 	end
