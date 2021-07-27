@@ -119,6 +119,7 @@ local vars = {
 	["timer_slow"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
 
 	-- Render
+	["afov"] = 75,
 	["antiblind"] = false,
 	["beamtracers"] = false,
 	["catpng"] = false,
@@ -773,9 +774,7 @@ if mcall then
 			
 			if fov and fov > 0 then
 				local retardednumber = 2.6
-				local dfov = GetConVar("fov_desired"):GetInt()
-			
-				local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(dfov / 2)) * ScrW()) / retardednumber
+				local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
 				local w, h = rad * 2, rad * 2
 				
 				surface.SetDrawColor(vars["catpng_r"] % 256, vars["catpng_g"] % 256, vars["catpng_b"] % 256, vars["catpng_a"] % 256)
@@ -909,6 +908,7 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	local w = meta_pl.GetActiveWeapon(ply)
 
 	local nfov = math.Clamp(fov + (vars["cfov"] - meta_cv.GetInt(GetConVar("fov_desired"))), 0, 179)
+	vars["afov"] = nfov
 
 	if vars["thirdpersonfix"] then
 		if meta_pl.ShouldDrawLocalPlayer(ply) then
