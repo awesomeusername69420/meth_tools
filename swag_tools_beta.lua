@@ -103,7 +103,7 @@ if meth_lua_api then
 		mcall = mapi.callbacks
 	end
 	
-	if mutil.GetPermissions().Settings and mapi.var then
+	if mutil.GetPermissions().CheatSettings and mapi.var then
 		mvar = mapi.var
 	end
 end
