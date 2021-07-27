@@ -769,14 +769,14 @@ end
 
 if mcall then
 	mcall.Add("OnHUDPaint", vars["hookname"], function()
-		if mvar and catpng and not meta_im.IsError(catpng) then
+		if vars["catpng"] mvar and catpng and not meta_im.IsError(catpng) then
 			local fov = mvar.GetVarInt("Aimbot.Target.FoV") or nil
 			
 			if fov and fov > 0 then
-				local rad = math.tan(math.rad(fov / 2)) / math.tan(math.rad(160.3 / 2)) * ScrW()
+				local rad = math.tan(math.rad(fov / 2)) / math.tan(math.rad(110 / 2)) * ScrW()
 				local w, h = rad * 2, rad * 2
 				
-				surface.SetDrawColor(vars["catpng_r"], vars["catpng_g"], vars["catpng_b"], vars["catpng_a"])
+				surface.SetDrawColor(vars["catpng_r"] % 255, vars["catpng_g"] % 255, vars["catpng_b"] % 255, vars["catpng_a"] % 255)
 				surface.SetMaterial(catpng)
 				
 				surface.DrawTexturedRect((ScrW() / 2) - (w / 2), (ScrH() / 2) - (h / 2), w , h)
