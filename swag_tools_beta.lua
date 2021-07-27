@@ -15,7 +15,9 @@ local Color = Color
 local concommand = table.Copy(concommand)
 local cvars = table.Copy(cvars)
 local debug = table.Copy(debug)
+local draw = table.Copy(draw)
 local ents = table.Copy(ents)
+local file = table.Copy(file)
 local game = game
 local GetConVar = GetConVar
 local GetConVarNumber = GetConVarNumber
@@ -24,6 +26,7 @@ local GetConVar_Internal = GetConVar_Internal
 local gui = table.Copy(gui)
 local hook = table.Copy(hook)
 local HSVToColor = HSVToColor
+local http = table.Copy(http)
 local ipairs = ipairs
 local IsValid = IsValid
 local jit = table.Copy(jit)
@@ -51,6 +54,7 @@ local meta_an = debug.getregistry()["Angle"]
 local meta_cd = debug.getregistry()["CUserCmd"]
 local meta_cv = debug.getregistry()["ConVar"]
 local meta_en = debug.getregistry()["Entity"]
+local meta_im = debug.getregistry()["IMaterial"]
 local meta_pl = debug.getregistry()["Player"]
 local meta_vc = debug.getregistry()["Vector"]
 local meta_vm = debug.getregistry()["VMatrix"]
@@ -68,23 +72,52 @@ local MOVETYPE_NOCLIP = 8
 local MOVETYPE_OBSERVER = 10
 local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
 
+http.Fetch("https://raw.githubusercontent.com/awesomeusername69420/meth_tools/main/image/catpng_big.png",
+	function(b)
+		file.Write("catpng.png", b)
+	end,
+	
+	function(e)
+		http.Fetch("https://raw.githubusercontent.com/awesomeusername69420/meth_tools/main/image/catpng.png",
+			function(b)
+				file.Write("catpng.png", b)
+			end
+		)
+	end
+)
+
+local beammat = Material("cable/redlaser")
+local catpng
+
+if file.Exists("catpng.png", "DATA") then
+	catpng = Material("../data/catpng.png")
+	
+	meta_im.SetInt(catpng, "$flags", bit.bor(meta_im.GetInt(catpng, "$flags"), 32768))
+end
+
 math.randomseed(math.random(-123456, 123456))
 
 -- Meth stuff
 
-local mrend, mutil, mcall
+local mapi, mrend, mutil, mcall, mvar
 
 if meth_lua_api then
-	if meth_lua_api.render then
-		mrend = meth_lua_api.render
+	mapi = meth_lua_api
+
+	if mapi.render then
+		mrend = mapi.render
 	end
 
-	if meth_lua_api.util then
-		mutil = meth_lua_api.util
+	if mapi.util then
+		mutil = mapi.util
 	end
 	
-	if meth_lua_api.callbacks then
-		mcall = meth_lua_api.callbacks
+	if mapi.callbacks then
+		mcall = mapi.callbacks
+	end
+	
+	if mutil.GetPermissions().Settings and mapi.var then
+		mvar = mapi.var
 	end
 end
 
@@ -103,6 +136,11 @@ local vars = {
 	-- Render
 	["antiblind"] = false,
 	["beamtracers"] = false,
+	["catpng"] = false,
+	["catpng_a"] = 100,
+	["catpng_b"] = 255,
+	["catpng_g"] = 255,
+	["catpng_r"] = 255,
 	["cfov"] = meta_cv.GetInt(GetConVar("fov_desired")),
 	["fog"] = true,
 	["fullbright"] = false,
@@ -135,6 +173,10 @@ local vars = {
 local concommands = {
 	["integer"] = {
 		-- Render
+		["st_render_catpng_alpha"] = "catpng_a",
+		["st_render_catpng_blue"] = "catpng_b",
+		["st_render_catpng_green"] = "catpng_g",
+		["st_render_catpng_red"] = "catpng_r",
 		["st_render_fov_set"] = "cfov",
 		["st_render_tracers_life_set"] = "tracerlife",
 		["st_render_tracers_max_set"] = "maxtracers",
@@ -153,6 +195,7 @@ local concommands = {
 	["boolean"] = {
 		-- Render
 		["st_render_antiblind"] = "antiblind",
+		["st_render_catpng"] = "catpng",
 		["st_render_fixthirdperson"] = "thirdpersonfix",
 		["st_render_fog"] = "fog",
 		["st_render_fullbright"] = "fullbright",
@@ -360,6 +403,7 @@ local safefuncs = {
 	msgc = MsgC,
 	pcon = meta_pl.ConCommand,
 	rcon = RunConsoleCommand,
+	rtts = render.DrawTextureToScreen,
 	tempty = table.Empty,
 	texists = timer.Exists,
 }
@@ -398,6 +442,14 @@ meta_cd.SetViewAngles = function(...)
 	end
 
 	return safefuncs.sva(...)
+end
+
+_G.render.DrawTextureToScreen = function(...)
+	if not ... or vars["antiblind"] then
+		return
+	end
+	
+	return safefuncs.rtts(...)
 end
 
 _G.cvars.AddChangeCallback = function(var, ...)
@@ -662,6 +714,8 @@ _G.timer.Exists = function(n)
 	end
 
 	if n == vars["timer_fast"] or n == vars["timer_slow"] then
+		alert("timer.Exists", n)
+		
 		return false
 	end
 
@@ -728,6 +782,22 @@ end
 
 if mcall then
 	mcall.Add("OnHUDPaint", vars["hookname"], function()
+		if mvar and catpng and not meta_im.IsError(catpng) then
+			local fov = mvar.GetVarInt("Aimbot.Target.FoV") or nil
+			
+			if fov and fov > 0 then
+				local rad = math.tan(math.rad(fov / 2)) / math.tan(math.rad(160.3 / 2)) * ScrW()
+				local w, h = rad * 2, rad * 2
+				
+				surface.SetDrawColor(vars["catpng_r"], vars["catpng_g"], vars["catpng_b"], vars["catpng_a"])
+				surface.SetMaterial(catpng)
+				
+				surface.DrawTexturedRect((ScrW() / 2) - (w / 2), (ScrH() / 2) - (h / 2), w , h)
+			end
+		end
+	
+		draw.NoTexture()
+	
 		if vars["followbot"] then
 			local tply = vars["followtarg"]
 		
@@ -754,7 +824,7 @@ if mcall then
 	
 			cam.Start3D()
 				if vars["beamtracers"] then
-					render.SetMaterial(Material("cable/redlaser"))
+					render.SetMaterial(beammat)
 					render.DrawBeam(bullets[k].s, bullets[k].e, 4, 1, 1, Color(255, 255, 255, 255))
 				else
 					render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
@@ -763,6 +833,15 @@ if mcall then
 		end
 	end)
 end
+
+hook.Add("HUDPaint", vars["hookname"], function()
+	if vars["antiblind"] then
+		hook.Remove("HUDPaint", "ulx_blind")
+		hook.Remove("HUDPaintBackground", "ulx_blind")
+		hook.Remove("RenderScreenspaceEffects", "CSGOSmokeBlind")
+		hook.Remove("RenderScreenspaceEffects", "TFA_CSGO_FLASHBANG")
+	end
+end)
 
 hook.Add("HUDShouldDraw", vars["hookname"], function(n)
 	if n == "CHudDamageIndicator" then
@@ -886,15 +965,6 @@ hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, po
 			
 			return pos, npos:Angle()
 		end
-	end
-end)
-
-hook.Add("HUDPaint", vars["hookname"], function()
-	if vars["antiblind"] then
-		hook.Remove("HUDPaint", "ulx_blind")
-		hook.Remove("HUDPaintBackground", "ulx_blind")
-		hook.Remove("RenderScreenspaceEffects", "CSGOSmokeBlind")
-		hook.Remove("RenderScreenspaceEffects", "TFA_CSGO_FLASHBANG")
 	end
 end)
 
