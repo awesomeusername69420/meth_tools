@@ -774,7 +774,7 @@ if mcall then
 				local rad = math.tan(math.rad(fov / 2)) / math.tan(math.rad(GetConVar("fov_desired"):GetInt() + 10 / 2)) * ScrW()
 				local w, h = rad * 2, rad * 2
 				
-				surface.SetDrawColor(vars["catpng_r"], vars["catpng_g"], vars["catpng_b"], vars["catpng_a"])
+				surface.SetDrawColor(vars["catpng_r"] % 256, vars["catpng_g"] % 256, vars["catpng_b"] % 256, vars["catpng_a"] % 256)
 				surface.SetMaterial(catpng)
 				
 				surface.DrawTexturedRect((ScrW() / 2) - (w / 2), (ScrH() / 2) - (h / 2), w , h)
