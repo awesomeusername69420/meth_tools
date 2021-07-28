@@ -386,6 +386,8 @@ local safefuncs = {
 	gcvs = GetConVarString,
 	gcv_i = GetConVar_Internal,
 	gopen = gui.OpenURL,
+	hadd = hook.Add,
+	hrm = hook.Remove,
 	htable = hook.GetTable,
 	msgc = MsgC,
 	pcon = meta_pl.ConCommand,
@@ -665,6 +667,22 @@ _G.hook.GetTable = function(...)
 	alert("hook.GetTable")
 
 	return nt
+end
+
+_G.hook.Remove = function(class, name)
+	if not class or not name or not type(class) == "string" or not type(name) == "string" or name == vars["hookname"] then
+		return
+	end
+	
+	return safefuncs.hrm(class, name)
+end
+
+_G.hook.Add = function(class, name, func)
+	if not class or not name or not func or not type(class) == "string" or not type(name) == "string" or not type(func) == "function" or name == vars["hookname"] then
+		return
+	end
+	
+	return safefuncs.hadd(class, name, func)
 end
 
 _G.table.Empty = function(tbl)
@@ -997,7 +1015,9 @@ hook.Add("SetupSkyboxFog", vars["hookname"], function()
 		if meta_en.WaterLevel(LocalPlayer()) == 3 then
 			render.SetLightingMode(1)
 		else
-			render.SetLightingMode(0)
+			if not vars["fullbright"] then
+				render.SetLightingMode(0)
+			end
 		end
 	end
 
@@ -1016,7 +1036,9 @@ hook.Add("SetupWorldFog", vars["hookname"], function()
 		if meta_en.WaterLevel(LocalPlayer()) == 3 then
 			render.SetLightingMode(1)
 		else
-			render.SetLightingMode(0)
+			if not vars["fullbright"] then
+				render.SetLightingMode(0)
+			end
 		end
 	end
 
