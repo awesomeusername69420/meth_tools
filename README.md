@@ -19,6 +19,11 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | st_render_fov_set | Sets FOV | `integer` | FOV at load time |
  | st_render_tracers_life_set | Sets bullet tracer lifespan (in seconds) | `integer` | `3` |
  | st_render_tracers_max_set | Sets maximum amount of bullet tracers allowed | `integer` | `1000` |
+ | st_render_catpng_alpha | Sets alpha value for catpng fov | `integer` | `100` |
+ | st_render_catpng_red | Sets red rgb value for catpng fov | `integer` | `255` |
+ | st_render_catpng_green | Sets blue rgb value for catpng fov | `integer` | `255` |
+ | st_render_catpng_blue | Sets green rgb value for catpng fov | `integer` | `255` |
+ | st_render_catpng | Toggles catpng fov rendering | `boolean` | `false` |
  | st_render_antiblind | Toggles anti ULX blind | `boolean` | `false` |
  | st_render_fog | Toggles fog rendering | `boolean` | `true` |
  | st_render_fullbright | Toggles fullbright | `boolean` | `false` |
