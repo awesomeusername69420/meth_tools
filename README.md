@@ -47,7 +47,7 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | st_tools_followbot | Toggles block bot/follow bot | `boolean` | `false` |
 </details>
 <details>
- <summary>Misc Commands</summary>
+ <summary>Miscellaneous Commands</summary>
  
  Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
