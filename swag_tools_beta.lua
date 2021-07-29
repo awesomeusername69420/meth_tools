@@ -28,6 +28,7 @@ local hook = table.Copy(hook)
 local HSVToColor = HSVToColor
 local http = table.Copy(http)
 local ipairs = ipairs
+local IsConCommandBlocked = IsConCommandBlocked
 local IsValid = IsValid
 local jit = table.Copy(jit)
 local LocalPlayer = LocalPlayer
@@ -391,6 +392,7 @@ local safefuncs = {
 	hadd = hook.Add,
 	hrm = hook.Remove,
 	htable = hook.GetTable,
+	isccb = IsConCommandBlocked,
 	msgc = MsgC,
 	pcon = meta_pl.ConCommand,
 	rcon = RunConsoleCommand,
@@ -647,6 +649,22 @@ _G.concommand.Remove = function(var)
 	end
 
 	return safefuncs.cremove(var)
+end
+
+_G.IsConCommandBlocked = function(var)
+	if not var or type(var) ~= "string" then
+		return false
+	end
+
+	for _, v in ipairs(addedCommands) do
+		if string.find(var, v) then
+			alert("IsConCommandBlocked", var)
+
+			return false
+		end
+	end
+
+	return safefuncs.isccb(var)
 end
 
 _G.hook.GetTable = function(...)
