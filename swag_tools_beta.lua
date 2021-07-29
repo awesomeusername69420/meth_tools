@@ -790,17 +790,19 @@ end
 if mcall then
 	mcall.Add("OnHUDPaint", vars["hookname"], function()
 		if vars["catpng"] and catpng and not meta_im.IsError(catpng) and mvar then
-			local fov = mvar.GetVarInt("Aimbot.Target.FoV") or nil
-			
-			if fov and fov > 0 then
-				local retardednumber = 2.6
-				local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
-				local size = rad * 1.96
+			if mvar.GetVarInt("ESP..Enabled") == 1 then
+				local fov = mvar.GetVarInt("Aimbot.Target.FoV") or nil
 				
-				surface.SetDrawColor(vars["catpng_r"] % 256, vars["catpng_g"] % 256, vars["catpng_b"] % 256, vars["catpng_a"] % 256)
-				surface.SetMaterial(catpng)
-				
-				surface.DrawTexturedRect((ScrW() / 2) - (size / 2), (ScrH() / 2) - (size / 2), size + retardednumber, size + retardednumber)
+				if fov and fov > 0 and fov <= 60 then
+					local retardednumber = 2.6
+					local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
+					local size = rad * 1.96
+					
+					surface.SetDrawColor(vars["catpng_r"] % 256, vars["catpng_g"] % 256, vars["catpng_b"] % 256, vars["catpng_a"] % 256)
+					surface.SetMaterial(catpng)
+					
+					surface.DrawTexturedRect((ScrW() / 2) - (size / 2), (ScrH() / 2) - (size / 2), size + retardednumber, size + retardednumber)
+				end
 			end
 		end
 	
@@ -953,6 +955,10 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 
 		if wcv then
 			nview.origin, nview.angles, nview.fov = wcv(w, ply, pos * 1, ang * 1, fov)
+			
+			if nview.fov ~= nfov then
+				vars["afov"] = nview.fov
+			end
 		end
 	end
 
