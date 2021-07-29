@@ -81,10 +81,12 @@ math.randomseed(math.random(-123456, 123456))
 
 -- Meth stuff
 
+local ismeth = false
 local mapi, mrend, mutil, mcall, mvar
 
 if meth_lua_api then
 	mapi = meth_lua_api
+	ismeth = true
 
 	if mapi.render then
 		mrend = mapi.render
@@ -125,12 +127,14 @@ local vars = {
 	["catpng_g"] = 255,
 	["catpng_r"] = 255,
 	["cfov"] = meta_cv.GetInt(GetConVar("fov_desired")),
+	["contextmenuvisible"] = false,
 	["fog"] = true,
 	["fullbright"] = false,
 	["maxtracers"] = 1000,
 	["reddeath"] = true,
 	["rgb"] = false,
 	["silentviz"] = false,
+	["spawnmenuvisible"] = false,
 	["thirdpersonfix"] = false,
 	["tracerlife"] = 3,
 	["tracers_local"] = false,
@@ -147,6 +151,8 @@ local vars = {
 	["gopen"] = true,
 	["psays"] = false,
 	["psays_message"] = "message",
+	["tdetector"] = false,
+	["ttable"] = {},
 	
 	-- Thing
 	["alerts"] = true,
@@ -194,6 +200,7 @@ local concommands = {
 		["st_tools_followbot"] = "followbot",
 		["st_tools_gesture_loop"] = "gesture_loop",
 		["st_tools_psay_spam"] = "psays",
+		["st_tools_tdetector"] = "tdetector",
 		
 		-- Thing
 		["st_alerts"] = "alerts",
@@ -292,6 +299,31 @@ local badWeapons = {
 	"sword",
 }
 
+local tWeapons = {
+	"(Disguise)",
+	"spiderman's_swep",
+	"weapon_awp",
+	"weapon_jihadbomb",
+	"weapon_ttt_awp",
+	"weapon_ttt_c4",
+	"weapon_ttt_death_station",
+	"weapon_ttt_decoy",
+	"weapon_ttt_dhook",
+	"weapon_ttt_flaregun",
+	"weapon_ttt_knife",
+	"weapon_ttt_phammer",
+	"weapon_ttt_push",
+	"weapon_ttt_radio",
+	"weapon_ttt_sg552",
+	"weapon_ttt_silencedsniper",
+	"weapon_ttt_sipistol",
+	"weapon_ttt_teleport",
+	"weapon_ttt_trait_defilibrator",
+	"weapon_ttt_tripmine",
+	"weapon_ttt_turtlenade",
+	"weapon_ttt_xbow",
+}
+
 --[[
 	Fuccncs
 ]]
@@ -341,12 +373,20 @@ local function isBadWeapon(weapon)
 	return false
 end
 
+local function vEnt(ent)
+	if meta_en.IsPlayer(ent) then
+		return meta_pl.Alive(ent) and meta_en.IsValid(ent) and meta_pl.GetObserverMode(ent) == 0 and meta_pl.Team(ent) ~= 1002 and meta_en.GetColor(ent).a > 0
+	end
+	
+	return meta_en.IsValid(ent)
+end
+
 local function getClosest()
 	local d = math.huge
 	local cur = LocalPlayer()
 
 	for _, v in ipairs(player.GetAll()) do
-		if v == LocalPlayer() or not meta_pl.Alive(v) or not meta_en.IsValid(v) or meta_pl.GetObserverMode(v) ~= 0 or meta_pl.Team(v) == 1002 or meta_en.IsDormant(v) then
+		if v == LocalPlayer() or not vEnt(v) or meta_en.IsDormant(v) then
 			continue
 		end
 
@@ -359,6 +399,16 @@ local function getClosest()
 	end
 
 	return cur
+end
+
+local function canRender()
+	local mesp = true
+	
+	if ismeth and mvar then
+		mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1
+	end
+
+	return mesp and not gui.IsConsoleVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vars["spawnmenuvisible"] and not vars["contextmenuvisible"]
 end
 
 --[[
@@ -799,34 +849,158 @@ end
 	The Hooks!!
 ]]
 
-if mcall then
+if ismeth and mcall then
 	mcall.Add("OnHUDPaint", vars["hookname"], function()
-		if vars["catpng"] and catpng and not meta_im.IsError(catpng) and mvar then
-			if (mvar.GetVarInt("ESP..Enabled") % 256) == 1 then
-				local fov = mvar.GetVarInt("Aimbot.Target.FoV") or nil
+		if canRender() and vars["catpng"] and catpng and not meta_im.IsError(catpng) and mvar then
+			local fov = mvar.GetVarInt("Aimbot.Target.FoV") or nil
+			
+			if fov and fov > 0 and fov <= 60 then
+				local retardednumber = 2.6
+				local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
+				local size = rad * 1.96
 				
-				if fov and fov > 0 and fov <= 60 then
-					local retardednumber = 2.6
-					local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
-					local size = rad * 1.96
-					
-					surface.SetDrawColor(vars["catpng_r"] % 256, vars["catpng_g"] % 256, vars["catpng_b"] % 256, vars["catpng_a"] % 256)
-					surface.SetMaterial(catpng)
-					
-					surface.DrawTexturedRect((ScrW() / 2) - (size / 2), (ScrH() / 2) - (size / 2), size + retardednumber, size + retardednumber)
-				end
+				surface.SetDrawColor(vars["catpng_r"] % 256, vars["catpng_g"] % 256, vars["catpng_b"] % 256, vars["catpng_a"] % 256)
+				surface.SetMaterial(catpng)
+				
+				surface.DrawTexturedRect((ScrW() / 2) - (size / 2), (ScrH() / 2) - (size / 2), size + retardednumber, size + retardednumber)
 			end
 		end
 	
 		draw.NoTexture()
+		surface.SetFont("BudgetLabel")
+		
+		if engine.ActiveGamemode() == "terrortown" and canRender() and vars["tdetector"] then
+			local tt = vars["ttable"]
+			local hasstuff = table.Count(tt) > 0
+			
+			if hasstuff then
+				if meta_pl.IsTraitor and not meta_pl.IsTraitor(LocalPlayer()) then
+					local imat = Material("vgui/ttt/sprite_traitor")
+					local icol = Color(255, 255, 255, 130)
+				
+					for _, v in ipairs(tt) do
+						local ply = v[1] or nil
+					
+						if v[2] == 0 or v[2] == 1 or not IsValid(ply) or not meta_en.IsValid(ply) or meta_en.IsDormant(ply) then
+							continue
+						end
+						
+						local dir = meta_en.GetForward(LocalPlayer()) * -1
+						
+						cam.Start3D()
+							render.SetMaterial(imat)
+							
+							local pos = meta_en.GetPos(ply) or nil
+							
+							if not pos then
+								cam.End3D()
+							
+								continue
+							end
+							
+							pos = meta_en.LocalToWorld(ply, (meta_en.OBBCenter(ply) * 2) + Vector(0, 0, 2))
+							
+							render.DrawQuadEasy(pos, dir, 8, 8, icol, 180)
+						cam.End3D()
+					end
+				end
+			end
+		
+			local x, y, w, h = 10, 10, ScrW() * (375 / 1920), 20
+			local sw = 500
+			
+			surface.SetFont("BudgetLabel")
+			surface.SetDrawColor(55, 55, 55, 255)
+			surface.DrawRect(x, y, w, h)
+			
+			surface.SetDrawColor(12, 12, 12, 255)
+			surface.DrawOutlinedRect(x, y, w, h)
+			surface.DrawLine(x + (sw / 2), y, x + (sw / 2), y + h)
+			
+			local tw, th = surface.GetTextSize("Player")
+			
+			surface.SetTextPos(x + (sw / 4) - (tw / 2), y + 3)
+			surface.SetTextColor(255, 255, 255, 255)
+			surface.DrawText("Player")
+			
+			tw, th = surface.GetTextSize("Group")
+			
+			surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), y + 3)
+			surface.DrawText("Group")
+			
+			if hasstuff then
+				local ofs = 1
+			
+				for _, v in ipairs(tt) do
+					if not IsValid(v[1]) or not meta_en.IsValid(v[1]) then
+						continue
+					end
+				
+					local offsety = y + (ofs * 20)
+					
+					if offsety > ScrH() then
+						continue
+					end
+				
+					local mode = v[2]
+					local group = "Innocent"
+				
+					if mode == 0 then
+						surface.SetDrawColor(0, 255, 0, 150)
+					elseif mode == 1 then
+						surface.SetDrawColor(0, 0, 255, 150)
+						group = "Detective"
+					elseif mode == 2 then
+						surface.SetDrawColor(255, 0, 0, 150)
+						group = "Traitor"
+					else
+						surface.SetDrawColor(24, 24, 24, 150)
+						group = "UNKNOWN"
+					end
+					
+					surface.DrawRect(x, offsety, w, h)
+				
+					local n = meta_pl.GetName(v[1])
+					local md = false
+					
+					tw, th = surface.GetTextSize(n)
+					
+					while tw + 5 > (sw / 2) do
+						md = true
+			
+						n = string.sub(n, 1, string.len(n) - 1)
+			
+						tw, th = surface.GetTextSize(n .. "...")
+					end
+					
+					if md then
+						n = n .. "..."
+					end
+					
+					surface.SetTextColor(255, 255, 255, 255)
+					surface.SetTextPos(x + (sw / 4) - (tw / 2), offsety + 3)
+					surface.DrawText(n)
+					
+					tw, th = surface.GetTextSize(group)
+					
+					surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), offsety + 3)
+					surface.DrawText(group)
+					
+					surface.SetDrawColor(12, 12, 12, 255)
+					surface.DrawOutlinedRect(x, offsety - 1, w, h + 1)
+					surface.DrawLine(x + (sw / 2), offsety, x + (sw / 2), offsety + h)
+					
+					ofs = ofs + 1
+				end
+			end
+		end
 	
-		if vars["followbot"] then
+		if canRender() and vars["followbot"] then
 			local tply = vars["followtarg"]
 		
 			if tply ~= LocalPlayer() and IsValid(tply) then
-				local text = "Following: " .. tply:Name()
+				local text = "Following: " .. meta_pl.GetName(tply)
 				
-				surface.SetFont("BudgetLabel")
 				local tw, th = surface.GetTextSize(text)
 				
 				surface.SetTextColor(255, 255, 255, 255)
@@ -855,6 +1029,23 @@ if mcall then
 		end
 	end)
 end
+
+hook.Add("OnSpawnMenuOpen", vars["hookname"], function()
+	vars["spawnmenuvisible"] = true
+end)
+
+hook.Add("OnSpawnMenuClose", vars["hookname"], function()
+	vars["spawnmenuvisible"] = false
+end)
+
+hook.Add("OnContextMenuOpen", vars["hookname"], function()
+	vars["contextmenuvisible"] = true
+end)
+
+hook.Add("OnContextMenuClose", vars["hookname"], function()
+	vars["contextmenuvisible"] = false
+end)
+
 
 hook.Add("HUDPaint", vars["hookname"], function()
 	if vars["antiblind"] then
@@ -978,7 +1169,7 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 end)
 
 hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, pos, ang)
-	if not mutil or not vars["silentviz"] then
+	if not ismeth or not mutil or not vars["silentviz"] then
 		return
 	end
 
@@ -1015,11 +1206,20 @@ hook.Add("Think", vars["hookname"], function()
 		meta_pl.SetWeaponColor(LocalPlayer(), Vector(rgc.r / 255, rgc.g / 255, rgc.b / 255))
 		meta_pl.SetPlayerColor(LocalPlayer(), Vector(rgc.r / 255, rgc.g / 255, rgc.b / 255))
 	else
-		local wc = string.Split(meta_cv.GetString(GetConVar("cl_weaponcolor")), " ")
-		local pc = string.Split(meta_cv.GetString(GetConVar("cl_playercolor")), " ")
-
-		meta_pl.SetWeaponColor(LocalPlayer(), Vector(wc[1], wc[2], wc[3]))
-		meta_pl.SetPlayerColor(LocalPlayer(), Vector(pc[1], pc[2], pc[3]))
+		local wccv = GetConVar("cl_weaponcolor") or nil
+		local pccv = GetConVar("cl_playercolor") or nil
+		
+		local wc, pc
+		
+		if wccv then
+			wc = string.Split(meta_cv.GetString(wccv), " ")
+			meta_pl.SetWeaponColor(LocalPlayer(), Vector(wc[1], wc[2], wc[3]))
+		end
+		
+		if pccv then
+			pc = string.Split(meta_cv.GetString(pccv), " ")
+			meta_pl.SetPlayerColor(LocalPlayer(), Vector(pc[1], pc[2], pc[3]))
+		end
 	end
 end)
 
@@ -1123,7 +1323,7 @@ end)
 hook.Add("PreDrawEffects", vars["hookname"], function()
 	render.SetLightingMode(0)
 
-	if not mcall then
+	if not ismeth then
 		if not vars["tracers_other"] and not vars["tracers_local"] then
 			return
 		end
@@ -1291,13 +1491,76 @@ timer.Create(vars["timer_fast"], 0.1, 0, function()
 end)
 
 timer.Create(vars["timer_slow"], 1, 0, function()
+	if vars["tdetector"] and ismeth then
+		if GAMEMODE.round_state == ROUND_ACTIVE then
+			safefuncs.tempty(vars["ttable"])
+		
+			for _, v in ipairs(player.GetAll()) do
+				if v == LocalPlayer() or not vEnt(v) then
+					continue
+				end
+				
+				if meta_pl.IsTerror then
+					if not meta_pl.IsTerror(v) then
+						continue
+					end
+				end
+				
+				local insd = false
+				local ins = {v, 0}
+				
+				if meta_pl.IsDetective then
+					if not insd and meta_pl.IsDetective(v) then
+						ins[2] = 1
+						table.insert(vars["ttable"], ins)
+						insd = true
+						
+						continue
+					end
+				end
+				
+				if meta_pl.IsTraitor then
+					if not insd and meta_pl.IsTraitor(v) then
+						ins[2] = 2
+						table.insert(vars["ttable"], ins)
+						insd = true
+						
+						continue
+					end
+				end
+				
+				if not insd then
+					for _, w in ipairs(meta_pl.GetWeapons(v)) do
+						if not w or not meta_en.IsValid(w) then
+							continue
+						end
+						
+						if table.HasValue(tWeapons, meta_en.GetClass(w)) then
+							ins[2] = 2
+							table.insert(vars["ttable"], ins)
+							insd = true
+							
+							break
+						end
+					end
+				end
+				
+				if not insd then
+					table.insert(vars["ttable"], ins)
+				end
+			end
+		else
+			safefuncs.tempty(vars["ttable"])
+		end
+	end
+
 	if vars["psays"] then
 		for _, v in ipairs(player.GetAll()) do
 			if not meta_en.IsValid(v) or v == LocalPlayer() then
 				continue
 			end
 
-			safefuncs.rcon("ulx", "psay", v:Name(), vars["psays_message"])
+			safefuncs.rcon("ulx", "psay", meta_pl.Name(v), vars["psays_message"])
 		end
 	end
 end)
