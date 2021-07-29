@@ -784,7 +784,7 @@ end
 if mcall then
 	mcall.Add("OnHUDPaint", vars["hookname"], function()
 		if vars["catpng"] and catpng and not meta_im.IsError(catpng) and mvar then
-			if mvar.GetVarInt("ESP..Enabled") == 1 then
+			if (mvar.GetVarInt("ESP..Enabled") % 256) == 1 then
 				local fov = mvar.GetVarInt("Aimbot.Target.FoV") or nil
 				
 				if fov and fov > 0 and fov <= 60 then
