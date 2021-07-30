@@ -1,10 +1,4 @@
 --[[
-
-	WARNING: THIS IS A BETA BUILD, EXPECT JANK
-
-]]
-
---[[
 	Locales
 ]]
 
@@ -410,7 +404,7 @@ local function getClosest()
 	local cur = LocalPlayer()
 
 	for _, v in ipairs(player.GetAll()) do
-		if v == LocalPlayer() or not vEnt(v) or meta_en.IsDormant(v) then
+		if v == LocalPlayer() or not vEnt(v) or meta_en.IsDormant(v) or meta_en.GetColor(v).a < 1 then
 			continue
 		end
 
@@ -878,24 +872,7 @@ if ismeth and mcall then
 		if canRender() then
 			draw.NoTexture()
 			surface.SetFont("BudgetLabel")
-		
-			if (vars["tracers_other"] or vars["tracers_local"]) then
-				for k, v in ipairs(bullets) do
-					if not k or not v then
-						continue
-					end
-			
-					cam.Start3D()
-						if vars["beamtracers"] then
-							render.SetMaterial(beammat)
-							render.DrawBeam(bullets[k].s, bullets[k].e, 4, 1, 1, Color(255, 255, 255, 255))
-						else
-							render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
-						end
-					cam.End3D()
-				end
-			end
-		
+
 			if vars["tdetector"] and engine.ActiveGamemode() == "terrortown" then
 				local x, y, w, h = vars["tdetector_list_x"], vars["tdetector_list_y"], ScrW() * (375 / 1920), 20
 				local sw = 500
@@ -993,16 +970,19 @@ if ismeth and mcall then
 						ofs = ofs + 1
 					end
 					
-					if vars["tdetector_icons"] and has then
-						local dis = meta_vc.Distance(meta_en.GetPos(ply), meta_en.GetPos(LocalPlayer()))
-						local size = math.Clamp(60 - (dis / 8), 0, 60)
-						local rpos = meta_vc.ToScreen(meta_en.LocalToWorld(ply, (meta_en.OBBCenter(ply) * 2) + Vector(0, 0, 2)))
-						
-						surface.SetDrawColor(255, 255, 255, math.Clamp(math.Round(dis), 0, 130))
-						surface.SetMaterial(trmat)
-						
-						surface.DrawTexturedRect(rpos.x - (size / 2), rpos.y - (size / 2), size, size)
+					if (meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer())) or meta_en.IsDormant(ply) or not meta_pl.Alive(ply) or meta_en.GetColor(ply).a < 1 then
+						continue
 					end
+					
+					cam.Start3D()
+						if vars["tdetector_icons"] and has then
+							local dir = meta_en.GetForward(LocalPlayer()) * -1
+							local rpos = meta_en.LocalToWorld(ply, (meta_en.OBBCenter(ply) * 2) + Vector(0, 0, 2))
+							
+							render.SetMaterial(trmat)
+							render.DrawQuadEasy(rpos, dir, 8,  8, Color(255, 255, 255, 130), 180)
+						end
+					cam.End3D()
 				end
 				
 				draw.NoTexture()
@@ -1011,6 +991,23 @@ if ismeth and mcall then
 					surface.SetDrawColor(12, 12, 12, 255)
 					surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
 					surface.DrawLine(x + (sw / 2), y, x + (sw / 2), y + h + ((ofs - 1) * 20))
+				end
+			end
+		
+			if vars["tracers_other"] or vars["tracers_local"] then
+				for k, v in ipairs(bullets) do
+					if not k or not v then
+						continue
+					end
+			
+					cam.Start3D()
+						if vars["beamtracers"] then
+							render.SetMaterial(beammat)
+							render.DrawBeam(bullets[k].s, bullets[k].e, 4, 1, 1, Color(255, 255, 255, 255))
+						else
+							render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
+						end
+					cam.End3D()
 				end
 			end
 		
@@ -1570,7 +1567,7 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 						if table.HasValue(tWeapons, meta_en.GetClass(w)) then
 							ins[2] = 2
 							table.insert(vars["ttable"], ins)
-							
+
 							if not table.HasValue(vars["tcache"], v) then
 								table.insert(vars["tcache"], v)
 							end
