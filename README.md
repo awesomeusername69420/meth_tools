@@ -16,36 +16,40 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  
  | Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
+ | st_render_catpng_alpha | Sets alpha value for catpng fov | `integer` | `100` |
+ | st_render_catpng_blue | Sets green rgb value for catpng fov | `integer` | `255` |
+ | st_render_catpng_green | Sets blue rgb value for catpng fov | `integer` | `255` |
+ | st_render_catpng_red | Sets red rgb value for catpng fov | `integer` | `255` |
  | st_render_fov_set | Sets FOV | `integer` | FOV at load time |
  | st_render_tracers_life_set | Sets bullet tracer lifespan (in seconds) | `integer` | `3` |
  | st_render_tracers_max_set | Sets maximum amount of bullet tracers allowed | `integer` | `1000` |
- | st_render_catpng_alpha | Sets alpha value for catpng fov | `integer` | `100` |
- | st_render_catpng_red | Sets red rgb value for catpng fov | `integer` | `255` |
- | st_render_catpng_green | Sets blue rgb value for catpng fov | `integer` | `255` |
- | st_render_catpng_blue | Sets green rgb value for catpng fov | `integer` | `255` |
- | st_render_catpng | Toggles catpng fov rendering | `boolean` | `false` |
  | st_render_antiblind | Toggles anti ULX blind | `boolean` | `false` |
+ | st_render_catpng | Toggles catpng fov rendering | `boolean` | `false` |
+ | st_render_fixthirdperson | Toggles thirdperson fix | `boolean` | `false` |
  | st_render_fog | Toggles fog rendering | `boolean` | `true` |
  | st_render_fullbright | Toggles fullbright | `boolean` | `false` |
  | st_render_rgb | Toggles rgb for the LocalPlayer | `boolean` | `false` |
  | st_render_tracers_beam | Toggles bullet tracers being a beam instead of a line | `boolean` | `false` |
  | st_render_tracers_local | Toggles bullet tracers for LocalPlayer | `boolean` | `false` |
  | st_render_tracers_other | Toggles bullet tracers for other players | `boolean` | `false` |
- | st_render_fixthirdperson | Toggles thirdperson fix | `boolean` | `false` |
 </details>
 <details>
  <summary>Tool Commands</summary>
  
  Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
+ | st_tools_tdetector_list_x | Sets X position for the TDetector list | `integer` | `10` |
+ | st_tools_tdetector_list_y | Sets Y position for the TDetector list | `integer` | `10` |
  | st_tools_gesture_set | Sets gesture for the gestureloop | `string` | `dance` |
  | st_tools_psay_spam_set | Sets message for ULX psay spammer | `string` | `message` |
  | st_tools_allow_guiopenurl | Toggles gui.OpenURL capabilities | `boolean` | `true` |
  | st_tools_antigag | Toggles anti ULX gag | `boolean` | `false` |
+ | st_tools_followbot | Toggles block bot/follow bot | `boolean` | `false` |
  | st_tools_gesture_loop | Toggles gestureloop | `boolean` | `false` |
  | st_tools_psay_spam | Toggles ULX psay spammer | `boolean` | `false` |
- | st_tools_followbot | Toggles block bot/follow bot | `boolean` | `false` |
  | st_tools_tdetector | Toggles TTT traitor detector | `boolean` | `false` |
+ | st_tools_tdetector_drawicons | Toggles rendering of the TDetector's icons above heads | `boolean` | `true` |
+ | st_tools_tdetector_drawlist | Toggles rendering of the TDetector's list | `boolean` | `true` |
 </details>
 <details>
  <summary>Miscellaneous Commands</summary>
