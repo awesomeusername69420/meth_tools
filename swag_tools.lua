@@ -922,10 +922,10 @@ if ismeth and mcall then
 				surface.SetTextColor(255, 255, 255, 255)
 				surface.DrawText("Player")
 				
-				tw, th = surface.GetTextSize("Group")
+				tw, th = surface.GetTextSize("Role")
 				
 				surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), y + 3)
-				surface.DrawText("Group")
+				surface.DrawText("Role")
 				
 				if hasstuff then
 					local ofs = 1
@@ -942,24 +942,24 @@ if ismeth and mcall then
 						end
 					
 						local mode = v[2]
-						local group = "Unknown"
+						local role = "Unknown"
 					
 						if mode == 0 then
 							if meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer()) then
-								group = "Innocent"
+								role = "Innocent"
 								surface.SetDrawColor(0, 200, 0, 150)
 							else
 								surface.SetDrawColor(24, 24, 24, 150)
 							end
 						elseif mode == 1 then
 							surface.SetDrawColor(0, 0, 200, 150)
-							group = "Detective"
+							role = "Detective"
 						elseif mode == 2 then
 							surface.SetDrawColor(200, 0, 0, 150)
-							group = "Traitor"
+							role = "Traitor"
 						else
 							surface.SetDrawColor(24, 24, 24, 150)
-							group = "ERROR"
+							role = "ERROR"
 						end
 						
 						surface.DrawRect(x, offsety, w, h)
@@ -985,10 +985,10 @@ if ismeth and mcall then
 						surface.SetTextPos(x + (sw / 4) - (tw / 2), offsety + 3)
 						surface.DrawText(n)
 						
-						tw, th = surface.GetTextSize(group)
+						tw, th = surface.GetTextSize(role)
 						
 						surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), offsety + 3)
-						surface.DrawText(group)
+						surface.DrawText(role)
 						
 						surface.SetDrawColor(12, 12, 12, 255)
 						surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
