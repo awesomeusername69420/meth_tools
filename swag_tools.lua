@@ -875,8 +875,8 @@ if ismeth and mcall then
 
 			if vars["tdetector"] and engine.ActiveGamemode() == "terrortown" then
 				local x, y, w, h = vars["tdetector_list_x"], vars["tdetector_list_y"], ScrW() * (375 / 1920), 20
-				local sw = 500
 				local ofs = 1
+				local dw = w - (w / 3)
 				
 				if vars["tdetector_list"] then
 					surface.SetDrawColor(55, 55, 55, 255)
@@ -884,11 +884,11 @@ if ismeth and mcall then
 					
 					surface.SetDrawColor(12, 12, 12, 255)
 					surface.DrawOutlinedRect(x, y, w, h)
-					surface.DrawLine(x + (sw / 2), y, x + (sw / 2), y + h)
+					surface.SetDrawColor(12, 255, 12, 255)
 					
 					local tw, th = surface.GetTextSize("Player")
 					
-					surface.SetTextPos(x + (sw / 4) - (tw / 2), y + 3)
+					surface.SetTextPos(x + (w - dw) - (tw / 2), y + 3)
 					surface.SetTextColor(255, 255, 255, 255)
 					surface.DrawText("Player")
 					
@@ -906,9 +906,7 @@ if ismeth and mcall then
 						if not IsValid(ply) or not meta_en.IsValid(ply) then
 							continue
 						end
-						
-						draw.NoTexture()
-						
+
 						local offsety = y + (ofs * 20)
 						
 						if offsety > ScrH() then
@@ -943,7 +941,7 @@ if ismeth and mcall then
 						
 						local tw, th = surface.GetTextSize(n)
 						
-						while tw + 5 > (sw / 2) do
+						while tw + 5 > dw do
 							md = true
 						
 							n = string.sub(n, 1, string.len(n) - 1)
@@ -956,7 +954,7 @@ if ismeth and mcall then
 						end
 						
 						surface.SetTextColor(255, 255, 255, 255)
-						surface.SetTextPos(x + (sw / 4) - (tw / 2), offsety + 3)
+						surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
 						surface.DrawText(n)
 						
 						tw, th = surface.GetTextSize(role)
@@ -985,12 +983,10 @@ if ismeth and mcall then
 					cam.End3D()
 				end
 				
-				draw.NoTexture()
-				
 				if vars["tdetector_list"] then
 					surface.SetDrawColor(12, 12, 12, 255)
 					surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
-					surface.DrawLine(x + (sw / 2), y, x + (sw / 2), y + h + ((ofs - 1) * 20))
+					surface.DrawLine(x + (w - (w / 3)), y, x + (w - (w / 3)), y + h + ((ofs - 1) * 20))
 				end
 			end
 		
@@ -1031,7 +1027,7 @@ if ismeth and mcall then
 				if fov and fov > 0 and fov <= 60 then
 					local retardednumber = 2.6
 					local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
-					local size = rad * 1.96
+					local size = rad * 1.955
 					
 					surface.SetDrawColor(vars["catpng_r"] % 256, vars["catpng_g"] % 256, vars["catpng_b"] % 256, vars["catpng_a"] % 256)
 					surface.SetMaterial(catpng)
