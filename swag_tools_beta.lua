@@ -429,7 +429,7 @@ local function canRender()
 	local mesp = true
 	
 	if ismeth and mvar then
-		mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1
+		mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
 	end
 
 	return mesp and not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vars["spawnmenuvisible"] and not vars["contextmenuvisible"]
