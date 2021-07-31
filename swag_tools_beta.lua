@@ -143,6 +143,7 @@ local vars = {
 	["fullbright"] = false,
 	["maxtracers"] = 1000,
 	["reddeath"] = true,
+	["renderpanic"] = false,
 	["rgb"] = false,
 	["silentviz"] = false,
 	["spawnmenuvisible"] = false,
@@ -433,6 +434,144 @@ local function canRender()
 	end
 
 	return mesp and not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vars["spawnmenuvisible"] and not vars["contextmenuvisible"]
+end
+
+local drawTraitorDetector = function()
+	if ismeth and vars["renderpanic"] then
+		return
+	end
+
+	if engine.ActiveGamemode() == "terrortown" then
+		draw.NoTexture()
+		surface.SetFont("BudgetLabel")
+	
+		local x, y, w, h = vars["tdetector_list_x"], vars["tdetector_list_y"], ScrW() * (375 / 1920), 20
+		local ofs = 1
+		local dw = w - (w / 3)
+		
+		if vars["tdetector_list"] then
+			if ismeth and vars["renderpanic"] then
+				return
+			end
+		
+			surface.SetDrawColor(55, 55, 55, 255)
+			surface.DrawRect(x, y, w, h)
+			
+			surface.SetDrawColor(12, 12, 12, 255)
+			surface.DrawOutlinedRect(x, y, w, h)
+			surface.SetDrawColor(12, 255, 12, 255)
+			
+			local tw, th = surface.GetTextSize("Player")
+			
+			surface.SetTextPos(x + (w - dw) - (tw / 2), y + 3)
+			surface.SetTextColor(255, 255, 255, 255)
+			surface.DrawText("Player")
+			
+			tw, th = surface.GetTextSize("Role")
+			
+			surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), y + 3)
+			surface.DrawText("Role")
+		end
+	
+		for _, v in ipairs(vars["ttable"]) do
+			local ply = v[1]
+			local has = table.HasValue(vars["tcache"], ply)
+			
+			if not IsValid(ply) or not meta_en.IsValid(ply) then
+				continue
+			end
+
+			if ismeth and vars["renderpanic"] then
+				return
+			end
+		
+			if vars["tdetector_list"] then
+				local offsety = y + (ofs * 20)
+				
+				if offsety > ScrH() then
+					continue
+				end
+				
+				local mode = v[2]
+				local role = "Unknown"
+				
+				if mode == 0 and not has then
+					if meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer()) then
+						role = "Innocent"
+						surface.SetDrawColor(0, 200, 0, 150)
+					else
+						surface.SetDrawColor(24, 24, 24, 150)
+					end
+				elseif mode == 1 and not has then
+					surface.SetDrawColor(0, 0, 200, 150)
+					role = "Detective"
+				elseif mode == 2 or has then
+					surface.SetDrawColor(200, 0, 0, 150)
+					role = "Traitor"
+				else
+					surface.SetDrawColor(24, 24, 24, 150)
+					role = "ERROR"
+				end
+				
+				surface.DrawRect(x, offsety, w, h)
+				
+				local n = meta_pl.GetName(ply)
+				local md = false
+				
+				local tw, th = surface.GetTextSize(n)
+				
+				while tw + 5 > dw do
+					md = true
+				
+					n = string.sub(n, 1, string.len(n) - 1)
+				
+					tw, th = surface.GetTextSize(n .. "...")
+				end
+				
+				if md then
+					n = n .. "..."
+				end
+				
+				surface.SetTextColor(255, 255, 255, 255)
+				surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
+				surface.DrawText(n)
+				
+				tw, th = surface.GetTextSize(role)
+				
+				surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), offsety + 3)
+				surface.DrawText(role)
+				
+				surface.SetDrawColor(12, 12, 12, 255)
+				surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
+				
+				ofs = ofs + 1
+			end
+			
+			if (meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer())) or meta_en.IsDormant(ply) or not meta_pl.Alive(ply) or meta_en.GetColor(ply).a < 1 then
+				continue
+			end
+			
+			cam.Start3D()
+				if vars["tdetector_icons"] and has then
+					local dir = meta_en.GetForward(LocalPlayer()) * -1
+					local rpos = meta_en.LocalToWorld(ply, (meta_en.OBBCenter(ply) * 2) + Vector(0, 0, 2))
+					
+					render.SetMaterial(trmat)
+					render.DrawQuadEasy(rpos, dir, 8,  8, Color(255, 255, 255, 130), 180)
+				end
+			cam.End3D()
+		end
+		
+		if vars["tdetector_list"] then
+			if ismeth and vars["renderpanic"] then
+				return
+			end
+		
+			surface.SetDrawColor(12, 12, 12, 255)
+			surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
+			surface.DrawLine(x + (w - (w / 3)), y, x + (w - (w / 3)), y + h + ((ofs - 1) * 20))
+		end
+	end
 end
 
 --[[
@@ -875,130 +1014,23 @@ end
 
 if ismeth and mcall then
 	mcall.Add("OnHUDPaint", vars["hookname"], function()
+		vars["renderpanic"] = false
+	
 		if canRender() then
 			draw.NoTexture()
 			surface.SetFont("BudgetLabel")
-
-			if vars["tdetector"] and engine.ActiveGamemode() == "terrortown" then
-				local x, y, w, h = vars["tdetector_list_x"], vars["tdetector_list_y"], ScrW() * (375 / 1920), 20
-				local ofs = 1
-				local dw = w - (w / 3)
-				
-				if vars["tdetector_list"] then
-					surface.SetDrawColor(55, 55, 55, 255)
-					surface.DrawRect(x, y, w, h)
-					
-					surface.SetDrawColor(12, 12, 12, 255)
-					surface.DrawOutlinedRect(x, y, w, h)
-					surface.SetDrawColor(12, 255, 12, 255)
-					
-					local tw, th = surface.GetTextSize("Player")
-					
-					surface.SetTextPos(x + (w - dw) - (tw / 2), y + 3)
-					surface.SetTextColor(255, 255, 255, 255)
-					surface.DrawText("Player")
-					
-					tw, th = surface.GetTextSize("Role")
-					
-					surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), y + 3)
-					surface.DrawText("Role")
-				end
 			
-				for _, v in ipairs(vars["ttable"]) do
-					local ply = v[1]
-					local has = table.HasValue(vars["tcache"], ply)
-				
-					if vars["tdetector_list"] then
-						if not IsValid(ply) or not meta_en.IsValid(ply) then
-							continue
-						end
-
-						local offsety = y + (ofs * 20)
-						
-						if offsety > ScrH() then
-							continue
-						end
-						
-						local mode = v[2]
-						local role = "Unknown"
-						
-						if mode == 0 and not has then
-							if meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer()) then
-								role = "Innocent"
-								surface.SetDrawColor(0, 200, 0, 150)
-							else
-								surface.SetDrawColor(24, 24, 24, 150)
-							end
-						elseif mode == 1 and not has then
-							surface.SetDrawColor(0, 0, 200, 150)
-							role = "Detective"
-						elseif mode == 2 or has then
-							surface.SetDrawColor(200, 0, 0, 150)
-							role = "Traitor"
-						else
-							surface.SetDrawColor(24, 24, 24, 150)
-							role = "ERROR"
-						end
-						
-						surface.DrawRect(x, offsety, w, h)
-						
-						local n = meta_pl.GetName(ply)
-						local md = false
-						
-						local tw, th = surface.GetTextSize(n)
-						
-						while tw + 5 > dw do
-							md = true
-						
-							n = string.sub(n, 1, string.len(n) - 1)
-						
-							tw, th = surface.GetTextSize(n .. "...")
-						end
-						
-						if md then
-							n = n .. "..."
-						end
-						
-						surface.SetTextColor(255, 255, 255, 255)
-						surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
-						surface.DrawText(n)
-						
-						tw, th = surface.GetTextSize(role)
-						
-						surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), offsety + 3)
-						surface.DrawText(role)
-						
-						surface.SetDrawColor(12, 12, 12, 255)
-						surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
-						
-						ofs = ofs + 1
-					end
-					
-					if (meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer())) or meta_en.IsDormant(ply) or not meta_pl.Alive(ply) or meta_en.GetColor(ply).a < 1 then
-						continue
-					end
-					
-					cam.Start3D()
-						if vars["tdetector_icons"] and has then
-							local dir = meta_en.GetForward(LocalPlayer()) * -1
-							local rpos = meta_en.LocalToWorld(ply, (meta_en.OBBCenter(ply) * 2) + Vector(0, 0, 2))
-							
-							render.SetMaterial(trmat)
-							render.DrawQuadEasy(rpos, dir, 8,  8, Color(255, 255, 255, 130), 180)
-						end
-					cam.End3D()
-				end
-				
-				if vars["tdetector_list"] then
-					surface.SetDrawColor(12, 12, 12, 255)
-					surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
-					surface.DrawLine(x + (w - (w / 3)), y, x + (w - (w / 3)), y + h + ((ofs - 1) * 20))
-				end
+			if vars["tdetector"] then
+				drawTraitorDetector()
 			end
-		
+
 			if vars["tracers_other"] or vars["tracers_local"] then
 				for k, v in ipairs(bullets) do
 					if not k or not v then
+						continue
+					end
+			
+					if vars["renderpanic"] then
 						continue
 					end
 			
@@ -1063,6 +1095,12 @@ end)
 
 
 hook.Add("HUDPaint", vars["hookname"], function()
+	vars["renderpanic"] = true
+
+	if not ismeth and vars["tdetector"] then
+		drawTraitorDetector()
+	end
+
 	if vars["antiblind"] then
 		hook.Remove("HUDPaint", "ulx_blind")
 		hook.Remove("HUDPaintBackground", "ulx_blind")
@@ -1522,7 +1560,7 @@ timer.Create(vars["timer_fast"], 0.1, 0, function()
 end)
 
 timer.Create(vars["timer_slow"], 1, 0, function()
-	if ismeth and vars["tdetector"] then
+	if vars["tdetector"] then
 		if GAMEMODE.round_state == ROUND_ACTIVE then
 			safefuncs.tempty(vars["ttable"])
 		
