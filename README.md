@@ -39,6 +39,8 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  
  Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
+ | st_tools_spectatorlist_x | Sets X position for the Spectator list | `integer` | Offset 10 from TDetector list |
+ | st_tools_spectatorlist_y | Sets Y position for the Spectator list | `integer` | `10` |
  | st_tools_tdetector_list_x | Sets X position for the TDetector list | `integer` | `10` |
  | st_tools_tdetector_list_y | Sets Y position for the TDetector list | `integer` | `10` |
  | st_tools_gesture_set | Sets gesture for the gestureloop | `string` | `dance` |
@@ -48,6 +50,8 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | st_tools_followbot | Toggles block bot/follow bot | `boolean` | `false` |
  | st_tools_gesture_loop | Toggles gestureloop | `boolean` | `false` |
  | st_tools_psay_spam | Toggles ULX psay spammer | `boolean` | `false` |
+ | st_tools_spectatorlist | Toggles spectator list | `boolean` | `false` |
+ | st_tools_spectatorlist_showall | Toggles spectator list displaying all spectators (Red = on you) | `boolean` | `false` |
  | st_tools_tdetector | Toggles TTT traitor detector | `boolean` | `false` |
  | st_tools_tdetector_drawicons | Toggles rendering of the TDetector's icons above heads | `boolean` | `true` |
  | st_tools_tdetector_drawlist | Toggles rendering of the TDetector's list | `boolean` | `true` |
