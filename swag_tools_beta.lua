@@ -193,6 +193,8 @@ local concommands = {
 		["st_render_tracers_max_set"] = "maxtracers",
 
 		-- Tools
+		["st_tools_spectatorlist_x"] = "specdetector_x",
+		["st_tools_spectatorlist_y"] = "specdetector_y",
 		["st_tools_tdetector_list_x"] = "tdetector_list_x",
 		["st_tools_tdetector_list_y"] = "tdetector_list_y",
 	},
