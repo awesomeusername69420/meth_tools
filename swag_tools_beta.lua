@@ -1301,13 +1301,7 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	local v = meta_pl.GetVehicle(ply)
 	local w = meta_pl.GetActiveWeapon(ply)
 
-	local nfov = 0
-	
-	if ismeth and vars["renderpanic"] then
-		nfov = fov
-	else
-		nfov = math.Clamp(fov + (vars["cfov"] - meta_cv.GetInt(GetConVar("fov_desired"))), 2, 179)
-	end
+	local nfov = math.Clamp(fov + (vars["cfov"] - meta_cv.GetInt(GetConVar("fov_desired"))), 2, 179)
 	
 	vars["afov"] = nfov
 
