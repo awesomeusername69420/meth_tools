@@ -1563,7 +1563,17 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 	if vars["tdetector"] then
 		if GAMEMODE.round_state == ROUND_ACTIVE then
 			safefuncs.tempty(vars["ttable"])
-		
+			
+			local force = false
+			local forced = false
+			local mp = GetConVar("ttt_minimum_players")
+			
+			if mp and meta_cv.GetInt(mp) == player.GetCount() then
+				if (meta_pl.IsTraitor and not meta_pl.IsTraitor(LocalPlayer())) or (meta_pl.IsDetective and meta_pl.IsDetective(LocalPlayer())) then
+					force = true
+				end
+			end
+			
 			for _, v in ipairs(player.GetAll()) do
 				if v == LocalPlayer() or not vEnt(v) then
 					continue
@@ -1575,6 +1585,19 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 				
 				local insd = false
 				local ins = {v, 0}
+				
+				if force and not forced then
+					table.insert(vars["ttable"], ins)
+					
+					if not table.HasValue(vars["tcache"], v) then
+						table.insert(vars["tcache"], v)
+					end
+					
+					forced = true
+					insd = true
+				elseif forced then
+					continue
+				end
 				
 				if not insd and meta_pl.IsDetective and meta_pl.IsDetective(v) then
 					ins[2] = 1
