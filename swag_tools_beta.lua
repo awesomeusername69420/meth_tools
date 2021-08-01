@@ -163,6 +163,11 @@ local vars = {
 	["gopen"] = true,
 	["psays"] = false,
 	["psays_message"] = "message",
+	["specdetector"] = false,
+	["specdetector_all"] = false,
+	["specdetector_x"] = 20 + ScrW() * (375 / 1920),
+	["specdetector_y"] = 10,
+	["spectators"] = {},
 	["tcache"] = {},
 	["tdetector"] = false,
 	["tdetector_icons"] = true,
@@ -219,6 +224,8 @@ local concommands = {
 		["st_tools_followbot"] = "followbot",
 		["st_tools_gesture_loop"] = "gesture_loop",
 		["st_tools_psay_spam"] = "psays",
+		["st_tools_spectatorlist"] = "specdetector",
+		["st_tools_spectatorlist_showall"] = "specdetector_all",
 		["st_tools_tdetector"] = "tdetector",
 		["st_tools_tdetector_drawicons"] = "tdetector_icons",
 		["st_tools_tdetector_drawlist"] = "tdetector_list",
@@ -450,10 +457,6 @@ local drawTraitorDetector = function()
 		local dw = w - (w / 3)
 		
 		if vars["tdetector_list"] then
-			if ismeth and vars["renderpanic"] then
-				return
-			end
-		
 			surface.SetDrawColor(55, 55, 55, 255)
 			surface.DrawRect(x, y, w, h)
 			
@@ -474,6 +477,10 @@ local drawTraitorDetector = function()
 		end
 	
 		for _, v in ipairs(vars["ttable"]) do
+			if ismeth and vars["renderpanic"] then
+				return
+			end
+		
 			local ply = v[1]
 			local has = table.HasValue(vars["tcache"], ply)
 			
@@ -481,10 +488,6 @@ local drawTraitorDetector = function()
 				continue
 			end
 
-			if ismeth and vars["renderpanic"] then
-				return
-			end
-		
 			if vars["tdetector_list"] then
 				local offsety = y + (ofs * 20)
 				
@@ -563,15 +566,122 @@ local drawTraitorDetector = function()
 		end
 		
 		if vars["tdetector_list"] then
-			if ismeth and vars["renderpanic"] then
-				return
-			end
-		
 			surface.SetDrawColor(12, 12, 12, 255)
 			surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
 			surface.DrawLine(x + (w - (w / 3)), y, x + (w - (w / 3)), y + h + ((ofs - 1) * 20))
 		end
 	end
+end
+
+local drawSpectators = function()
+	if ismeth and vars["renderpanic"] then
+		return
+	end
+
+	draw.NoTexture()
+	surface.SetFont("BudgetLabel")
+	
+	local x, y, w, h = vars["specdetector_x"], vars["specdetector_y"], ScrW() * (375 / 1920), 20
+	local ofs = 1
+	local dw = w - (w / 3)
+	
+	surface.SetDrawColor(55, 55, 55, 255)
+	surface.DrawRect(x, y, w, h)
+	
+	surface.SetDrawColor(12, 12, 12, 255)
+	surface.DrawOutlinedRect(x, y, w, h)
+	surface.SetDrawColor(12, 255, 12, 255)
+	
+	local tw, th = surface.GetTextSize("Spectator")
+	
+	surface.SetTextPos(x + (w - dw) - (tw / 2), y + 3)
+	surface.SetTextColor(255, 255, 255, 255)
+	surface.DrawText("Spectator")
+	
+	tw, th = surface.GetTextSize("OBS-Mode")
+	
+	surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), y + 3)
+	surface.DrawText("OBS-Mode")
+
+	for _, v in ipairs(vars["spectators"]) do
+		if ismeth and vars["renderpanic"] then
+			return
+		end
+	
+		if not meta_en.IsValid(v) then
+			continue
+		end
+		
+		local offsety = y + (ofs * 20)
+				
+		if offsety > ScrH() then
+			continue
+		end
+		
+		if vars["specdetector_all"] then
+			if meta_pl.GetObserverTarget(v) == LocalPlayer() then
+				surface.SetDrawColor(200, 0, 0, 150)
+			else
+				surface.SetDrawColor(24, 24, 24, 150)
+			end
+		else
+			surface.SetDrawColor(24, 24, 24, 150)
+		end
+		
+		surface.DrawRect(x, offsety, w, h)
+		
+		local n = meta_pl.GetName(v)
+		tw, th = surface.GetTextSize(n)
+		
+		local md = false
+		
+		while tw + 5 > dw do
+			md = true
+		
+			n = string.sub(n, 1, string.len(n) - 1)
+		
+			tw, th = surface.GetTextSize(n .. "...")
+		end
+		
+		if md then
+			n = n .. "..."
+		end
+
+		surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
+		surface.DrawText(n)
+		
+		local mode = meta_pl.GetObserverMode(v)
+	
+		if mode == 1 then
+			mode = "Deathcam"
+		elseif mode == 2 then
+			mode = "Freezecam"
+		elseif mode == 3 then
+			mode = "Fixed"
+		elseif mode == 4 then
+			mode = "Firstperson"
+		elseif mode == 5 then
+			mode = "Thirdperson"
+		elseif mode == 6 then
+			mode = "Roaming"
+		else
+			mode = "UNKNOWN"
+		end
+		
+		tw, th = surface.GetTextSize(mode)
+		
+		surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), offsety + 3)
+		surface.DrawText(mode)
+		
+		surface.SetDrawColor(12, 12, 12, 255)
+		surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
+		
+		ofs = ofs + 1
+	end
+	
+	surface.SetDrawColor(12, 12, 12, 255)
+	surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
+	surface.DrawLine(x + (w - (w / 3)), y, x + (w - (w / 3)), y + h + ((ofs - 1) * 20))
 end
 
 --[[
@@ -1023,14 +1133,14 @@ if ismeth and mcall then
 			if vars["tdetector"] then
 				drawTraitorDetector()
 			end
+			
+			if vars["specdetector"] then
+				drawSpectators()
+			end
 
 			if vars["tracers_other"] or vars["tracers_local"] then
 				for k, v in ipairs(bullets) do
-					if not k or not v then
-						continue
-					end
-			
-					if vars["renderpanic"] then
+					if not k or not v or vars["renderpanic"] then
 						continue
 					end
 			
@@ -1097,10 +1207,16 @@ end)
 hook.Add("HUDPaint", vars["hookname"], function()
 	vars["renderpanic"] = true
 
-	if not ismeth and vars["tdetector"] then
-		drawTraitorDetector()
+	if not ismeth then
+		if vars["tdetector"] then
+			drawTraitorDetector()
+		end
+		
+		if vars["specdetector"] then
+			drawSpectators()
+		end
 	end
-
+	
 	if vars["antiblind"] then
 		hook.Remove("HUDPaint", "ulx_blind")
 		hook.Remove("HUDPaintBackground", "ulx_blind")
@@ -1185,7 +1301,14 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	local v = meta_pl.GetVehicle(ply)
 	local w = meta_pl.GetActiveWeapon(ply)
 
-	local nfov = math.Clamp(fov + (vars["cfov"] - meta_cv.GetInt(GetConVar("fov_desired"))), 0, 179)
+	local nfov = 0
+	
+	if ismeth and vars["renderpanic"] then
+		nfov = fov
+	else
+		nfov = math.Clamp(fov + (vars["cfov"] - meta_cv.GetInt(GetConVar("fov_desired"))), 2, 179)
+	end
+	
 	vars["afov"] = nfov
 
 	if vars["thirdpersonfix"] then
@@ -1560,12 +1683,15 @@ timer.Create(vars["timer_fast"], 0.1, 0, function()
 end)
 
 timer.Create(vars["timer_slow"], 1, 0, function()
-	if vars["tdetector"] then
+	local td = vars["tdetector"]
+	local sd = vars["specdetector"]
+	local force = false
+	local forced = false
+
+	if td then
 		if GAMEMODE.round_state == ROUND_ACTIVE then
 			safefuncs.tempty(vars["ttable"])
 			
-			local force = false
-			local forced = false
 			local mp = GetConVar("ttt_minimum_players")
 			
 			if mp and meta_cv.GetInt(mp) == player.GetCount() then
@@ -1573,20 +1699,29 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 					force = true
 				end
 			end
-			
-			for _, v in ipairs(player.GetAll()) do
+		else
+			safefuncs.tempty(vars["ttable"])
+			safefuncs.tempty(vars["tcache"])
+		end
+	end
+
+	if td or sd then
+		for _, v in ipairs(player.GetAll()) do
+			if td and GAMEMODE.round_state == ROUND_ACTIVE then
+				local skip = false
+				
 				if v == LocalPlayer() or not vEnt(v) then
-					continue
+					skip = true
 				end
 				
 				if meta_pl.IsTerror and not meta_pl.IsTerror(v) then
-					continue
+					skip = true
 				end
-				
+					
 				local insd = false
 				local ins = {v, 0}
 				
-				if force and not forced then
+				if not skip and force and not forced then
 					table.insert(vars["ttable"], ins)
 					
 					if not table.HasValue(vars["tcache"], v) then
@@ -1596,59 +1731,81 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 					forced = true
 					insd = true
 				elseif forced then
-					continue
+					skip = true
 				end
 				
-				if not insd and meta_pl.IsDetective and meta_pl.IsDetective(v) then
-					ins[2] = 1
-					table.insert(vars["ttable"], ins)
-					
-					insd = true
-					
-					continue
-				end
-				
-				if not insd and meta_pl.IsTraitor and meta_pl.IsTraitor(v) then
-					ins[2] = 2
-					table.insert(vars["ttable"], ins)
-					
-					insd = true
-					
-					if not table.HasValue(vars["tcache"], v) then
-						table.insert(vars["tcache"], v)
+				if not skip then
+					if not insd and meta_pl.IsDetective and meta_pl.IsDetective(v) then
+						ins[2] = 1
+						table.insert(vars["ttable"], ins)
+						
+						insd = true
 					end
 					
-					continue
-				end
-				
-				if not insd then
-					for _, w in ipairs(meta_pl.GetWeapons(v)) do
-						if not w or not meta_en.IsValid(w) then
-							continue
-						end
+					if not insd and meta_pl.IsTraitor and meta_pl.IsTraitor(v) then
+						ins[2] = 2
+						table.insert(vars["ttable"], ins)
 						
-						if table.HasValue(tWeapons, meta_en.GetClass(w)) then
-							ins[2] = 2
-							table.insert(vars["ttable"], ins)
-
-							if not table.HasValue(vars["tcache"], v) then
-								table.insert(vars["tcache"], v)
+						insd = true
+						
+						if not table.HasValue(vars["tcache"], v) then
+							table.insert(vars["tcache"], v)
+						end
+					end
+					
+					if not insd then
+						for _, w in ipairs(meta_pl.GetWeapons(v)) do
+							if not w or not meta_en.IsValid(w) or insd then
+								continue
 							end
 							
-							insd = true
-							
-							break
+							if table.HasValue(tWeapons, meta_en.GetClass(w)) then
+								ins[2] = 2
+								table.insert(vars["ttable"], ins)
+				
+								if not table.HasValue(vars["tcache"], v) then
+									table.insert(vars["tcache"], v)
+								end
+								
+								insd = true
+							end
 						end
+					end
+					
+					if not insd then
+						table.insert(vars["ttable"], ins)
+					end
+				end
+			end
+			
+			if sd then
+				local skip = false
+			
+				local mode = meta_pl.GetObserverMode(v)
+				local targ = meta_pl.GetObserverTarget(v)
+			
+				if not meta_en.IsValid(v) or v == LocalPlayer() or mode == 0 then
+					skip = true
+				end
+				
+				if not vars["specdetector_all"] then
+					if targ ~= LocalPlayer() then
+						skip = true
 					end
 				end
 				
-				if not insd then
-					table.insert(vars["ttable"], ins)
+				local has = table.HasValue(vars["spectators"], v)
+				
+				if not skip then
+					if not has then
+						table.insert(vars["spectators"], v)
+					end
+				else
+					if has then
+						table.RemoveByValue(vars["spectators"], v)
+					end
 				end
 			end
-		else
-			safefuncs.tempty(vars["ttable"])
-			safefuncs.tempty(vars["tcache"])
 		end
 	end
 
