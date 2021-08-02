@@ -10,48 +10,76 @@
 
 local table = table.Copy(table)
 
-local cam = table.Copy(cam)
-local Color = Color
-local concommand = table.Copy(concommand)
-local cvars = table.Copy(cvars)
 local debug = table.Copy(debug)
-local draw = table.Copy(draw)
-local engine = table.Copy(engine)
-local ents = table.Copy(ents)
-local file = table.Copy(file)
+local pairs = pairs
+local type = type
+
+local function tCopy(n, t)
+	if not n then
+		return nil
+	end
+	
+	local c = {}
+	
+	debug.setmetatable(c, debug.getmetatable(n))
+	
+	for k, v in pairs(n) do
+		if type(v) ~= "table" then
+			c[k] = v
+		else
+			t = t or {}
+			t[n] = c
+			
+			if t[v] then
+				c[k] = t[v]
+			else
+				c[k] = tCopy(v, t)
+			end
+		end
+	end
+	
+	return c
+end
+
+local cam = tCopy(cam)
+local Color = Color
+local concommand = tCopy(concommand)
+local cvars = tCopy(cvars)
+local draw = tCopy(draw)
+local engine = tCopy(engine)
+local ents = tCopy(ents)
+local file = tCopy(file)
 local game = game
 local GetConVar = GetConVar
 local GetConVarNumber = GetConVarNumber
 local GetConVarString = GetConVarString
 local GetConVar_Internal = GetConVar_Internal
-local gui = table.Copy(gui)
-local hook = table.Copy(hook)
+local gui = tCopy(gui)
+local hook = tCopy(hook)
 local HSVToColor = HSVToColor
-local http = table.Copy(http)
+local http = tCopy(http)
 local ipairs = ipairs
 local IsConCommandBlocked = IsConCommandBlocked
 local IsValid = IsValid
-local jit = table.Copy(jit)
+local jit = tCopy(jit)
 local LocalPlayer = LocalPlayer
 local Material = Material
-local math = table.Copy(math)
+local math = tCopy(math)
 local MsgC = MsgC
-local pairs = pairs
-local player = table.Copy(player)
-local render = table.Copy(render)
+local player = tCopy(player)
+local render = tCopy(render)
 local RunConsoleCommand = RunConsoleCommand
 local ScrW = ScrW
-local string = table.Copy(string)
-local surface = table.Copy(surface)
-local timer = table.Copy(timer)
+local string = tCopy(string)
+local surface = tCopy(surface)
+local timer = tCopy(timer)
 local tobool = tobool
 local tonumber = tonumber
 local tostring = tostring
-local type = type
 local UnPredictedCurTime = UnPredictedCurTime
-local util = table.Copy(util)
+local util = tCopy(util)
 local Vector = Vector
-local vgui = table.Copy(vgui)
+local vgui = tCopy(vgui)
 
 local meta_an = debug.getregistry()["Angle"]
 local meta_cd = debug.getregistry()["CUserCmd"]
@@ -358,7 +386,7 @@ local tWeapons = {
 	Fuccncs
 ]]
 
-local alert = function(event, data)
+local function alert(event, data)
 	if not vars["alerts"] then
 		return
 	end
@@ -449,7 +477,7 @@ local function canRender()
 	return mesp and not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vars["spawnmenuvisible"] and not vars["contextmenuvisible"]
 end
 
-local drawTraitorDetector = function()
+local function drawTraitorDetector()
 	if ismeth and vars["renderpanic"] then
 		return
 	end
@@ -579,7 +607,7 @@ local drawTraitorDetector = function()
 	end
 end
 
-local drawSpectators = function()
+local function drawSpectators()
 	if ismeth and vars["renderpanic"] then
 		return
 	end
@@ -1633,7 +1661,7 @@ for j, l in pairs(concommands) do
 	end
 
 	for k, v in pairs(l) do
-		local confunc = function() return end
+		local function confunc() return end
 
 		if j == "integer" then
 			confunc = function(p, c, args)
