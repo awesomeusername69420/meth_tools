@@ -408,8 +408,12 @@ local function isBadWeapon(weapon)
 end
 
 local function vEnt(ent)
-	if meta_en.IsPlayer(ent) then
-		return meta_pl.Alive(ent) and meta_en.IsValid(ent) and meta_pl.GetObserverMode(ent) == 0 and meta_pl.Team(ent) ~= 1002 and meta_en.GetColor(ent).a > 0
+	if not ent then
+		return false
+	end
+
+	if meta_pl.IsPlayer(ent) then
+		return meta_en.IsValid(ent) and meta_pl.Alive(ent) and meta_pl.GetObserverMode(ent) == 0 and meta_pl.Team(ent) ~= 1002 and meta_en.GetColor(ent).a > 0
 	end
 	
 	return meta_en.IsValid(ent)
@@ -417,10 +421,10 @@ end
 
 local function getClosest()
 	local d = math.huge
-	local cur = LocalPlayer()
+	local cur = nil
 
 	for _, v in ipairs(player.GetAll()) do
-		if v == LocalPlayer() or not vEnt(v) or meta_en.IsDormant(v) or meta_en.GetColor(v).a < 1 then
+		if v == LocalPlayer() or not vEnt(v) or meta_en.IsDormant(v) then
 			continue
 		end
 
@@ -1242,8 +1246,8 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 
 	if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) and mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER then
 		local tply = vars["followtarg"]
-
-		if tply ~= LocalPlayer() and IsValid(tply) then
+		
+		if vEnt(tply) then
 			if meta_cd.KeyDown(cmd, IN_FORWARD) or meta_cd.KeyDown(cmd, IN_BACK) or meta_cd.KeyDown(cmd, IN_MOVELEFT) or meta_cd.KeyDown(cmd, IN_MOVERIGHT) then
 				vars["following"] = false
 				
@@ -1706,7 +1710,7 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 			if td and GAMEMODE.round_state == ROUND_ACTIVE then
 				local skip = false
 				
-				if v == LocalPlayer() or not vEnt(v) then
+				if v == LocalPlayer() or not meta_en.IsValid(v) or not meta_pl.Alive(v) then
 					skip = true
 				end
 				
