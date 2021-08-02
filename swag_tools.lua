@@ -4,48 +4,76 @@
 
 local table = table.Copy(table)
 
-local cam = table.Copy(cam)
-local Color = Color
-local concommand = table.Copy(concommand)
-local cvars = table.Copy(cvars)
 local debug = table.Copy(debug)
-local draw = table.Copy(draw)
-local engine = table.Copy(engine)
-local ents = table.Copy(ents)
-local file = table.Copy(file)
+local pairs = pairs
+local type = type
+
+local function tCopy(n, t)
+	if not n then
+		return nil
+	end
+	
+	local c = {}
+	
+	debug.setmetatable(c, debug.getmetatable(n))
+	
+	for k, v in pairs(n) do
+		if type(v) ~= "table" then
+			c[k] = v
+		else
+			t = t or {}
+			t[n] = c
+			
+			if t[v] then
+				c[k] = t[v]
+			else
+				c[k] = tCopy(v, t)
+			end
+		end
+	end
+	
+	return c
+end
+
+local cam = tCopy(cam)
+local Color = Color
+local concommand = tCopy(concommand)
+local cvars = tCopy(cvars)
+local draw = tCopy(draw)
+local engine = tCopy(engine)
+local ents = tCopy(ents)
+local file = tCopy(file)
 local game = game
 local GetConVar = GetConVar
 local GetConVarNumber = GetConVarNumber
 local GetConVarString = GetConVarString
 local GetConVar_Internal = GetConVar_Internal
-local gui = table.Copy(gui)
-local hook = table.Copy(hook)
+local gui = tCopy(gui)
+local hook = tCopy(hook)
 local HSVToColor = HSVToColor
-local http = table.Copy(http)
+local http = tCopy(http)
 local ipairs = ipairs
 local IsConCommandBlocked = IsConCommandBlocked
 local IsValid = IsValid
-local jit = table.Copy(jit)
+local jit = tCopy(jit)
 local LocalPlayer = LocalPlayer
 local Material = Material
-local math = table.Copy(math)
+local math = tCopy(math)
 local MsgC = MsgC
-local pairs = pairs
-local player = table.Copy(player)
-local render = table.Copy(render)
+local player = tCopy(player)
+local render = tCopy(render)
 local RunConsoleCommand = RunConsoleCommand
 local ScrW = ScrW
-local string = table.Copy(string)
-local surface = table.Copy(surface)
-local timer = table.Copy(timer)
+local string = tCopy(string)
+local surface = tCopy(surface)
+local timer = tCopy(timer)
 local tobool = tobool
 local tonumber = tonumber
 local tostring = tostring
-local type = type
 local UnPredictedCurTime = UnPredictedCurTime
-local util = table.Copy(util)
+local util = tCopy(util)
 local Vector = Vector
-local vgui = table.Copy(vgui)
+local vgui = tCopy(vgui)
 
 local meta_an = debug.getregistry()["Angle"]
 local meta_cd = debug.getregistry()["CUserCmd"]
@@ -352,7 +380,7 @@ local tWeapons = {
 	Fuccncs
 ]]
 
-local alert = function(event, data)
+local function alert(event, data)
 	if not vars["alerts"] then
 		return
 	end
@@ -443,7 +471,28 @@ local function canRender()
 	return mesp and not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vars["spawnmenuvisible"] and not vars["contextmenuvisible"]
 end
 
-local drawTraitorDetector = function()
+local function shrtxt(text, maxw)
+	surface.SetFont("BudgetLabel")
+	
+	local md = false
+	local tw, th = surface.GetTextSize(text)
+	
+	while tw + 5 > maxw do
+		md = true
+	
+		text = string.sub(text, 1, string.len(text) - 1)
+	
+		tw, th = surface.GetTextSize(text .. "...")
+	end
+	
+	if md then
+		text = text .. "..."
+	end
+	
+	return text
+end
+
+local function drawTraitorDetector()
 	if ismeth and vars["renderpanic"] then
 		return
 	end
@@ -518,22 +567,10 @@ local drawTraitorDetector = function()
 				
 				surface.DrawRect(x, offsety, w, h)
 				
-				local n = meta_pl.GetName(ply)
+				local n = shrtxt(meta_pl.GetName(ply), dw)
 				local md = false
 				
 				local tw, th = surface.GetTextSize(n)
-				
-				while tw + 5 > dw do
-					md = true
-				
-					n = string.sub(n, 1, string.len(n) - 1)
-				
-					tw, th = surface.GetTextSize(n .. "...")
-				end
-				
-				if md then
-					n = n .. "..."
-				end
 				
 				surface.SetTextColor(255, 255, 255, 255)
 				surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
@@ -573,7 +610,7 @@ local drawTraitorDetector = function()
 	end
 end
 
-local drawSpectators = function()
+local function drawSpectators()
 	if ismeth and vars["renderpanic"] then
 		return
 	end
@@ -581,9 +618,13 @@ local drawSpectators = function()
 	draw.NoTexture()
 	surface.SetFont("BudgetLabel")
 	
-	local x, y, w, h = vars["specdetector_x"], vars["specdetector_y"], ScrW() * (375 / 1920), 20
+	local x, y, w, h = vars["specdetector_x"], vars["specdetector_y"], ScrW() * (500 / 1920), 20
 	local ofs = 1
-	local dw = w - (w / 3)
+	
+	local fw = w - (w / 8)
+	local nw = w - (w / 2)
+	
+	local dw = w - (w / 4)
 	
 	surface.SetDrawColor(55, 55, 55, 255)
 	surface.DrawRect(x, y, w, h)
@@ -600,8 +641,13 @@ local drawSpectators = function()
 	
 	tw, th = surface.GetTextSize("OBS-Mode")
 	
-	surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), y + 3)
+	surface.SetTextPos(x + fw - (tw / 2), y + 3)
 	surface.DrawText("OBS-Mode")
+	
+	tw, th = surface.GetTextSize("Target")
+	
+	surface.SetTextPos(x + (w - (dw / 2)) - (tw / 2), y + 3)
+	surface.DrawText("Target")
 
 	for _, v in ipairs(vars["spectators"]) do
 		if ismeth and vars["renderpanic"] then
@@ -618,8 +664,10 @@ local drawSpectators = function()
 			continue
 		end
 		
+		local starg = meta_pl.GetObserverTarget(v) or nil
+		
 		if vars["specdetector_all"] then
-			if meta_pl.GetObserverTarget(v) == LocalPlayer() then
+			if starg and meta_en.IsValid(starg) and starg == LocalPlayer() then
 				surface.SetDrawColor(200, 0, 0, 150)
 			else
 				surface.SetDrawColor(24, 24, 24, 150)
@@ -630,27 +678,24 @@ local drawSpectators = function()
 		
 		surface.DrawRect(x, offsety, w, h)
 		
-		local n = meta_pl.GetName(v)
+		local n = shrtxt(meta_pl.GetName(v), w - nw)
 		tw, th = surface.GetTextSize(n)
-		
-		local md = false
-		
-		while tw + 5 > dw do
-			md = true
-		
-			n = string.sub(n, 1, string.len(n) - 1)
-		
-			tw, th = surface.GetTextSize(n .. "...")
-		end
-		
-		if md then
-			n = n .. "..."
-		end
 
 		surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
 		surface.DrawText(n)
 		
-		local mode = meta_pl.GetObserverMode(v)
+		local sname = "UNKNOWN"
+		
+		if starg and meta_en.IsValid(starg) then
+			sname = shrtxt(meta_pl.GetName(starg), w - dw)
+		end
+		
+		tw, th = surface.GetTextSize(sname)
+
+		surface.SetTextPos(x + (w - (dw / 2)) - (tw / 2), offsety + 3)
+		surface.DrawText(sname)
+		
+		local mode = meta_pl.GetObserverMode(v) or -1
 	
 		if mode == 1 then
 			mode = "Deathcam"
@@ -670,7 +715,7 @@ local drawSpectators = function()
 		
 		tw, th = surface.GetTextSize(mode)
 		
-		surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), offsety + 3)
+		surface.SetTextPos(x + fw - (tw / 2), offsety + 3)
 		surface.DrawText(mode)
 		
 		surface.SetDrawColor(12, 12, 12, 255)
@@ -681,7 +726,8 @@ local drawSpectators = function()
 	
 	surface.SetDrawColor(12, 12, 12, 255)
 	surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
-	surface.DrawLine(x + (w - (w / 3)), y, x + (w - (w / 3)), y + h + ((ofs - 1) * 20))
+	surface.DrawLine(x + nw, y, x + nw, y + h + ((ofs - 1) * 20))
+	surface.DrawLine(x + dw, y, x + dw, y + h + ((ofs - 1) * 20))
 end
 
 --[[
@@ -1627,7 +1673,7 @@ for j, l in pairs(concommands) do
 	end
 
 	for k, v in pairs(l) do
-		local confunc = function() return end
+		local function confunc() return end
 
 		if j == "integer" then
 			confunc = function(p, c, args)
