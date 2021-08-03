@@ -694,7 +694,7 @@ local function drawSpectators()
 		
 		if starg and meta_en.IsValid(starg) then
 			if starg == LocalPlayer() then
-				sname = "LocalPlayer"
+				sname = shrtxt("LocalPlayer", w - dw)
 			else
 				sname = shrtxt(meta_pl.GetName(starg), w - dw)
 			end
