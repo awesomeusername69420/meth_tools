@@ -1735,6 +1735,7 @@ end)
 timer.Create(vars["timer_slow"], 1, 0, function()
 	local td = vars["tdetector"]
 	local sd = vars["specdetector"]
+	local ps = vars["psays"]
 	local force = false
 	local forced = false
 
@@ -1755,11 +1756,11 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 		end
 	end
 
-	if td or sd then
+	if td or sd or ps then
 		for _, v in ipairs(player.GetAll()) do
+			local skip = false
+		
 			if td and GAMEMODE.round_state == ROUND_ACTIVE then
-				local skip = false
-				
 				if v == LocalPlayer() or not meta_en.IsValid(v) or not meta_pl.Alive(v) then
 					skip = true
 				end
@@ -1829,7 +1830,7 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 			end
 			
 			if sd then
-				local skip = false
+				skip = false
 			
 				local mode = meta_pl.GetObserverMode(v)
 				local targ = meta_pl.GetObserverTarget(v)
@@ -1856,16 +1857,18 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 					end
 				end
 			end
-		end
-	end
-
-	if vars["psays"] then
-		for _, v in ipairs(player.GetAll()) do
-			if v == LocalPlayer() or not meta_en.IsValid(v) then
-				continue
+			
+			if ps then
+				skip = false
+			
+				if v == LocalPlayer() or not meta_en.IsValid(v) then
+					skip = true
+				end
+				
+				if not skip then
+					safefuncs.rcon("ulx", "psay", meta_pl.Name(v), vars["psays_message"])
+				end
 			end
-
-			safefuncs.rcon("ulx", "psay", meta_pl.Name(v), vars["psays_message"])
 		end
 	end
 end)
