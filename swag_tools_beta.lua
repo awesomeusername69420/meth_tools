@@ -693,7 +693,11 @@ local function drawSpectators()
 		local sname = "UNKNOWN"
 		
 		if starg and meta_en.IsValid(starg) then
-			sname = shrtxt(meta_pl.GetName(starg), w - dw)
+			if starg == LocalPlayer() then
+				sname = "LocalPlayer"
+			else
+				sname = shrtxt(meta_pl.GetName(starg), w - dw)
+			end
 		end
 		
 		tw, th = surface.GetTextSize(sname)
