@@ -575,6 +575,8 @@ local function drawTraitorDetector()
 					role = "ERROR"
 				end
 				
+				role = shrtxt(role, w - dw)
+				
 				surface.DrawRect(x, offsety, w, h)
 				
 				local n = shrtxt(meta_pl.GetName(ply), dw)
@@ -726,6 +728,8 @@ local function drawSpectators()
 		else
 			mode = "UNKNOWN"
 		end
+		
+		mode = shrtxt(mode, w - dw)
 		
 		tw, th = surface.GetTextSize(mode)
 		
