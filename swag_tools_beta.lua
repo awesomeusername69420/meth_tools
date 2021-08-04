@@ -180,6 +180,7 @@ local vars = {
 
 	-- Tools
 	["antigag"] = false,
+	["detourcmd"] = true,
 	["followang"] = Angle(0, 0, 0),
 	["followbot"] = false,
 	["following"] = false,
@@ -249,6 +250,7 @@ local concommands = {
 		-- Tools
 		["st_tools_allow_guiopenurl"] = "gopen",
 		["st_tools_antigag"] = "antigag",
+		["st_tools_detour_commands"] = "detourcmd",
 		["st_tools_followbot"] = "followbot",
 		["st_tools_gesture_loop"] = "gesture_loop",
 		["st_tools_psay_spam"] = "psays",
@@ -1131,25 +1133,27 @@ _G.RunConsoleCommand = function(cmd, ...)
 		return
 	end
 
-	local conc = ""
-
-	if ... then
-		conc = " " .. ...
-	end
-
-	for _, v in ipairs(badCommands) do
-		if string.find(cmd, v) then
-			alert("RunConsoleCommand", "\"" .. cmd .. conc .. "\"")
-
-			return
+	if vars["detourcmd"] then
+		local conc = ""
+	
+		if ... then
+			conc = " " .. ...
 		end
-	end
-
-	for _, v in ipairs(addedCommands) do
-		if string.find(cmd, v) then
-			alert("RunConsoleCommand", "\"" .. cmd .. conc .. "\"")
-
-			return
+	
+		for _, v in ipairs(badCommands) do
+			if string.find(cmd, v) then
+				alert("RunConsoleCommand", "\"" .. cmd .. conc .. "\"")
+	
+				return
+			end
+		end
+	
+		for _, v in ipairs(addedCommands) do
+			if string.find(cmd, v) then
+				alert("RunConsoleCommand", "\"" .. cmd .. conc .. "\"")
+	
+				return
+			end
 		end
 	end
 
@@ -1161,19 +1165,21 @@ meta_pl.ConCommand = function(cmd)
 		return
 	end
 
-	for _, v in ipairs(badCommands) do
-		if string.find(cmd, v) then
-			alert("LocalPlayer():ConCommand", "\"" .. cmd .. "\"")
-
-			return
+	if vars["detourcmd"] then
+		for _, v in ipairs(badCommands) do
+			if string.find(cmd, v) then
+				alert("LocalPlayer():ConCommand", "\"" .. cmd .. "\"")
+	
+				return
+			end
 		end
-	end
-
-	for _, v in ipairs(addedCommands) do
-		if string.find(cmd, v) then
-			alert("LocalPlayer():ConCommand", "\"" .. cmd .. "\"")
-
-			return
+	
+		for _, v in ipairs(addedCommands) do
+			if string.find(cmd, v) then
+				alert("LocalPlayer():ConCommand", "\"" .. cmd .. "\"")
+	
+				return
+			end
 		end
 	end
 
