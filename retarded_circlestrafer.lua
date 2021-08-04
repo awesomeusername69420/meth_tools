@@ -33,9 +33,10 @@ if meth_lua_api then
 end
 
 local vars = {
-	["csize"] = 5,
 	["ahop"] = false,
 	["astrafe"] = false,
+	["csize"] = 5,
+	["shouldstrafe"] = true,
 }
 
 --
@@ -45,7 +46,7 @@ local s = 0
 local isstrafe = false
 
 hook.Add("CreateMove", "", function(cmd)
-	if meta_cd.CommandNumber(cmd) == 0 then
+	if meta_cd.CommandNumber(cmd) == 0 or not vars["shouldstrafe"] then
 		return
 	end
 
@@ -133,4 +134,8 @@ concommand.Add("r_cs_astrafe", function(p, c, args)
 	end
 
 	vars["astrafe"] = tobool(args[1])
+end)
+
+concommand.Add("r_cs_toggle", function()
+	vars["shouldstrafe"] = not vars["shouldstrafe"]
 end)
