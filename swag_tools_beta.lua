@@ -166,7 +166,6 @@ local vars = {
 	["catpng_g"] = 255,
 	["catpng_r"] = 255,
 	["cfov"] = meta_cv.GetInt(GetConVar("fov_desired")),
-	["contextmenuvisible"] = false,
 	["fog"] = true,
 	["fullbright"] = false,
 	["maxtracers"] = 1000,
@@ -174,7 +173,6 @@ local vars = {
 	["renderpanic"] = false,
 	["rgb"] = false,
 	["silentviz"] = false,
-	["spawnmenuvisible"] = false,
 	["thirdpersonfix"] = false,
 	["tracerlife"] = 3,
 	["tracers_local"] = false,
@@ -478,7 +476,7 @@ local function canRender()
 		mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
 	end
 
-	return mesp and not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vars["spawnmenuvisible"] and not vars["contextmenuvisible"]
+	return mesp and not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer())
 end
 
 local function shrtxt(text, maxw)
@@ -1250,22 +1248,6 @@ if ismeth and mcall then
 		end
 	end)
 end
-
-hook.Add("OnSpawnMenuOpen", vars["hookname"], function()
-	vars["spawnmenuvisible"] = true
-end)
-
-hook.Add("OnSpawnMenuClose", vars["hookname"], function()
-	vars["spawnmenuvisible"] = false
-end)
-
-hook.Add("OnContextMenuOpen", vars["hookname"], function()
-	vars["contextmenuvisible"] = true
-end)
-
-hook.Add("OnContextMenuClose", vars["hookname"], function()
-	vars["contextmenuvisible"] = false
-end)
 
 
 hook.Add("HUDPaint", vars["hookname"], function()
