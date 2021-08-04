@@ -1295,8 +1295,17 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			end
 		
 			local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
+			
 			local tpos =  meta_en.GetPos(tply)
 			local lpos = meta_en.GetPos(LocalPlayer())
+			
+			if not ontop then
+				if not meta_en.IsOnGround(LocalPlayer()) then
+					if lpos.z - tpos.z > meta_en.LocalToWorld(tply, meta_en.OBBCenter(tply) * 2).z - 5 then
+						ontop = true
+					end
+				end
+			end
 			
 			local lang
 			
@@ -1309,26 +1318,29 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 				lang = vars["followang"]
 			end
 
-			local lposnz = Vector(lpos.x, lpos.y, 0)
-			local tposnz = Vector(tpos.x, tpos.y, 0)
-
-			local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
 			local dir = tpos - lpos
-			local dis = meta_vc.Distance(lposnz, tposnz)
 			local mvec = Vector(dir.x, dir.y, 0)
 			local ang = meta_vc.Angle(mvec)
+			
+			local lposnz = Vector(lpos.x, lpos.y, 0)
+			local tposnz = Vector(tpos.x, tpos.y, 0)
+			local dis = math.Round(meta_vc.Distance(lposnz, tposnz))
 
 			local yaw = math.rad(ang.y - lang.y)
 
-			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) then
+			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and dis > 15 then
 				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 			end
 	
-			if ontop then
-				meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
-			end
+			if dis > 10 then
+				local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
 			
-			meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
+				if ontop then
+					meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
+				end
+				
+				meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
+			end
 		else
 			vars["followtarg"] = getClosest()
 		end
@@ -1483,22 +1495,6 @@ hook.Add("SetupWorldFog", vars["hookname"], function()
 	end
 
 	return not f
-end)
-
-hook.Add("PrePlayerDraw", vars["hookname"], function(ply)
-	if vars["fullbright"] then
-		render.SetLightingMode(1)
-	else
-		render.SetLightingMode(0)
-	end
-end)
-
-hook.Add("PostPlayerDraw", vars["hookname"], function(ply)
-	if vars["fullbright"] then
-		render.SetLightingMode(1)
-	else
-		render.SetLightingMode(0)
-	end
 end)
 
 hook.Add("RenderScene", vars["hookname"], function()
