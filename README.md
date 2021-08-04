@@ -96,6 +96,7 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
  | r_cs_size | Changes strafe circle size | `integer` | `5` |
+ | r_cs_toggle | Toggles circle strafer | `boolean` | `true` |
  | r_cs_ahop | Toggles auto bhop | `boolean` | `false` |
  | r_cs_astrafe | Toggles auto strafer | `boolean` | `false` |
 </details>
