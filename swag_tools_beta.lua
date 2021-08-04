@@ -467,6 +467,10 @@ local function getClosest()
 	return cur
 end
 
+local function shouldPanic()
+	return ismeth and vars["renderpanic"]
+end
+
 local function canRender()
 	local mesp = true
 	
@@ -499,7 +503,7 @@ local function shrtxt(text, maxw)
 end
 
 local function drawTraitorDetector()
-	if ismeth and vars["renderpanic"] then
+	if shouldPanic() then
 		return
 	end
 
@@ -532,7 +536,7 @@ local function drawTraitorDetector()
 		end
 	
 		for _, v in ipairs(vars["ttable"]) do
-			if ismeth and vars["renderpanic"] then
+			if shouldPanic() then
 				return
 			end
 		
@@ -617,7 +621,7 @@ local function drawTraitorDetector()
 end
 
 local function drawSpectators()
-	if ismeth and vars["renderpanic"] then
+	if shouldPanic() then
 		return
 	end
 
@@ -656,7 +660,7 @@ local function drawSpectators()
 	surface.DrawText("Target")
 
 	for _, v in ipairs(vars["spectators"]) do
-		if ismeth and vars["renderpanic"] then
+		if shouldPanic() then
 			return
 		end
 	
