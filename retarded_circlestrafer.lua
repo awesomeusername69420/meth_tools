@@ -46,7 +46,7 @@ local s = 0
 local isstrafe = false
 
 hook.Add("CreateMove", "", function(cmd)
-	if meta_cd.CommandNumber(cmd) == 0 or not vars["shouldstrafe"] then
+	if meta_cd.CommandNumber(cmd) == 0 then
 		return
 	end
 
@@ -83,7 +83,7 @@ hook.Add("CreateMove", "", function(cmd)
 			end
 		end
 
-		if (right or left) and j then
+		if vars["shouldstrafe"] and (right or left) and j then
 			isstrafe = true
 	
 			local vel = meta_en.GetVelocity(LocalPlayer())
