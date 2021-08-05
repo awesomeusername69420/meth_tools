@@ -160,7 +160,6 @@ local vars = {
 	["catpng_g"] = 255,
 	["catpng_r"] = 255,
 	["cfov"] = meta_cv.GetInt(GetConVar("fov_desired")),
-	["contextmenuvisible"] = false,
 	["fog"] = true,
 	["fullbright"] = false,
 	["maxtracers"] = 1000,
@@ -168,7 +167,6 @@ local vars = {
 	["renderpanic"] = false,
 	["rgb"] = false,
 	["silentviz"] = false,
-	["spawnmenuvisible"] = false,
 	["thirdpersonfix"] = false,
 	["tracerlife"] = 3,
 	["tracers_local"] = false,
@@ -176,6 +174,7 @@ local vars = {
 
 	-- Tools
 	["antigag"] = false,
+	["detourcmd"] = true,
 	["followang"] = Angle(0, 0, 0),
 	["followbot"] = false,
 	["following"] = false,
@@ -245,6 +244,7 @@ local concommands = {
 		-- Tools
 		["st_tools_allow_guiopenurl"] = "gopen",
 		["st_tools_antigag"] = "antigag",
+		["st_tools_detour_commands"] = "detourcmd",
 		["st_tools_followbot"] = "followbot",
 		["st_tools_gesture_loop"] = "gesture_loop",
 		["st_tools_psay_spam"] = "psays",
@@ -410,18 +410,13 @@ local function isBadWeapon(weapon)
 	end
 
 	local class = meta_en.GetClass(weapon)
-	local pname = meta_wn.GetPrintName(weapon)
 	
 	if class then
 		class = string.lower(class)
 	end
-	
-	if pname then
-		pname = string.lower(pname)
-	end
 
 	for _, v in ipairs(badWeapons) do
-		if string.find(class, v) or string.find(pname, v) then
+		if string.find(class, v) then
 			return true
 		end
 	end
@@ -461,6 +456,10 @@ local function getClosest()
 	return cur
 end
 
+local function shouldPanic()
+	return ismeth and vars["renderpanic"]
+end
+
 local function canRender()
 	local mesp = true
 	
@@ -468,7 +467,7 @@ local function canRender()
 		mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
 	end
 
-	return mesp and not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vars["spawnmenuvisible"] and not vars["contextmenuvisible"]
+	return mesp and not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer())
 end
 
 local function shrtxt(text, maxw)
@@ -493,7 +492,7 @@ local function shrtxt(text, maxw)
 end
 
 local function drawTraitorDetector()
-	if ismeth and vars["renderpanic"] then
+	if shouldPanic() then
 		return
 	end
 
@@ -526,7 +525,7 @@ local function drawTraitorDetector()
 		end
 	
 		for _, v in ipairs(vars["ttable"]) do
-			if ismeth and vars["renderpanic"] then
+			if shouldPanic() then
 				return
 			end
 		
@@ -564,6 +563,8 @@ local function drawTraitorDetector()
 					surface.SetDrawColor(24, 24, 24, 150)
 					role = "ERROR"
 				end
+				
+				role = shrtxt(role, w - dw)
 				
 				surface.DrawRect(x, offsety, w, h)
 				
@@ -611,7 +612,7 @@ local function drawTraitorDetector()
 end
 
 local function drawSpectators()
-	if ismeth and vars["renderpanic"] then
+	if shouldPanic() then
 		return
 	end
 
@@ -650,7 +651,7 @@ local function drawSpectators()
 	surface.DrawText("Target")
 
 	for _, v in ipairs(vars["spectators"]) do
-		if ismeth and vars["renderpanic"] then
+		if shouldPanic() then
 			return
 		end
 	
@@ -687,7 +688,11 @@ local function drawSpectators()
 		local sname = "UNKNOWN"
 		
 		if starg and meta_en.IsValid(starg) then
-			sname = shrtxt(meta_pl.GetName(starg), w - dw)
+			if starg == LocalPlayer() then
+				sname = shrtxt("LocalPlayer", w - dw)
+			else
+				sname = shrtxt(meta_pl.GetName(starg), w - dw)
+			end
 		end
 		
 		tw, th = surface.GetTextSize(sname)
@@ -712,6 +717,8 @@ local function drawSpectators()
 		else
 			mode = "UNKNOWN"
 		end
+		
+		mode = shrtxt(mode, w - dw)
 		
 		tw, th = surface.GetTextSize(mode)
 		
@@ -1115,25 +1122,27 @@ _G.RunConsoleCommand = function(cmd, ...)
 		return
 	end
 
-	local conc = ""
-
-	if ... then
-		conc = " " .. ...
-	end
-
-	for _, v in ipairs(badCommands) do
-		if string.find(cmd, v) then
-			alert("RunConsoleCommand", "\"" .. cmd .. conc .. "\"")
-
-			return
+	if vars["detourcmd"] then
+		local conc = ""
+	
+		if ... then
+			conc = " " .. ...
 		end
-	end
-
-	for _, v in ipairs(addedCommands) do
-		if string.find(cmd, v) then
-			alert("RunConsoleCommand", "\"" .. cmd .. conc .. "\"")
-
-			return
+	
+		for _, v in ipairs(badCommands) do
+			if string.find(cmd, v) then
+				alert("RunConsoleCommand", "\"" .. cmd .. conc .. "\"")
+	
+				return
+			end
+		end
+	
+		for _, v in ipairs(addedCommands) do
+			if string.find(cmd, v) then
+				alert("RunConsoleCommand", "\"" .. cmd .. conc .. "\"")
+	
+				return
+			end
 		end
 	end
 
@@ -1145,19 +1154,21 @@ meta_pl.ConCommand = function(cmd)
 		return
 	end
 
-	for _, v in ipairs(badCommands) do
-		if string.find(cmd, v) then
-			alert("LocalPlayer():ConCommand", "\"" .. cmd .. "\"")
-
-			return
+	if vars["detourcmd"] then
+		for _, v in ipairs(badCommands) do
+			if string.find(cmd, v) then
+				alert("LocalPlayer():ConCommand", "\"" .. cmd .. "\"")
+	
+				return
+			end
 		end
-	end
-
-	for _, v in ipairs(addedCommands) do
-		if string.find(cmd, v) then
-			alert("LocalPlayer():ConCommand", "\"" .. cmd .. "\"")
-
-			return
+	
+		for _, v in ipairs(addedCommands) do
+			if string.find(cmd, v) then
+				alert("LocalPlayer():ConCommand", "\"" .. cmd .. "\"")
+	
+				return
+			end
 		end
 	end
 
@@ -1233,22 +1244,6 @@ if ismeth and mcall then
 	end)
 end
 
-hook.Add("OnSpawnMenuOpen", vars["hookname"], function()
-	vars["spawnmenuvisible"] = true
-end)
-
-hook.Add("OnSpawnMenuClose", vars["hookname"], function()
-	vars["spawnmenuvisible"] = false
-end)
-
-hook.Add("OnContextMenuOpen", vars["hookname"], function()
-	vars["contextmenuvisible"] = true
-end)
-
-hook.Add("OnContextMenuClose", vars["hookname"], function()
-	vars["contextmenuvisible"] = false
-end)
-
 
 hook.Add("HUDPaint", vars["hookname"], function()
 	vars["renderpanic"] = true
@@ -1295,8 +1290,17 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			end
 		
 			local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
+			
 			local tpos =  meta_en.GetPos(tply)
 			local lpos = meta_en.GetPos(LocalPlayer())
+			
+			if not ontop then
+				if not meta_en.IsOnGround(LocalPlayer()) then
+					if lpos.z - tpos.z > meta_en.LocalToWorld(tply, meta_en.OBBCenter(tply) * 2).z - 5 then
+						ontop = true
+					end
+				end
+			end
 			
 			local lang
 			
@@ -1309,26 +1313,29 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 				lang = vars["followang"]
 			end
 
-			local lposnz = Vector(lpos.x, lpos.y, 0)
-			local tposnz = Vector(tpos.x, tpos.y, 0)
-
-			local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
 			local dir = tpos - lpos
-			local dis = meta_vc.Distance(lposnz, tposnz)
 			local mvec = Vector(dir.x, dir.y, 0)
 			local ang = meta_vc.Angle(mvec)
+			
+			local lposnz = Vector(lpos.x, lpos.y, 0)
+			local tposnz = Vector(tpos.x, tpos.y, 0)
+			local dis = math.Round(meta_vc.Distance(lposnz, tposnz))
 
 			local yaw = math.rad(ang.y - lang.y)
 
-			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) then
+			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and dis > 15 then
 				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 			end
 	
-			if ontop then
-				meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
-			end
+			if dis > 10 then
+				local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
 			
-			meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
+				if ontop then
+					meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
+				end
+				
+				meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
+			end
 		else
 			vars["followtarg"] = getClosest()
 		end
@@ -1483,22 +1490,6 @@ hook.Add("SetupWorldFog", vars["hookname"], function()
 	end
 
 	return not f
-end)
-
-hook.Add("PrePlayerDraw", vars["hookname"], function(ply)
-	if vars["fullbright"] then
-		render.SetLightingMode(1)
-	else
-		render.SetLightingMode(0)
-	end
-end)
-
-hook.Add("PostPlayerDraw", vars["hookname"], function(ply)
-	if vars["fullbright"] then
-		render.SetLightingMode(1)
-	else
-		render.SetLightingMode(0)
-	end
 end)
 
 hook.Add("RenderScene", vars["hookname"], function()
@@ -1725,6 +1716,7 @@ end)
 timer.Create(vars["timer_slow"], 1, 0, function()
 	local td = vars["tdetector"]
 	local sd = vars["specdetector"]
+	local ps = vars["psays"]
 	local force = false
 	local forced = false
 
@@ -1745,11 +1737,11 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 		end
 	end
 
-	if td or sd then
+	if td or sd or ps then
 		for _, v in ipairs(player.GetAll()) do
+			local skip = false
+		
 			if td and GAMEMODE.round_state == ROUND_ACTIVE then
-				local skip = false
-				
 				if v == LocalPlayer() or not meta_en.IsValid(v) or not meta_pl.Alive(v) then
 					skip = true
 				end
@@ -1819,7 +1811,7 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 			end
 			
 			if sd then
-				local skip = false
+				skip = false
 			
 				local mode = meta_pl.GetObserverMode(v)
 				local targ = meta_pl.GetObserverTarget(v)
@@ -1846,16 +1838,18 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 					end
 				end
 			end
-		end
-	end
-
-	if vars["psays"] then
-		for _, v in ipairs(player.GetAll()) do
-			if v == LocalPlayer() or not meta_en.IsValid(v) then
-				continue
+			
+			if ps then
+				skip = false
+			
+				if v == LocalPlayer() or not meta_en.IsValid(v) then
+					skip = true
+				end
+				
+				if not skip then
+					safefuncs.rcon("ulx", "psay", meta_pl.Name(v), vars["psays_message"])
+				end
 			end
-
-			safefuncs.rcon("ulx", "psay", meta_pl.Name(v), vars["psays_message"])
 		end
 	end
 end)
