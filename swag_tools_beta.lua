@@ -416,18 +416,13 @@ local function isBadWeapon(weapon)
 	end
 
 	local class = meta_en.GetClass(weapon)
-	local pname = meta_wn.GetPrintName(weapon)
 	
 	if class then
 		class = string.lower(class)
 	end
-	
-	if pname then
-		pname = string.lower(pname)
-	end
 
 	for _, v in ipairs(badWeapons) do
-		if string.find(class, v) or string.find(pname, v) then
+		if string.find(class, v) then
 			return true
 		end
 	end
