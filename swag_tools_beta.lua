@@ -49,7 +49,7 @@ local draw = tCopy(draw)
 local engine = tCopy(engine)
 local ents = tCopy(ents)
 local file = tCopy(file)
-local game = game
+local game = tCopy(game)
 local GetConVar = GetConVar
 local GetConVarNumber = GetConVarNumber
 local GetConVarString = GetConVarString
@@ -169,6 +169,9 @@ local vars = {
 	["fog"] = true,
 	["fullbright"] = false,
 	["maxtracers"] = 1000,
+	["nightmode"] = false,
+	["nightmode_intensity"] = 0.05,
+	["nightmode_rs"] = false,
 	["reddeath"] = true,
 	["renderpanic"] = false,
 	["rgb"] = false,
@@ -216,6 +219,7 @@ local concommands = {
 		["st_render_catpng_green"] = "catpng_g",
 		["st_render_catpng_red"] = "catpng_r",
 		["st_render_fov_set"] = "cfov",
+		["st_render_nightmode_intensity"] = "nightmode_intensity",
 		["st_render_tracers_life_set"] = "tracerlife",
 		["st_render_tracers_max_set"] = "maxtracers",
 
@@ -241,6 +245,7 @@ local concommands = {
 		["st_render_fixthirdperson"] = "thirdpersonfix",
 		["st_render_fog"] = "fog",
 		["st_render_fullbright"] = "fullbright",
+		["st_render_nightmode"] = "nightmode",
 		["st_render_rgb"] = "rgb",
 		["st_render_tracers_beam"] = "beamtracers",
 		["st_render_tracers_local"] = "tracers_local",
@@ -1507,6 +1512,24 @@ hook.Add("RenderScene", vars["hookname"], function()
 		MATERIAL_FOG_LINEAR_BELOW_FOG_Z	= 0
 	end
 
+	if vars["nightmode"] and not vars["fullbright"] then
+		local i = math.Clamp(vars["nightmode_intensity"], 0, 1)
+	
+		for _, v in pairs(meta_en.GetMaterials(game.GetWorld())) do
+			meta_im.SetVector(Material(v), "$color", Vector(i, i, i))
+		end
+		
+		vars["nightmode_rs"] = false
+	else
+		if not vars["nightmode_rs"] then
+			for _, v in pairs(meta_en.GetMaterials(game.GetWorld())) do
+				meta_im.SetVector(Material(v), "$color", Vector(1, 1, 1))
+			end
+		
+			vars["nightmode_rs"] = true
+		end
+	end
+
 	if vars["fullbright"] then
 		render.SuppressEngineLighting(false)
 		render.ResetModelLighting(1, 1, 1)
@@ -1651,7 +1674,7 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 
 	local ttr = bullets[table.Count(bullets)]
 
-	timer.Simple(vars["tracerlife"], function()
+	timer.Simple(math.floor(vars["tracerlife"]), function()
 		table.RemoveByValue(bullets, ttr)
 	end)
 end)
@@ -1684,7 +1707,7 @@ for j, l in pairs(concommands) do
 					new = tonumber(new)
 				end
 
-				vars[v] = math.floor(new)
+				vars[v] = new
 			end
 		elseif j == "string" then
 			confunc = function(p, c, args, argstr)
