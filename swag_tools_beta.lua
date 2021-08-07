@@ -183,6 +183,9 @@ local vars = {
 
 	-- Tools
 	["antigag"] = false,
+	["delayaf"] = false,
+	["delayaf_a"] = 0.05,
+	["delayaf_dp"] = false,
 	["detourcmd"] = true,
 	["followang"] = Angle(0, 0, 0),
 	["followbot"] = false,
@@ -214,20 +217,21 @@ local vars = {
 local concommands = {
 	["integer"] = {
 		-- Render
-		["st_render_catpng_alpha"] = "catpng_a",
-		["st_render_catpng_blue"] = "catpng_b",
-		["st_render_catpng_green"] = "catpng_g",
-		["st_render_catpng_red"] = "catpng_r",
+		["st_render_catpng_alpha_set"] = "catpng_a",
+		["st_render_catpng_blue_set"] = "catpng_b",
+		["st_render_catpng_green_set"] = "catpng_g",
+		["st_render_catpng_red_set"] = "catpng_r",
 		["st_render_fov_set"] = "cfov",
-		["st_render_nightmode_intensity"] = "nightmode_intensity",
+		["st_render_nightmode_intensity_set"] = "nightmode_intensity",
 		["st_render_tracers_life_set"] = "tracerlife",
 		["st_render_tracers_max_set"] = "maxtracers",
 
 		-- Tools
-		["st_tools_spectatorlist_x"] = "specdetector_x",
-		["st_tools_spectatorlist_y"] = "specdetector_y",
-		["st_tools_tdetector_list_x"] = "tdetector_list_x",
-		["st_tools_tdetector_list_y"] = "tdetector_list_y",
+		["st_tools_delay_autofire_amount_set"] = "delayaf_a",
+		["st_tools_spectatorlist_x_set"] = "specdetector_x",
+		["st_tools_spectatorlist_y_set"] = "specdetector_y",
+		["st_tools_tdetector_list_x_set"] = "tdetector_list_x",
+		["st_tools_tdetector_list_y_set"] = "tdetector_list_y",
 	},
 
 	["string"] = {
@@ -255,6 +259,7 @@ local concommands = {
 		-- Tools
 		["st_tools_allow_guiopenurl"] = "gopen",
 		["st_tools_antigag"] = "antigag",
+		["st_tools_delay_autofire"] = "delayaf",
 		["st_tools_detour_commands"] = "detourcmd",
 		["st_tools_followbot"] = "followbot",
 		["st_tools_gesture_loop"] = "gesture_loop",
@@ -1421,6 +1426,27 @@ hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, po
 end)
 
 hook.Add("Think", vars["hookname"], function()
+	if ismeth and vars["delayaf"] and mvar then
+		local at = mutil.GetAimbotTarget()
+
+		if at ~= 0 then
+			local e = ents.GetByIndex(at)
+			
+			if IsValid(e) and meta_pl.Alive(e) then
+				if mvar.GetVarInt("Aimbot.Options.Auto Fire") == 0 and not vars["delayaf_dp"] then
+					vars["delayaf_dp"] = true
+				
+					timer.Simple(vars["delayaf_a"], function()
+						mvar.SetVarInt("Aimbot.Options.Auto Fire", 1)
+					end)
+				end
+			end
+		else
+			mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
+			vars["delayaf_dp"] = false
+		end
+	end
+
 	if vars["antigag"] then
 		hook.Remove("PlayerCanHearPlayersVoice", "ULXGag")
 		hook.Remove("PlayerBindPress", "ULXGagForce")
