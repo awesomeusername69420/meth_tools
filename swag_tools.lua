@@ -1206,17 +1206,17 @@ if ismeth and mcall then
 			end
 
 			if vars["tracers_other"] or vars["tracers_local"] then
-				for k, v in ipairs(bullets) do
-					if not k or not v or vars["renderpanic"] then
+				for _, v in ipairs(bullets) do
+					if not v or vars["renderpanic"] then
 						continue
 					end
 			
 					cam.Start3D()
 						if vars["beamtracers"] then
 							render.SetMaterial(beammat)
-							render.DrawBeam(bullets[k].s, bullets[k].e, 4, 1, 1, Color(255, 255, 255, 255))
+							render.DrawBeam(v.s, v.e, 4, 1, 1, Color(255, 255, 255, 255))
 						else
-							render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
+							render.DrawLine(v.s, v.e, v.c, true)
 						end
 					cam.End3D()
 				end
@@ -1558,25 +1558,6 @@ hook.Add("RenderScene", vars["hookname"], function()
 	else
 		render.SetLightingMode(0)
 	end
-	
-	if not ismeth then
-		if not vars["tracers_other"] and not vars["tracers_local"] then
-			return
-		end
-	
-		for k, v in ipairs(bullets) do
-			if not k or not v then
-				continue
-			end
-	
-			if vars["beamtracers"] then
-				render.SetMaterial(beammat)
-				render.DrawBeam(bullets[k].s, bullets[k].e, 4, 1, 1, Color(255, 255, 255, 255))
-			else
-				render.DrawLine(bullets[k].s, bullets[k].e, bullets[k].c, true)
-			end
-		end
-	end
 end)
 
 hook.Add("PreDrawViewModel", vars["hookname"], function(vm)
@@ -1609,6 +1590,25 @@ end)
 
 hook.Add("PreDrawEffects", vars["hookname"], function()
 	render.SetLightingMode(0)
+	
+	if not ismeth then
+		if not vars["tracers_other"] and not vars["tracers_local"] then
+			return
+		end
+	
+		for _, v in ipairs(bullets) do
+			if not v then
+				continue
+			end
+	
+			if vars["beamtracers"] then
+				render.SetMaterial(beammat)
+				render.DrawBeam(v.s, v.e, 4, 1, 1, Color(255, 255, 255, 255))
+			else
+				render.DrawLine(v.s, v.e, v.c, true)
+			end
+		end
+	end
 end)
 
 hook.Add("PostDrawEffects", vars["hookname"], function()
