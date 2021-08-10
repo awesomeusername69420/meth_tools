@@ -355,6 +355,13 @@ local badCommands = {
 	"startmovie",
 }
 
+local badMaterials = {
+	"glass",
+	"metalfence",
+	"water",
+	"window",
+}
+
 local badWeapons = {
 	"bomb",
 	"bugbait",
@@ -450,6 +457,22 @@ local function isBadWeapon(weapon)
 	end
 
 	return false
+end
+
+local function vMat(mat)
+	if not mat then
+		return false
+	end
+
+	mat = string.lower(mat)
+
+	for _, v in ipairs(badMaterials) do
+		if string.find(mat, v) then
+			return false
+		end
+	end
+	
+	return true
 end
 
 local function vEnt(ent)
@@ -1407,7 +1430,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 			end
 	
-			if dis > 10 then
+			if dis > 4 then
 				local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
 			
 				if ontop then
@@ -1626,7 +1649,9 @@ hook.Add("RenderScene", vars["hookname"], function()
 			local wm = Material(v)
 
 			if dv then
-				if not string.find(string.lower(meta_im.GetName(wm)), "water") then
+				local n = string.lower(meta_im.GetName(wm))
+			
+				if vMat(n) then
 					if dvo then
 						meta_im.SetTexture(wm, "$basetexture", devtex_o)
 					else
