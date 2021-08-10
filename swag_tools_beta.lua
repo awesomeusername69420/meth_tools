@@ -50,6 +50,7 @@ local engine = tCopy(engine)
 local ents = tCopy(ents)
 local file = tCopy(file)
 local game = tCopy(game)
+local gameevent = tCopy(gameevent)
 local GetConVar = GetConVar
 local GetConVarNumber = GetConVarNumber
 local GetConVarString = GetConVarString
@@ -1878,28 +1879,33 @@ hook.Add("PreDrawSkyBox", vars["hookname"], function()
 	render.MaterialOverride(nil)
 end)
 
-hook.Add("PlayerTraceAttack", vars["hookname"], function(ply, ...)
-	if not meta_en.IsValid(ply) then
+gameevent.Listen("player_hurt")
+
+hook.Add("player_hurt", vars["hookname"], function(data)
+	local at = Player(data.attacker)
+	local tg = Player(data.userid)
+	
+	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) then
 		return
 	end
 	
 	local ins = {}
 	
-	for i = 0, meta_en.GetHitboxSetCount(ply) - 1 do
-		for ii = 0, meta_en.GetHitBoxCount(ply, i) - 1 do
-			local bone = meta_en.GetHitBoxBone(ply, ii, i)
+	for i = 0, meta_en.GetHitboxSetCount(tg) - 1 do
+		for ii = 0, meta_en.GetHitBoxCount(tg, i) - 1 do
+			local bone = meta_en.GetHitBoxBone(tg, ii, i)
 			
 			if not bone then
 				continue
 			end	
 			
-			local mins, maxs = meta_en.GetHitBoxBounds(ply, ii, i)
+			local mins, maxs = meta_en.GetHitBoxBounds(tg, ii, i)
 			
 			if not mins or not maxs then
 				continue
 			end
 			
-			local bm = meta_en.GetBoneMatrix(ply, bone)
+			local bm = meta_en.GetBoneMatrix(tg, bone)
 			
 			if not bm then
 				continue
