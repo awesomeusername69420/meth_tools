@@ -356,8 +356,12 @@ local badCommands = {
 }
 
 local badMaterials = {
+	"assault_warehouse_02",
 	"glass",
 	"metalfence",
+	"metalfireescape",
+	"metalgrate",
+	"metalrail",
 	"water",
 	"window",
 }
