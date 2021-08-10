@@ -178,6 +178,7 @@ local vars = {
 	["fullbright"] = false,
 	["hitboxonhit"] = false,
 	["hitbox_color"] = "255 255 255 255",
+	["hitbox_color_ovr"] = "255 0 0 255",
 	["hitbox_delay"] = 3,
 	["maxtracers"] = 1000,
 	["nightmode"] = false,
@@ -247,6 +248,7 @@ local concommands = {
 	["string"] = {
 		-- Render
 		["st_render_catpng_color_set"] = "catpng_color",
+		["st_render_damageboxes_color_override_set"] = "hitbox_color_ovr",
 		["st_render_damageboxes_color_set"] = "hitbox_color",
 		["st_render_snaplines_color_set"] = "snaplines_color",
 
@@ -489,7 +491,7 @@ local function vEnt(ent)
 		return false
 	end
 
-	if meta_pl.IsPlayer(ent) then
+	if meta_en.GetClass(ent) == "player" then
 		return meta_en.IsValid(ent) and meta_pl.Alive(ent) and meta_pl.GetObserverMode(ent) == 0 and meta_pl.Team(ent) ~= 1002 and meta_en.GetColor(ent).a > 0
 	end
 	
@@ -1285,6 +1287,7 @@ if ismeth and mcall then
 
 			if vars["hitboxonhit"] then
 				local color = strColor(vars["hitbox_color"])
+				local ovrcolor = strColor(vars["hitbox_color_ovr"])
 
 				for _, g in ipairs(hits) do
 					if not g or vars["renderpanic"] then
@@ -1298,7 +1301,11 @@ if ismeth and mcall then
 							end
 			
 							cam.Start3D()
-								render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, color)
+								if v.ovr then
+									render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, ovrcolor)
+								else
+									render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, color)
+								end
 							cam.End3D()
 						end
 					end
@@ -1838,6 +1845,7 @@ hook.Add("PreDrawEffects", vars["hookname"], function()
 	if not ismeth then
 		if vars["hitboxonhit"] then
 			local color = strColor(vars["hitbox_color"])
+			local ovrcolor = strColor(vars["hitbox_color_ovr"])
 
 			for _, g in ipairs(hits) do
 				if not g then
@@ -1850,7 +1858,11 @@ hook.Add("PreDrawEffects", vars["hookname"], function()
 							continue
 						end
 			
-						render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, color)
+						if v.ovr then
+							render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, ovrcolor)
+						else
+							render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, color)
+						end
 					end
 				end
 			end
@@ -1882,10 +1894,14 @@ end)
 gameevent.Listen("player_hurt")
 
 hook.Add("player_hurt", vars["hookname"], function(data)
+	if not vars["hitboxonhit"] or not data then
+		return
+	end
+
 	local at = Player(data.attacker)
 	local tg = Player(data.userid)
 	
-	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) then
+	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) or not meta_pl.Alive(tg) then
 		return
 	end
 	
@@ -1922,6 +1938,70 @@ hook.Add("player_hurt", vars["hookname"], function(data)
 				["ang"] = ang,
 				["mins"] = mins,
 				["maxs"] = maxs,
+				["ovr"] = false,
+			})
+		end
+	end
+	
+	if not table.IsEmpty(ins) then
+		table.insert(hits, ins)
+	end
+	
+	local ttr = hits[table.Count(hits)]
+	
+	timer.Simple(math.Round(vars["hitbox_delay"]), function()
+		table.RemoveByValue(hits, ttr)
+	end)
+end)
+
+gameevent.Listen("entity_killed")
+
+hook.Add("entity_killed", vars["hookname"], function(data)
+	if not vars["hitboxonhit"] or not data then
+		return
+	end
+
+	local at = ents.GetByIndex(data.entindex_attacker)
+	local tg = ents.GetByIndex(data.entindex_killed)
+	
+	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) or meta_en.GetClass(tg) ~= "player" then
+		return
+	end
+	
+	local ins = {}
+	
+	for i = 0, meta_en.GetHitboxSetCount(tg) - 1 do
+		for ii = 0, meta_en.GetHitBoxCount(tg, i) - 1 do
+			local bone = meta_en.GetHitBoxBone(tg, ii, i)
+			
+			if not bone then
+				continue
+			end	
+			
+			local mins, maxs = meta_en.GetHitBoxBounds(tg, ii, i)
+			
+			if not mins or not maxs then
+				continue
+			end
+			
+			local bm = meta_en.GetBoneMatrix(tg, bone)
+			
+			if not bm then
+				continue
+			end
+			
+			local pos, ang = meta_vm.GetTranslation(bm), meta_vm.GetAngles(bm)
+			
+			if not pos then
+				continue
+			end
+			
+			table.insert(ins, {
+				["pos"] = pos,
+				["ang"] = ang,
+				["mins"] = mins,
+				["maxs"] = maxs,
+				["ovr"] = true,
 			})
 		end
 	end
