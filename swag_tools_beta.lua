@@ -175,9 +175,9 @@ local vars = {
 	["devtexture_o"] = false,
 	["fog"] = true,
 	["fullbright"] = false,
+	["hitboxonhit"] = false,
 	["hitbox_color"] = "255 255 255 255",
 	["hitbox_delay"] = 3,
-	["hitboxonhit"] = false,
 	["maxtracers"] = 1000,
 	["nightmode"] = false,
 	["nightmode_intensity"] = 0.05,
@@ -186,6 +186,8 @@ local vars = {
 	["renderpanic"] = false,
 	["rgb"] = false,
 	["silentviz"] = false,
+	["snaplines"] = false,
+	["snaplines_color"] = "255 255 255 255",
 	["thirdpersonfix"] = false,
 	["tracerlife"] = 3,
 	["tracers_local"] = false,
@@ -245,6 +247,7 @@ local concommands = {
 		-- Render
 		["st_render_catpng_color_set"] = "catpng_color",
 		["st_render_damageboxes_color_set"] = "hitbox_color",
+		["st_render_snaplines_color_set"] = "snaplines_color",
 
 		-- Tools
 		["st_tools_gesture_set"] = "gesture",
@@ -263,6 +266,7 @@ local concommands = {
 		["st_render_fullbright"] = "fullbright",
 		["st_render_nightmode"] = "nightmode",
 		["st_render_rgb"] = "rgb",
+		["st_render_snaplines"] = "snaplines",
 		["st_render_tracers_beam"] = "beamtracers",
 		["st_render_tracers_local"] = "tracers_local",
 		["st_render_tracers_other"] = "tracers_other",
@@ -1293,7 +1297,7 @@ if ismeth and mcall then
 							end
 			
 							cam.Start3D()
-								render.DrawWireframeBox(v.pos, v.ang, v.min, v.max, color)
+								render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, color)
 							cam.End3D()
 						end
 					end
@@ -1331,20 +1335,111 @@ if ismeth and mcall then
 				end
 			end
 			
-			if vars["catpng"] and catpng and not meta_im.IsError(catpng) and mvar then
-				local fov = mvar.GetVarInt("Aimbot.Target.FoV") or nil
+			if mvar then
+				if vars["snaplines"] then
+					local method = mvar.GetVarInt("Aimbot.Target.Priority")
+					
+					local hw, hh = ScrW() / 2, ScrH() / 2
+					local snaptarg = nil
+					
+					if method == 0 then
+						snaptarg = getClosest()
+					elseif method ~= 3 then
+						local bhp
+						local beste
+						
+						if method == 1 then
+							bhp = math.huge
+						else
+							bhp = -1337
+						end
+					
+						for _, v in ipairs(player.GetAll()) do
+							if v == LocalPlayer() or not vEnt(v) then
+								continue
+							end
+							
+							local hp = meta_en.Health(v)
+							
+							if method == 1 then
+								if hp < bhp then
+									bhp = hp
+									beste = v
+								end
+							else
+								if hp > bhp then
+									bhp = hp
+									beste = v
+								end
+							end
+						end
+						
+						if vEnt(beste) then
+							snaptarg = beste
+						end
+					else
+						local closest
+						local bpos = math.huge
+					
+						for _, v in ipairs(player.GetAll()) do
+							if v == LocalPlayer() or not vEnt(v) then
+								continue
+							end
+							
+							local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
+							local dist = math.Dist(obbpos.x, obbpos.y, hw, hh)
+							
+							if math.abs(dist) < bpos then
+								bpos = dist
+								closest = v
+							end
+						end
+						
+						if vEnt(closest) then
+							snaptarg = closest
+						end
+					end
+					
+					if vEnt(snaptarg) then
+						local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(snaptarg, meta_en.OBBCenter(snaptarg)))
+						local color = strColor(vars["snaplines_color"])
+					
+						local om = 1
+						
+						if obbpos.y > hh then
+							if obbpos.x > hw then
+								om = -1
+							end
+						else
+							if obbpos.x < hw then
+								om = -1
+							end
+						end
+						
+						surface.SetDrawColor(color)
+						surface.DrawLine(hw, hh, obbpos.x, obbpos.y)
+						
+						surface.SetDrawColor(0, 0, 0, color.a)
+						surface.DrawLine(hw + (1 * om), hh + (1 * om), obbpos.x + (1 * om), obbpos.y + (1 * om))
+						surface.DrawLine(hw - (1 * om), hh - (1 * om), obbpos.x - (1 * om), obbpos.y - (1 * om))
+					end
+				end
 				
-				if fov and fov > 0 and fov <= 60 then
-					local retardednumber = 2.6
-					local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
-					local size = rad * 1.955
-					
-					local color = strColor(vars["catpng_color"])
-					
-					surface.SetDrawColor(color)
-					surface.SetMaterial(catpng)
-					
-					surface.DrawTexturedRect((ScrW() / 2) - (size / 2), (ScrH() / 2) - (size / 2), size + retardednumber, size + retardednumber)
+				if vars["catpng"] and not meta_im.IsError(catpng) then
+					local fov = mvar.GetVarInt("Aimbot.Target.FoV") or nil
+				
+					if fov and fov > 0 and fov <= 60 then
+						local retardednumber = 2.6
+						local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
+						local size = rad * 1.955
+						
+						local color = strColor(vars["catpng_color"])
+						
+						surface.SetDrawColor(color)
+						surface.SetMaterial(catpng)
+						
+						surface.DrawTexturedRect((ScrW() / 2) - (size / 2), (ScrH() / 2) - (size / 2), size + retardednumber, size + retardednumber)
+					end
 				end
 			end
 		end
@@ -1754,7 +1849,7 @@ hook.Add("PreDrawEffects", vars["hookname"], function()
 							continue
 						end
 			
-						render.DrawWireframeBox(v.pos, v.ang, v.min, v.max, Color(color[1], color[2], color[3], color[4]))
+						render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, color)
 					end
 				end
 			end
@@ -1790,7 +1885,7 @@ hook.Add("PlayerTraceAttack", vars["hookname"], function(ply, ...)
 	
 	local ins = {}
 	
-	for i = 0, meta_en.GetHitBoxGroupCount(ply) - 1 do
+	for i = 0, meta_en.GetHitboxSetCount(ply) - 1 do
 		for ii = 0, meta_en.GetHitBoxCount(ply, i) - 1 do
 			local bone = meta_en.GetHitBoxBone(ply, ii, i)
 			
@@ -1798,9 +1893,9 @@ hook.Add("PlayerTraceAttack", vars["hookname"], function(ply, ...)
 				continue
 			end	
 			
-			local min, max = meta_en.GetHitBoxBounds(ply, ii, i)
+			local mins, maxs = meta_en.GetHitBoxBounds(ply, ii, i)
 			
-			if not min or not max then
+			if not mins or not maxs then
 				continue
 			end
 			
@@ -1819,8 +1914,8 @@ hook.Add("PlayerTraceAttack", vars["hookname"], function(ply, ...)
 			table.insert(ins, {
 				["pos"] = pos,
 				["ang"] = ang,
-				["min"] = min,
-				["max"] = max,
+				["mins"] = mins,
+				["maxs"] = maxs,
 			})
 		end
 	end
