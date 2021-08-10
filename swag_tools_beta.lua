@@ -1321,9 +1321,9 @@ if ismeth and mcall then
 					cam.Start3D()
 						if vars["beamtracers"] then
 							render.SetMaterial(beammat)
-							render.DrawBeam(v.s, v.e, 4, 1, 1, Color(255, 255, 255, 255))
+							render.DrawBeam(v.src, v.endpos, 8, 1, 1, Color(255, 255, 255, 255))
 						else
-							render.DrawLine(v.s, v.e, v.c, true)
+							render.DrawLine(v.src, v.endpos, v.col, true)
 						end
 					cam.End3D()
 				end
@@ -1876,9 +1876,9 @@ hook.Add("PreDrawEffects", vars["hookname"], function()
 		
 				if vars["beamtracers"] then
 					render.SetMaterial(beammat)
-					render.DrawBeam(v.s, v.e, 4, 1, 1, Color(255, 255, 255, 255))
+					render.DrawBeam(v.src, v.endpos, 8, 1, 1, Color(255, 255, 255, 255))
 				else
-					render.DrawLine(v.s, v.e, v.c, true)
+					render.DrawLine(v.src, v.endpos, v.col, true)
 				end
 			end
 		end
@@ -2017,81 +2017,100 @@ hook.Add("entity_killed", vars["hookname"], function(data)
 	end)
 end)
 
+hook.Add("EntityFireBullets", vars["hookname"], function(ply, data)
+	if not meta_en.IsValid(ply) or not data then
+		return
+	end
+	
+	if ply ~= LocalPlayer() then
+		print("wtf how")
+		return
+	end
+	
+	local len = vars["tracers_local"]
+	
+	if not len or isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
+		return
+	end
+
+	if table.Count(bullets) > vars["maxtracers"] then
+		table.remove(bullets, 1)
+	end
+	
+	local startpos = data.Src
+	local col = Color(100, 255, 100, 255)
+	
+	if meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
+		for i = 0, meta_en.GetBoneCount(ply) - 1 do
+			if string.find(string.lower(meta_en.GetBoneName(ply, i)), "head") then
+				startpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ply, i)) + (data.Dir * 2)
+	
+				break
+			end
+		end
+	end
+	
+	local tr = util.TraceLine({
+		start = startpos,
+		endpos = startpos + (data.Dir * 32767),
+		filter = player.GetAll(),
+		ignoreworld = false,
+		mask = MASK_SHOT,
+	})
+	
+	table.insert(bullets, {
+		["src"] = startpos,
+		["endpos"] = tr.HitPos,
+		["col"] = col,
+	})
+	
+	local ttr = bullets[table.Count(bullets)]
+
+	timer.Simple(math.Round(vars["tracerlife"]), function()
+		table.RemoveByValue(bullets, ttr)
+	end)
+end)
+
 hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 	if not (event == PLAYERANIMEVENT_ATTACK_PRIMARY and data == PLAYERANIMEVENT_ATTACK_PRIMARY) then
 		return
 	end
 
 	local en = vars["tracers_other"]
-	local len = vars["tracers_local"]
+	
 
-	if (not en and not len) or not meta_en.IsValid(ply) or not meta_pl.Alive(ply) or isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
+	if not en or not meta_en.IsValid(ply) or ply == LocalPlayer() or isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
 		return
-	end
-
-	local isloc = ply == LocalPlayer()
-
-	if isloc then
-		if not len then
-			return
-		end
-	else
-		if not en then
-			return
-		end
 	end
 
 	if table.Count(bullets) > vars["maxtracers"] then
 		table.remove(bullets, 1)
 	end
 
-	local usebones = true
 	local startpos = meta_pl.GetShootPos(ply)
 	local dir = meta_an.Forward(meta_en.EyeAngles(ply))
 	local col = Color(255, 100, 100, 255)
 
-	if isloc then
-		col = Color(100, 255, 100, 255)
-
-		if not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
-			usebones = false
-		end
-
-		if ismeth and mutil then
-			local at = mutil.GetAimbotTarget()
-		
-			if at ~= 0 then
-				local ent = ents.GetByIndex(at)
-				
-				if IsValid(ent) and meta_pl.Alive(ent) then
-					dir = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - startpos
-				end
-			end
-		end
-	end
-
-	if usebones then
-		for i = 0, meta_en.GetBoneCount(ply) - 1 do
-			if string.find(string.lower(meta_en.GetBoneName(ply, i)), "head") then
-				startpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ply, i)) + (dir * 2)
+	for i = 0, meta_en.GetBoneCount(ply) - 1 do
+		if string.find(string.lower(meta_en.GetBoneName(ply, i)), "head") then
+			startpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ply, i)) + (dir * 2)
 	
-				break
-			end
+			break
 		end
 	end
 
 	local tr = util.TraceLine({
 		start = startpos,
 		endpos = startpos + (dir * 32767),
-		filter = ply,
+		filter = player.GetAll(),
 		ignoreworld = false,
 		mask = MASK_SHOT,
 	})
 
 	table.insert(bullets, {
-		["s"] = startpos,
-		["e"] = tr.HitPos,
-		["c"] = col,
+		["src"] = startpos,
+		["endpos"] = tr.HitPos,
+		["col"] = col,
 	})
 
 	local ttr = bullets[table.Count(bullets)]
