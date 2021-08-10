@@ -1440,7 +1440,17 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 
 	if vars["thirdpersonfix"] then
 		if meta_pl.ShouldDrawLocalPlayer(ply) then
-			pos = pos + (meta_an.Forward(ang) * -150)
+			local tr = util.TraceLine({
+				start = pos,
+				endpos = pos - (meta_an.Forward(ang) * 150),
+				mask = MASK_SHOT,
+				filter = LocalPlayer(),
+				ignoreworld = false,
+				mins = Vector(-8, -8, -8),
+				maxs = Vector(8, 8, 8)
+			})
+		
+			pos = tr.HitPos + tr.HitNormal
 		end
 	end
 
