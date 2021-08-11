@@ -498,13 +498,31 @@ local function vEnt(ent)
 	return meta_en.IsValid(ent)
 end
 
-local function getClosest()
+local function getClosest(doFov)
+	local fov, retardednumber, rad, hw, hh = 0, 2.6, 0, ScrW() / 2, ScrH() / 2
+
+	if doFov then
+		fov = mvar.GetVarInt("Aimbot.Target.FoV")
+
+		rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
+	end
+
 	local d = math.huge
 	local cur = nil
 
 	for _, v in ipairs(player.GetAll()) do
 		if v == LocalPlayer() or not vEnt(v) or meta_en.IsDormant(v) then
 			continue
+		end
+		
+		local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
+
+		if doFov and fov > 0 and fov < 180 then
+			local mdist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
+			
+			if mdist > math.ceil(rad) then
+				continue
+			end
 		end
 
 		local dist = meta_vc.Distance(meta_en.GetPos(v), meta_en.GetPos(LocalPlayer()))
@@ -1345,13 +1363,18 @@ if ismeth and mcall then
 			
 			if mvar then
 				if vars["snaplines"] then
+					local fov = mvar.GetVarInt("Aimbot.Target.FoV")
+					
+					local retardednumber = 2.6
+					local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
+					
 					local method = mvar.GetVarInt("Aimbot.Target.Priority")
 					
 					local hw, hh = ScrW() / 2, ScrH() / 2
 					local snaptarg = nil
 					
 					if method == 0 then
-						snaptarg = getClosest()
+						snaptarg = getClosest(true)
 					elseif method ~= 3 then
 						local bhp
 						local beste
@@ -1365,6 +1388,15 @@ if ismeth and mcall then
 						for _, v in ipairs(player.GetAll()) do
 							if v == LocalPlayer() or not vEnt(v) then
 								continue
+							end
+							
+							if fov > 0 and fov < 180 then
+								local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
+								local dist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
+								
+								if dist > math.ceil(rad) and fov > 0 and fov < 180 then
+									continue
+								end
 							end
 							
 							local hp = meta_en.Health(v)
@@ -1388,16 +1420,20 @@ if ismeth and mcall then
 					else
 						local closest
 						local bpos = math.huge
-					
+						
 						for _, v in ipairs(player.GetAll()) do
 							if v == LocalPlayer() or not vEnt(v) then
 								continue
 							end
 							
 							local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
-							local dist = math.Dist(obbpos.x, obbpos.y, hw, hh)
+							local dist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
 							
-							if math.abs(dist) < bpos then
+							if dist > math.ceil(rad) and fov > 0 and fov < 180 then
+								continue
+							end
+							
+							if dist < bpos then
 								bpos = dist
 								closest = v
 							end
@@ -1434,9 +1470,9 @@ if ismeth and mcall then
 				end
 				
 				if vars["catpng"] and not meta_im.IsError(catpng) then
-					local fov = mvar.GetVarInt("Aimbot.Target.FoV") or nil
+					local fov = mvar.GetVarInt("Aimbot.Target.FoV")
 				
-					if fov and fov > 0 and fov <= 60 then
+					if fov > 0 and fov <= 60 then
 						local retardednumber = 2.6
 						local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
 						local size = rad * 1.955
@@ -1552,7 +1588,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 				meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
 			end
 		else
-			vars["followtarg"] = getClosest()
+			vars["followtarg"] = getClosest(false)
 		end
 	else
 		vars["followtarg"] = nil
