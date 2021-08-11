@@ -1448,24 +1448,8 @@ if ismeth and mcall then
 						local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(snaptarg, meta_en.OBBCenter(snaptarg)))
 						local color = strColor(vars["snaplines_color"])
 					
-						local om = 1
-						
-						if obbpos.y > hh then
-							if obbpos.x > hw then
-								om = -1
-							end
-						else
-							if obbpos.x < hw then
-								om = -1
-							end
-						end
-						
 						surface.SetDrawColor(color)
 						surface.DrawLine(hw, hh, obbpos.x, obbpos.y)
-						
-						surface.SetDrawColor(0, 0, 0, color.a)
-						surface.DrawLine(hw + (1 * om), hh + (1 * om), obbpos.x + (1 * om), obbpos.y + (1 * om))
-						surface.DrawLine(hw - (1 * om), hh - (1 * om), obbpos.x - (1 * om), obbpos.y - (1 * om))
 					end
 				end
 				
