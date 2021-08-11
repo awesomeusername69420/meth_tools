@@ -1473,6 +1473,7 @@ hook.Add("HUDPaint", vars["hookname"], function()
 		hook.Remove("HUDPaintBackground", "ulx_blind")
 		hook.Remove("RenderScreenspaceEffects", "CSGOSmokeBlind")
 		hook.Remove("RenderScreenspaceEffects", "TFA_CSGO_FLASHBANG")
+		hook.Remove("RenderScreenspaceEffects", "CW20_RenderScreenspaceEffects")
 	end
 end)
 
@@ -1534,6 +1535,10 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			local yaw = math.rad(ang.y - lang.y)
 
 			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and dis > 15 then
+				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
+			end
+			
+			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and meta_pl.IsSprinting(tply) then
 				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 			end
 	
@@ -1964,7 +1969,7 @@ hook.Add("entity_killed", vars["hookname"], function(data)
 	local at = ents.GetByIndex(data.entindex_attacker)
 	local tg = ents.GetByIndex(data.entindex_killed)
 	
-	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) or meta_en.GetClass(tg) ~= "player" then
+	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) or tg == LocalPlayer() or meta_en.GetClass(tg) ~= "player" then
 		return
 	end
 	
