@@ -1646,10 +1646,11 @@ hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, po
 	if at ~= 0 then
 		local ent = ents.GetByIndex(at)
 		
-		if IsValid(ent) and meta_pl.Alive(ent) then
-			local npos = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - meta_en.EyePos(LocalPlayer())
+		if meta_en.IsValid(ent) and meta_pl.Alive(ent) then
+			local npos = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - meta_en.LocalToWorld(LocalPlayer(), meta_en.OBBCenter(LocalPlayer()))
+			local nang = meta_vc.Angle(npos)
 			
-			return pos, npos:Angle()
+			return pos, nang
 		end
 	end
 end)
@@ -1659,9 +1660,9 @@ hook.Add("Think", vars["hookname"], function()
 		local at = mutil.GetAimbotTarget()
 
 		if at ~= 0 then
-			local e = ents.GetByIndex(at)
+			local ent = ents.GetByIndex(at)
 			
-			if IsValid(e) and meta_pl.Alive(e) then
+			if meta_en.IsValid(ent) and meta_pl.Alive(ent) then
 				if mvar.GetVarInt("Aimbot.Options.Auto Fire") == 0 and not vars["delayaf_dp"] then
 					vars["delayaf_dp"] = true
 				
