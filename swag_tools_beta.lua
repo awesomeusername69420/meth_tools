@@ -175,6 +175,7 @@ local vars = {
 	["devtexture"] = false,
 	["devtexture_o"] = false,
 	["fog"] = true,
+	["fov_force"] = false,
 	["fullbright"] = false,
 	["hitboxonhit"] = false,
 	["hitbox_color"] = "255 255 255 255",
@@ -266,6 +267,7 @@ local concommands = {
 		["st_render_devtexture_orange"] = "devtexture_o",
 		["st_render_fixthirdperson"] = "thirdpersonfix",
 		["st_render_fog"] = "fog",
+		["st_render_fov_force"] = "fov_force",
 		["st_render_fullbright"] = "fullbright",
 		["st_render_nightmode"] = "nightmode",
 		["st_render_rgb"] = "rgb",
@@ -1589,7 +1591,16 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	local v = meta_pl.GetVehicle(ply)
 	local w = meta_pl.GetActiveWeapon(ply)
 
-	local nfov = math.Clamp(fov + (vars["cfov"] - meta_cv.GetInt(GetConVar("fov_desired"))), 2, 179)
+	local nfov
+	local force = vars["fov_force"]
+	
+	if force then
+		nfov = vars["cfov"]
+	else
+		nfov = fov + (vars["cfov"] - meta_cv.GetInt(GetConVar("fov_desired")))
+	end
+	
+	nfov = math.Clamp(nfov, 2, 179)
 	
 	vars["afov"] = nfov
 
@@ -1622,10 +1633,10 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	end
 
 	if meta_en.IsValid(w) then
-		local wcv = w.CalcView
+		local wCV = w.CalcView
 
-		if wcv then
-			nview.origin, nview.angles, nview.fov = wcv(w, ply, pos * 1, ang * 1, fov)
+		if wCV then
+			nview.origin, nview.angles, nview.fov = wCV(w, ply, pos * 1, ang * 1, nfov)
 			
 			if nview.fov ~= nfov then
 				vars["afov"] = nview.fov
