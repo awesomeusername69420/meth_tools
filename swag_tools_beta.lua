@@ -82,15 +82,15 @@ local util = tCopy(util)
 local Vector = Vector
 local vgui = tCopy(vgui)
 
-local meta_an = debug.getregistry()["Angle"]
-local meta_cd = debug.getregistry()["CUserCmd"]
-local meta_cv = debug.getregistry()["ConVar"]
-local meta_en = debug.getregistry()["Entity"]
-local meta_im = debug.getregistry()["IMaterial"]
-local meta_pl = debug.getregistry()["Player"]
-local meta_vc = debug.getregistry()["Vector"]
-local meta_vm = debug.getregistry()["VMatrix"]
-local meta_wn = debug.getregistry()["Weapon"]
+local meta_an = tCopy(debug.getregistry()["Angle"])
+local meta_cd = tCopy(debug.getregistry()["CUserCmd"])
+local meta_cv = tCopy(debug.getregistry()["ConVar"])
+local meta_en = tCopy(debug.getregistry()["Entity"])
+local meta_im = tCopy(debug.getregistry()["IMaterial"])
+local meta_pl = tCopy(debug.getregistry()["Player"])
+local meta_vc = tCopy(debug.getregistry()["Vector"])
+local meta_vm = tCopy(debug.getregistry()["VMatrix"])
+local meta_wn = tCopy(debug.getregistry()["Weapon"])
 
 local IN_BACK = 16
 local IN_FORWARD = 8
