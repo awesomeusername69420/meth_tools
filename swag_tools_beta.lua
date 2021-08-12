@@ -1583,6 +1583,12 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 	end
 end)
 
+hook.Add("AdjustMouseSensitivity", vars["hookname"], function()
+	if vars["fov_force"] then
+		return 0
+	end
+end)
+
 hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	if not meta_en.IsValid(ply) then
 		return
@@ -1666,7 +1672,7 @@ hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, po
 	end
 end)
 
-hook.Add("Think", vars["hookname"], function()
+hook.Add("Tick", vars["hookname"], function()
 	if ismeth and vars["delayaf"] and mvar then
 		local at = mutil.GetAimbotTarget()
 
