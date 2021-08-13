@@ -174,6 +174,7 @@ local vars = {
 	["catpng"] = false,
 	["catpng_color"] = "255 255 255 100",
 	["cfov"] = meta_cv.GetInt(GetConVar("fov_desired")),
+	["cwscopes"] = true,
 	["devtexture"] = false,
 	["devtexture_o"] = false,
 	["fog"] = true,
@@ -264,6 +265,7 @@ local concommands = {
 		-- Render
 		["st_render_antiblind"] = "antiblind",
 		["st_render_catpng"] = "catpng",
+		["st_render_cw_scopes"] = "cwscopes",
 		["st_render_damageboxes"] = "hitboxonhit",
 		["st_render_devtexture"] = "devtexture",
 		["st_render_devtexture_orange"] = "devtexture_o",
@@ -1694,6 +1696,14 @@ hook.Add("Tick", vars["hookname"], function()
 		else
 			mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
 			vars["delayaf_dp"] = false
+		end
+	end
+
+	local wep = meta_pl.GetActiveWeapon(LocalPlayer())
+	
+	if wep.canUseComplexTelescopics then
+		wep.canUseComplexTelescopics = function()
+			return vars["cwscopes"]
 		end
 	end
 
