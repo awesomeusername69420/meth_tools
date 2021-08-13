@@ -1307,13 +1307,13 @@ if ismeth and mcall then
 				local ovrcolor = strColor(vars["hitbox_color_ovr"])
 
 				for _, g in ipairs(hits) do
-					if not g or vars["renderpanic"] then
+					if not g or shouldPanic() then
 						continue
 					end
 					
 					if type(g) == "table" then
 						for _, v in ipairs(g) do
-							if not v or vars["renderpanic"] then
+							if not v or shouldPanic() then
 								continue
 							end
 			
@@ -1331,7 +1331,7 @@ if ismeth and mcall then
 
 			if vars["tracers_other"] or vars["tracers_local"] then
 				for _, v in ipairs(bullets) do
-					if not v or vars["renderpanic"] then
+					if not v or shouldPanic() then
 						continue
 					end
 			
