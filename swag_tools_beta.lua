@@ -83,11 +83,13 @@ local Vector = Vector
 local vgui = tCopy(vgui)
 
 local meta_an = tCopy(debug.getregistry()["Angle"])
-local meta_cd = tCopy(debug.getregistry()["CUserCmd"])
+local meta_cd_g = debug.getregistry()["CUserCmd"]
+local meta_cd = tCopy(meta_cd_g)
 local meta_cv = tCopy(debug.getregistry()["ConVar"])
 local meta_en = tCopy(debug.getregistry()["Entity"])
 local meta_im = tCopy(debug.getregistry()["IMaterial"])
-local meta_pl = tCopy(debug.getregistry()["Player"])
+local meta_pl_g = debug.getregistry()["Player"]
+local meta_pl = tCopy(meta_pl_g)
 local meta_vc = tCopy(debug.getregistry()["Vector"])
 local meta_vm = tCopy(debug.getregistry()["VMatrix"])
 local meta_wn = tCopy(debug.getregistry()["Weapon"])
@@ -852,10 +854,6 @@ end
 ]]
 
 local safefuncs = {
-	cb = meta_cd.ClearButtons,
-	cm = meta_cd.ClearMovement,
-	sva = meta_cd.SetViewAngles,
-
 	cremove = concommand.Remove,
 	ctable = concommand.GetTable,
 	cvs_acb = cvars.AddChangeCallback,
@@ -874,14 +872,13 @@ local safefuncs = {
 	htable = hook.GetTable,
 	isccb = IsConCommandBlocked,
 	msgc = MsgC,
-	pcon = meta_pl.ConCommand,
 	rcon = RunConsoleCommand,
 	rtts = render.DrawTextureToScreen,
 	tempty = table.Empty,
 	texists = timer.Exists,
 }
 
-meta_cd.ClearButtons = function(...)
+meta_cd_g.ClearButtons = function(...)
 	if not ... then
 		return
 	end
@@ -890,10 +887,10 @@ meta_cd.ClearButtons = function(...)
 		return
 	end
 
-	return safefuncs.cb(...)
+	return meta_cd.ClearButtons(...)
 end
 
-meta_cd.ClearMovement = function(...)
+meta_cd_g.ClearMovement = function(...)
 	if not ... then
 		return
 	end
@@ -902,10 +899,10 @@ meta_cd.ClearMovement = function(...)
 		return
 	end
 
-	return safefuncs.cm(...)
+	return meta_cd.ClearMovement(...)
 end
 
-meta_cd.SetViewAngles = function(...)
+meta_cd_g.SetViewAngles = function(...)
 	if not ... then
 		return
 	end
@@ -914,7 +911,7 @@ meta_cd.SetViewAngles = function(...)
 		return
 	end
 
-	return safefuncs.sva(...)
+	return meta_cd.SetViewAngles(...)
 end
 
 _G.render.DrawTextureToScreen = function(...)
@@ -1259,7 +1256,7 @@ _G.RunConsoleCommand = function(cmd, ...)
 	return safefuncs.rcon(cmd, ...)
 end
 
-meta_pl.ConCommand = function(cmd)
+meta_pl_g.ConCommand = function(cmd)
 	if not cmd or type(cmd) ~= "string" then
 		return
 	end
@@ -1282,7 +1279,7 @@ meta_pl.ConCommand = function(cmd)
 		end
 	end
 
-	return safefuncs.pcon(cmd)
+	return meta_pl.ConCommand(cmd)
 end
 
 --[[
