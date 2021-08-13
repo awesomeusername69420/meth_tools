@@ -1645,10 +1645,10 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 			
 			if not force then
 				nview.fov = wFOV
-			end
 			
-			if wFOV ~= nfov then
-				vars["afov"] = wFOV
+				if wFOV ~= nfov then
+					vars["afov"] = wFOV
+				end
 			end
 		end
 	end
