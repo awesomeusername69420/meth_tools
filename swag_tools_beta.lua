@@ -1639,10 +1639,16 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 		local wCV = w.CalcView
 
 		if wCV then
-			nview.origin, nview.angles, nview.fov = wCV(w, ply, pos * 1, ang * 1, nfov)
+			local wFOV
+		
+			nview.origin, nview.angles, wFOV = wCV(w, ply, pos * 1, ang * 1, nfov)
 			
-			if nview.fov ~= nfov then
-				vars["afov"] = nview.fov
+			if not force then
+				nview.fov = wFOV
+			end
+			
+			if wFOV ~= nfov then
+				vars["afov"] = wFOV
 			end
 		end
 	end
