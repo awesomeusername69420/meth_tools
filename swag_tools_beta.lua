@@ -67,6 +67,7 @@ local LocalPlayer = LocalPlayer
 local Material = Material
 local math = tCopy(math)
 local MsgC = MsgC
+local pcall = pcall
 local player = tCopy(player)
 local render = tCopy(render)
 local RunConsoleCommand = RunConsoleCommand
@@ -644,7 +645,7 @@ local function drawTraitorDetector()
 			local ply = v[1]
 			local has = table.HasValue(vars["tcache"], ply)
 			
-			if not IsValid(ply) or not meta_en.IsValid(ply) then
+			if not meta_en.IsValid(ply) then
 				continue
 			end
 
@@ -777,10 +778,14 @@ local function drawSpectators()
 			continue
 		end
 		
-		local starg = meta_pl.GetObserverTarget(v) or nil
+		local starg = nil
+		
+		pcall(function()
+			starg = meta_pl.GetObserverTarget(v)
+		end)
 		
 		if vars["specdetector_all"] then
-			if starg and meta_en.IsValid(starg) and starg == LocalPlayer() then
+			if meta_en.IsValid(starg) and starg == LocalPlayer() then
 				surface.SetDrawColor(200, 0, 0, 150)
 			else
 				surface.SetDrawColor(24, 24, 24, 150)
@@ -799,7 +804,7 @@ local function drawSpectators()
 		
 		local sname = "UNKNOWN"
 		
-		if starg and meta_en.IsValid(starg) then
+		if meta_en.IsValid(starg) then
 			if starg == LocalPlayer() then
 				sname = shrtxt("LocalPlayer", w - dw)
 			else
@@ -812,7 +817,11 @@ local function drawSpectators()
 		surface.SetTextPos(x + (w - (dw / 2)) - (tw / 2), offsety + 3)
 		surface.DrawText(sname)
 		
-		local mode = meta_pl.GetObserverMode(v) or -1
+		local mode = -1
+		
+		pcall(function()
+			mode = meta_pl.GetObserverMode(v)
+		end)
 	
 		if mode == 1 then
 			mode = "Deathcam"
@@ -2303,7 +2312,7 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 					
 					if not insd then
 						for _, w in ipairs(meta_pl.GetWeapons(v)) do
-							if not w or not meta_en.IsValid(w) or insd then
+							if not meta_en.IsValid(w) or insd then
 								continue
 							end
 							
@@ -2328,11 +2337,15 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 			
 			if sd then
 				skip = false
+				
+				if not meta_en.IsValid(v) then
+					skip = true
+				end
 			
 				local mode = meta_pl.GetObserverMode(v)
 				local targ = meta_pl.GetObserverTarget(v)
-			
-				if not meta_en.IsValid(v) or v == LocalPlayer() or mode == 0 then
+				
+				if v == LocalPlayer() or mode == 0 then
 					skip = true
 				end
 				
@@ -2358,7 +2371,7 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 			if ps then
 				skip = false
 			
-				if v == LocalPlayer() or not meta_en.IsValid(v) then
+				if not meta_en.IsValid(v) or v == LocalPlayer() then
 					skip = true
 				end
 				
