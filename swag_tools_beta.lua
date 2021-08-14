@@ -67,7 +67,6 @@ local LocalPlayer = LocalPlayer
 local Material = Material
 local math = tCopy(math)
 local MsgC = MsgC
-local pcall = pcall
 local player = tCopy(player)
 local render = tCopy(render)
 local RunConsoleCommand = RunConsoleCommand
@@ -165,7 +164,6 @@ local bullets = {}
 local vars = {
 	-- Cunt
 	["hookname"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
-	["timer_fast"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
 	["timer_slow"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
 
 	-- Render
@@ -558,6 +556,10 @@ end
 local function shrtxt(text, maxw)
 	surface.SetFont("BudgetLabel")
 	
+	if not text then
+		text = ""
+	end
+	
 	local md = false
 	local tw, th = surface.GetTextSize(text)
 	
@@ -773,22 +775,33 @@ local function drawSpectators()
 		end
 		
 		local offsety = y + (ofs * 20)
-				
+		
 		if offsety > ScrH() then
 			continue
 		end
 		
-		local starg = nil
+		local starg = meta_pl.GetObserverTarget(v)
+		local sname = "UNKNOWN"
 		
-		pcall(function()
-			starg = meta_pl.GetObserverTarget(v)
-		end)
+		if meta_en.IsValid(starg) then
+			if string.lower(meta_en.GetClass(starg)) ~= "player" then
+				starg = nil
+			end
+		end
 		
-		if vars["specdetector_all"] then
-			if meta_en.IsValid(starg) and starg == LocalPlayer() then
+		local all = vars["specdetector_all"]
+		
+		if meta_en.IsValid(starg) then
+			if all and meta_en.IsValid(starg) and starg == LocalPlayer() then
 				surface.SetDrawColor(200, 0, 0, 150)
 			else
 				surface.SetDrawColor(24, 24, 24, 150)
+			end
+			
+			if starg == LocalPlayer() then
+				sname = shrtxt("LocalPlayer", w - dw)
+			else
+				sname = shrtxt(meta_pl.GetName(starg), w - dw)
 			end
 		else
 			surface.SetDrawColor(24, 24, 24, 150)
@@ -802,49 +815,34 @@ local function drawSpectators()
 		surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
 		surface.DrawText(n)
 		
-		local sname = "UNKNOWN"
-		
-		if meta_en.IsValid(starg) then
-			if starg == LocalPlayer() then
-				sname = shrtxt("LocalPlayer", w - dw)
-			else
-				sname = shrtxt(meta_pl.GetName(starg), w - dw)
-			end
-		end
-		
 		tw, th = surface.GetTextSize(sname)
 
 		surface.SetTextPos(x + (w - (dw / 2)) - (tw / 2), offsety + 3)
 		surface.DrawText(sname)
 		
-		local mode = -1
-		
-		pcall(function()
-			mode = meta_pl.GetObserverMode(v)
-		end)
+		local smode = meta_pl.GetObserverMode(v)
+		local tmode = "UNKNOWN"
 	
-		if mode == 1 then
-			mode = "Deathcam"
-		elseif mode == 2 then
-			mode = "Freezecam"
-		elseif mode == 3 then
-			mode = "Fixed"
-		elseif mode == 4 then
-			mode = "Firstperson"
-		elseif mode == 5 then
-			mode = "Thirdperson"
-		elseif mode == 6 then
-			mode = "Roaming"
-		else
-			mode = "UNKNOWN"
+		if smode == 1 then
+			tmode = "Deathcam"
+		elseif smode == 2 then
+			tmode = "Freezecam"
+		elseif smode == 3 then
+			tmode = "Fixed"
+		elseif smode == 4 then
+			tmode = "Firstperson"
+		elseif smode == 5 then
+			tmode = "Thirdperson"
+		elseif smode == 6 then
+			tmode = "Roaming"
 		end
 		
-		mode = shrtxt(mode, w - dw)
+		tmode = shrtxt(tmode, w - dw)
 		
-		tw, th = surface.GetTextSize(mode)
+		tw, th = surface.GetTextSize(tmode)
 		
 		surface.SetTextPos(x + fw - (tw / 2), offsety + 3)
-		surface.DrawText(mode)
+		surface.DrawText(tmode)
 		
 		surface.SetDrawColor(12, 12, 12, 255)
 		surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
@@ -1224,7 +1222,7 @@ _G.timer.Exists = function(n)
 		return false
 	end
 
-	if n == vars["timer_fast"] or n == vars["timer_slow"] then
+	if n == vars["timer_slow"] then
 		alert("timer.Exists", n)
 		
 		return false
@@ -1703,6 +1701,12 @@ hook.Add("Tick", vars["hookname"], function()
 		else
 			mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
 			vars["delayaf_dp"] = false
+		end
+	end
+	
+	if vars["gesture_loop"] then
+		if meta_pl.IsPlayingTaunt and not meta_pl.IsPlayingTaunt(LocalPlayer()) then
+			meta_pl.ConCommand(LocalPlayer(), "act " .. vars["gesture"])
 		end
 	end
 
@@ -2232,12 +2236,6 @@ for j, l in pairs(concommands) do
 	end
 end
 
-timer.Create(vars["timer_fast"], 0.1, 0, function()
-	if vars["gesture_loop"] then
-		safefuncs.rcon("act", vars["gesture"])
-	end
-end)
-
 timer.Create(vars["timer_slow"], 1, 0, function()
 	local td = vars["tdetector"]
 	local sd = vars["specdetector"]
@@ -2263,6 +2261,8 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 	end
 
 	if td or sd or ps then
+		local all = vars["specdetector_all"]
+	
 		for _, v in ipairs(player.GetAll()) do
 			local skip = false
 		
@@ -2342,17 +2342,23 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 					skip = true
 				end
 			
-				local mode = meta_pl.GetObserverMode(v)
 				local targ = meta_pl.GetObserverTarget(v)
+				local mode = meta_pl.GetObserverMode(v)
+				
+				if not mode then
+					mode = -1
+				end
 				
 				if v == LocalPlayer() or mode == 0 then
 					skip = true
 				end
-				
-				if not vars["specdetector_all"] then
-					if targ ~= LocalPlayer() then
+
+				if meta_en.IsValid(targ) then
+					if not all and targ ~= LocalPlayer() then
 						skip = true
 					end
+				elseif not all then
+					skip = true
 				end
 				
 				local has = table.HasValue(vars["spectators"], v)
