@@ -1496,9 +1496,11 @@ hook.Add("HUDPaint", vars["hookname"], function()
 	
 	if vars["antiblind"] then
 		hook.Remove("HUDPaint", "ulx_blind")
+		hook.Remove("HUDPaint", "Blind")
 		hook.Remove("HUDPaintBackground", "ulx_blind")
 		hook.Remove("RenderScreenspaceEffects", "CSGOSmokeBlind")
 		hook.Remove("RenderScreenspaceEffects", "TFA_CSGO_FLASHBANG")
+		hook.Remove("RenderScreenspaceEffects", "TFA_CSO2_FLASHBANG")
 		hook.Remove("RenderScreenspaceEffects", "CW20_RenderScreenspaceEffects")
 	end
 end)
