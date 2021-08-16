@@ -18,7 +18,7 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | --- | --- | --- | --- |
  | st_render_damageboxes_life_set | Sets life for damageboxes (in seconds) | `integer` | `3` |
  | st_render_fov_set | Sets FOV | `integer` | FOV at load time |
- | st_render_nightmode_intensity_set | Set how dark nightmode is | `integer` | `0.05` |
+ | st_render_nightmode_intensity_set | Set how dark nightmode is | `float` | `0.05` |
  | st_render_tracers_life_set | Sets bullet tracer lifespan (in seconds) | `integer` | `3` |
  | st_render_tracers_max_set | Sets maximum amount of bullet tracers allowed | `integer` | `1000` |
  | st_render_catpng_color_set | Sets color for catpng fov | `string` | `255 255 255 100` |
@@ -47,7 +47,7 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  
  Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
- | st_tools_delay_autofire_amount_set | Sets the delay until autofire enables | `integer` `0.05` |
+ | st_tools_delay_autofire_amount_set | Sets the delay until autofire enables (in seconds) | `float` | `0.05`
  | st_tools_spectatorlist_x_set | Sets X position for the Spectator list | `integer` | Offset 10 from TDetector list |
  | st_tools_spectatorlist_y_set | Sets Y position for the Spectator list | `integer` | `10` |
  | st_tools_tdetector_list_x_set | Sets X position for the TDetector list | `integer` | `10` |
