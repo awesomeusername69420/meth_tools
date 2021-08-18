@@ -68,6 +68,7 @@ local LocalPlayer = LocalPlayer
 local Material = Material
 local math = tCopy(math)
 local MsgC = MsgC
+local Player = Player
 local player = tCopy(player)
 local render = tCopy(render)
 local RunConsoleCommand = RunConsoleCommand
@@ -2171,6 +2172,10 @@ hook.Add("player_hurt", vars["hookname"], function(data)
 	local tg = Player(data.userid)
 	
 	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) or not meta_pl.Alive(tg) then
+		return
+	end
+	
+	if data.health and data.health < 1 then
 		return
 	end
 	
