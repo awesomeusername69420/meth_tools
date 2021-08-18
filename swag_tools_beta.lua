@@ -2406,8 +2406,8 @@ for i = 1, #menu_tabs do
 	local panel = vgui.Create("DScrollPanel", sheet)
 	
 	panel.Paint = function(self)
-		surface.SetDrawColor(234, 234, 234, 255)
-		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		draw.NoTexture()
+		draw.RoundedBox(4, 0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self), Color(234, 234, 234, 255))
 	end
 	
 	local cpanel
@@ -2418,8 +2418,8 @@ for i = 1, #menu_tabs do
 		cpanel = vgui.Create("DScrollPanel", sheet)
 		
 		cpanel.Paint = function(self)
-			surface.SetDrawColor(234, 234, 234, 255)
-			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+			draw.NoTexture()
+			draw.RoundedBox(4, 0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self), Color(234, 234, 234, 255))
 		end
 		
 		local div = vgui.Create("DHorizontalDivider", bpanel)
