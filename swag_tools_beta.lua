@@ -2438,7 +2438,7 @@ for i = 1, #menu_tabs do
 			clist:SetSpacing(5)
 			clist:EnableHorizontal(false)
 			clist:EnableVerticalScrollbar(true)
-			meta_pn.SetSize(clist, 300, 1000)
+			meta_pn.SetSize(clist, 300, 450)
 			meta_pn.SetPos(clist, 25, 75)
 		
 			for _, su in pairs(v) do
