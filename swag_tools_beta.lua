@@ -59,6 +59,7 @@ local gui = tCopy(gui)
 local hook = tCopy(hook)
 local HSVToColor = HSVToColor
 local http = tCopy(http)
+local input = tCopy(input)
 local ipairs = ipairs
 local IsConCommandBlocked = IsConCommandBlocked
 local IsValid = IsValid
@@ -82,6 +83,8 @@ local util = tCopy(util)
 local Vector = Vector
 local vgui = tCopy(vgui)
 
+-- Metatables
+
 local meta_an = tCopy(debug.getregistry()["Angle"])
 local meta_cd_g = debug.getregistry()["CUserCmd"]
 local meta_cd = tCopy(meta_cd_g)
@@ -90,10 +93,14 @@ local meta_en = tCopy(debug.getregistry()["Entity"])
 local meta_im = tCopy(debug.getregistry()["IMaterial"])
 local meta_pl_g = debug.getregistry()["Player"]
 local meta_pl = tCopy(meta_pl_g)
+local meta_pn = tCopy(debug.getregistry()["Panel"])
 local meta_vc = tCopy(debug.getregistry()["Vector"])
 local meta_vm = tCopy(debug.getregistry()["VMatrix"])
 local meta_wn = tCopy(debug.getregistry()["Weapon"])
 
+-- Enums
+
+local FILL = 1
 local IN_BACK = 16
 local IN_FORWARD = 8
 local IN_MOVELEFT = 512
@@ -102,10 +109,32 @@ local IN_RELOAD = 8192
 local IN_SPEED = 131072
 local MASK_SHOT = 1174421507
 local MATERIAL_FOG_NONE = 0
+local MOUSE_LEFT = 107
 local MOVETYPE_LADDER = 9
 local MOVETYPE_NOCLIP = 8
 local MOVETYPE_OBSERVER = 10
 local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
+
+-- Menu
+
+local menu_w, menu_h = ScrW() * (500 / 1920), ScrH() * (600 / 1080)
+
+local main = vgui.Create("DFrame")
+
+meta_pn.SetSize(main, menu_w, menu_h)
+meta_pn.Center(main)
+main:SetDeleteOnClose(false) -- If there is a metatable for these, I couldn't find it
+main:SetTitle("Swag Tools")
+meta_pn.SetVisible(main, false)
+main:ShowCloseButton(true)
+
+local sheet = vgui.Create("DPropertySheet", main)
+
+meta_pn.Dock(sheet, FILL)
+meta_pn.SetVisible(sheet, false)
+sheet:SetFadeTime(0)
+
+-- The rest
 
 local beammat = Material("cable/redlaser")
 
@@ -162,9 +191,18 @@ local hits = {}
 local bullets = {}
 
 local vars = {
-	-- Cunt
+	-- Stuffs
 	["hookname"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
 	["timer_slow"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
+	["spec_dragging"] = false,
+	["spec_drag_x"] = 0,
+	["spec_drag_y"] = 0,
+	["td_dragging"] = false,
+	["td_drag_x"] = 0,
+	["td_drag_y"] = 0,
+	["menu_open"] = false,
+	["menu_mouse"] = false,
+	["menu_delay"] = false,
 
 	-- Render
 	["afov"] = 75,
@@ -194,6 +232,7 @@ local vars = {
 	["snaplines_color"] = "255 255 255 255",
 	["thirdpersonfix"] = false,
 	["tracerlife"] = 3,
+	["tracers"] = false,
 	["tracers_local"] = false,
 	["tracers_other"] = false,
 
@@ -273,6 +312,7 @@ local concommands = {
 		["st_render_nightmode"] = "nightmode",
 		["st_render_rgb"] = "rgb",
 		["st_render_snaplines"] = "snaplines",
+		["st_render_tracers"] = "tracers",
 		["st_render_tracers_beam"] = "beamtracers",
 		["st_render_tracers_local"] = "tracers_local",
 		["st_render_tracers_other"] = "tracers_other",
@@ -298,7 +338,75 @@ local concommands = {
 	}
 }
 
-local addedCommands = {}
+local addedCommands = {"st_menu"}
+
+local menu_tabs = {"Tools", "Render", "Miscellaneous"}
+
+local menu = {
+	["Tools"] = {
+		["icon"] = "icon16/wrench.png",
+		
+		{"cb", "antigag", 25, 25, "Anti Gag"},
+		{"cb", "delayaf", 25, 50, "Autofire Delay"},
+		
+		{"num", "delayaf_a", 50, 70, 300, 25, 0, 5, 2, "Delay Time"},
+		
+		{"cb", "detourcmd", 25, 100, "Detour Commands"},
+		{"cb", "followbot", 25, 125, "Follow Bot"},
+		{"cb", "gopen", 25, 150, "Allow gui.OpenURL()"},
+		{"cb", "specdetector", 25, 175, "Spectator List"},
+		{"cb", "specdetector_all", 50, 200, "Show All Spectators"},
+		{"cb", "tdetector", 25, 225, "Traitor Detector"},
+		{"cb", "tdetector_icons", 50, 250, "Draw Icons"},
+		{"cb", "tdetector_list", 50, 275, "Draw List"},
+		{"cb", "gesture_loop", 25, 300, "Gesture Loop"},
+		
+		{"str", "gesture", 50, 320, 100, 25, "Gesture"},
+		
+		{"cb", "psays", 25, 350, "ULX PSay Spammer"},
+		
+		{"str", "psays_message", 50, 370, 250, 25, "Spam Message"},
+	},
+	
+	["Render"] = {
+		["icon"] = "icon16/monitor.png",
+		
+		{"cb", "antiblind", 25, 25, "Anti Blind"},
+		{"cb", "tracers", 25, 50, "Bullet Tracers"},
+		{"cb", "beamtracers", 50, 75, "Draw Beams"},
+		{"cb", "tracers_local", 50, 100, "Local Player"},
+		{"cb", "tracers_other", 50, 125, "Other Players"},
+		{"cb", "catpng", 25, 150, "Cat PNG FOV"},
+		{"cb", "devtexture", 25, 175, "Devtextures"},
+		{"cb", "devtexture_o", 50, 200, "Orange"},
+		{"cb", "fog", 25, 225, "Draw Fog"},
+		{"cb", "fov_force", 25, 250, "Force FOV"},
+		{"cb", "fullbright", 25, 275, "Fullbright"},
+		{"cb", "nightmode", 25, 300, "Nightmode"},
+		{"cb", "hitboxonhit", 25, 325, "Show hitboxes on damage"},
+		{"cb", "reddeath", 25, 350, "Render red deathscreen"},
+		{"cb", "rgb", 25, 375, "Rainbow Player & Weapon"},
+		{"cb", "silentviz", 25, 400, "Vizualize Silent Aim"},
+		{"cb", "snaplines", 25, 425, "Snaplines"},
+		{"cb", "thirdpersonfix", 25, 450, "Fix Thirdperson"},
+		
+		["right"] = {
+			{"lbl", 50, 25, 1, "Colors"},
+		
+			{"clr", "catpng_color", "Cat PNG FOV"},
+			{"clr", "hitbox_color", "Damagebox Hit"},
+			{"clr", "hitbox_color_ovr", "Damagebox Kill"},
+			{"clr", "snaplines", "Snaplines"},
+		},
+	},
+	
+	["Miscellaneous"] = {
+		["icon"] = "icon16/bomb.png",
+		
+		{"cb", "alerts", 25, 25, "Alerts"},
+		{"cb", "alerts_sound", 50, 50, "Alert Sounds"},
+	},
+}
 
 -- nonozone
 
@@ -603,7 +711,29 @@ local function strColor(str)
 		ret[4] = 255
 	end
 	
-	return Color(ret[1] % 256, ret[2] % 256, ret[3] % 256, ret[4] % 256)
+	return Color(tonumber(ret[1]) % 256, tonumber(ret[2]) % 256, tonumber(ret[3]) % 256, tonumber(ret[4]) % 256)
+end
+
+local function mouseIn(a, b, c, d)
+	local mx, my = gui.MouseX(), gui.MouseY()
+	
+	if not mx or not my then
+		return false
+	end
+	
+	if not a or not b or not c or not d then
+		return false
+	end
+	
+	return mx >= a and my >= b and mx <= c and my <= d
+end
+
+local function isClickable(a, b, c, d)
+	if not a or not b or not c or not d then
+		return false
+	end
+
+	return input.IsMouseDown(MOUSE_LEFT) and mouseIn(a, b, c, d) and not meta_pn.IsDragging(main) and not vars["spec_dragging"] and not vars["td_dragging"]
 end
 
 local function drawTraitorDetector()
@@ -616,10 +746,32 @@ local function drawTraitorDetector()
 		surface.SetFont("BudgetLabel")
 	
 		local x, y, w, h = vars["tdetector_list_x"], vars["tdetector_list_y"], ScrW() * (375 / 1920), 20
+		
 		local ofs = 1
 		local dw = w - (w / 3)
 		
 		if vars["tdetector_list"] then
+			local mx, my = gui.MouseX(), gui.MouseY()
+		
+			if vars["menu"] and isClickable(x, y, x + w, y + h) then
+				vars["td_drag_x"] = mx - x
+				vars["td_drag_y"] = my - y
+				
+				vars["td_dragging"] = true
+			else
+				if not vars["menu"] or not input.IsMouseDown(MOUSE_LEFT) then
+					vars["td_dragging"] = false
+				end
+			end
+			
+			if vars["td_dragging"] then
+				x = math.Clamp(mx - vars["td_drag_x"], 0, ScrW() - w)
+				y = math.Clamp(my - vars["td_drag_y"], 0, ScrH() - h)
+				
+				vars["tdetector_list_x"] = x
+				vars["tdetector_list_y"] = y
+			end
+		
 			surface.SetDrawColor(55, 55, 55, 255)
 			surface.DrawRect(x, y, w, h)
 			
@@ -735,6 +887,27 @@ local function drawSpectators()
 	surface.SetFont("BudgetLabel")
 	
 	local x, y, w, h = vars["specdetector_x"], vars["specdetector_y"], ScrW() * (500 / 1920), 20
+	local mx, my = gui.MouseX(), gui.MouseY()
+	
+	if vars["menu"] and isClickable(x, y, x + w, y + h) then
+		vars["spec_drag_x"] = mx - x
+		vars["spec_drag_y"] = my - y
+		
+		vars["spec_dragging"] = true
+	else
+		if not vars["menu"] or not input.IsMouseDown(MOUSE_LEFT) then
+			vars["spec_dragging"] = false
+		end
+	end
+	
+	if vars["spec_dragging"] then
+		x = math.Clamp(mx - vars["spec_drag_x"], 0, ScrW() - w)
+		y = math.Clamp(my - vars["spec_drag_y"], 0, ScrH() - h)
+		
+		vars["specdetector_x"] = x
+		vars["specdetector_y"] = y
+	end
+	
 	local ofs = 1
 	
 	local fw = w - (w / 8)
@@ -854,6 +1027,26 @@ local function drawSpectators()
 	surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
 	surface.DrawLine(x + nw, y, x + nw, y + h + ((ofs - 1) * 20))
 	surface.DrawLine(x + dw, y, x + dw, y + h + ((ofs - 1) * 20))
+end
+
+local function toggleMenu()
+	local ms = not vars["menu"]
+	vars["menu"] = ms
+	
+	meta_pn.SetVisible(main, ms)
+	meta_pn.SetVisible(sheet, ms)
+	
+	if ms then
+		meta_pn.MakePopup(main)
+	end
+	
+	gui.EnableScreenClicker(ms)
+	
+	vars["menu_delay"] = true
+	
+	timer.Simple(0.3, function()
+		vars["menu_delay"] = false
+	end)
 end
 
 --[[
@@ -1685,24 +1878,36 @@ hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, po
 end)
 
 hook.Add("Tick", vars["hookname"], function()
-	if ismeth and vars["delayaf"] and mvar then
-		local at = mutil.GetAimbotTarget()
-
-		if at ~= 0 then
-			local ent = ents.GetByIndex(at)
-			
-			if meta_en.IsValid(ent) and meta_pl.Alive(ent) then
-				if mvar.GetVarInt("Aimbot.Options.Auto Fire") == 0 and not vars["delayaf_dp"] then
-					vars["delayaf_dp"] = true
-				
-					timer.Simple(vars["delayaf_a"], function()
-						mvar.SetVarInt("Aimbot.Options.Auto Fire", 1)
-					end)
+	if ismeth then
+		if mvar then
+			if vars["delayaf"] then
+				local at = mutil.GetAimbotTarget()
+	
+				if at ~= 0 then
+					local ent = ents.GetByIndex(at)
+					
+					if meta_en.IsValid(ent) and meta_pl.Alive(ent) then
+						if mvar.GetVarInt("Aimbot.Options.Auto Fire") == 0 and not vars["delayaf_dp"] then
+							vars["delayaf_dp"] = true
+						
+							timer.Simple(vars["delayaf_a"], function()
+								mvar.SetVarInt("Aimbot.Options.Auto Fire", 1)
+							end)
+						end
+					end
+				else
+					mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
+					vars["delayaf_dp"] = false
 				end
 			end
+		end
+		
+		if vars["menu"] and shouldPanic() then
+			meta_pn.SetVisible(main, false)
+			meta_pn.SetVisible(sheet, false)
 		else
-			mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
-			vars["delayaf_dp"] = false
+			meta_pn.SetVisible(main, false)
+			meta_pn.SetVisible(sheet, false)
 		end
 	end
 	
@@ -2079,7 +2284,7 @@ hook.Add("entity_killed", vars["hookname"], function(data)
 end)
 
 hook.Add("EntityFireBullets", vars["hookname"], function(ply, data)
-	if not meta_en.IsValid(ply) or not data then
+	if not meta_en.IsValid(ply) or not data or not vars["tracers"] then
 		return
 	end
 	
@@ -2133,12 +2338,11 @@ hook.Add("EntityFireBullets", vars["hookname"], function(ply, data)
 end)
 
 hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
-	if not (event == PLAYERANIMEVENT_ATTACK_PRIMARY and data == PLAYERANIMEVENT_ATTACK_PRIMARY) then
+	if not (event == PLAYERANIMEVENT_ATTACK_PRIMARY and data == PLAYERANIMEVENT_ATTACK_PRIMARY) or not vars["tracers"] then
 		return
 	end
 
 	local en = vars["tracers_other"]
-	
 
 	if not en or not meta_en.IsValid(ply) or ply == LocalPlayer() or isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
 		return
@@ -2185,12 +2389,145 @@ end)
 	The rest
 ]]
 
-for j, l in pairs(concommands) do
-	if not j or not l then
-		continue
-	end
+-- Setting up menu
 
-	if not type(l) == "table" then
+for i = 1, #menu_tabs do
+	local t = menu_tabs[i]
+	local tt = menu[t]
+	
+	local panel = vgui.Create("DPanel", sheet)
+	
+	local cpanel
+	
+	if t == "Render" then
+		local bpanel = vgui.Create("DPanel", sheet)
+		
+		cpanel = vgui.Create("DPanel", sheet)
+		
+		local div = vgui.Create("DHorizontalDivider", bpanel)
+		
+		meta_pn.Dock(div, FILL)
+		div:SetLeft(panel)
+		div:SetRight(cpanel)
+		div:SetDividerWidth(4)
+		div:SetLeftMin(10)
+		div:SetRightMin(10)
+		div:SetLeftWidth((menu_w / 2) + 10)
+		
+		bpanel.Paint = function() end
+		
+		sheet:AddSheet(t, bpanel, tt.icon)
+	else
+		sheet:AddSheet(t, panel, tt.icon)
+	end
+	
+	for k, v in pairs(tt) do
+		if k == "icon" then
+			continue
+		end
+		
+		if type(k) == "string" then
+			if not cpanel then
+				continue
+			end
+		
+			local clist = vgui.Create("DPanelList", cpanel)
+			clist:SetSpacing(5)
+			clist:EnableHorizontal(false)
+			clist:EnableVerticalScrollbar(true)
+			meta_pn.SetSize(clist, 300, 1000)
+			meta_pn.SetPos(clist, 25, 75)
+		
+			for _, su in pairs(v) do
+				if su[1] == "lbl" then
+					local lb = vgui.Create("DLabel", cpanel)
+					
+					meta_pn.SetSize(lb, 999, 25)
+					
+					if su[4] == 1 then
+						lb:SetFont("DermaLarge")
+					end
+
+					lb:SetTextColor(Color(0, 0, 0, 255))
+					lb:SetText(su[table.Count(su)])
+					meta_pn.SetPos(lb, su[2], su[3])
+				elseif su[1] == "clr" then
+					local cat = vgui.Create("DCollapsibleCategory", cpanel)
+					cat:SetLabel(su[table.Count(su)])
+					cat:SetExpanded(false)
+					meta_pn.SetSize(cat, 300, 200)
+					
+					local pck = vgui.Create("DColorMixer")
+					
+					meta_pn.SetSize(pck, 250, 150)
+					pck:SetPalette(false)
+					pck:SetAlphaBar(true)
+					pck:SetWangs(true)
+					pck:SetColor(strColor(vars[su[2]]))
+					
+					pck.ValueChanged = function(self, new)
+						local r, g, b, a = tostring(new.r), tostring(new.g), tostring(new.b), tostring(new.a)
+					
+						vars[su[2]] = r .. " " .. g .. " " .. b .. " " .. a
+					end
+					
+					cat:SetContents(pck)
+					
+					clist:AddItem(cat)
+				end
+			end
+			
+			continue
+		end
+		
+		if v[1] == "cb" then
+			local cb = vgui.Create("DCheckBoxLabel", panel)
+			
+			meta_pn.SetPos(cb, v[3], v[4])
+			cb:SetTextColor(Color(0, 0, 0, 255))
+			cb:SetText(v[table.Count(v)])
+			cb:SetValue(vars[v[2]])
+			
+			cb.OnChange = function(self, new)
+				vars[v[2]] = new
+			end
+		elseif v[1] == "str" then
+			local tb = vgui.Create("DTextEntry", panel)
+			
+			meta_pn.SetSize(tb, v[5], v[6])
+			meta_pn.SetPos(tb, v[3], v[4])
+			tb:SetValue(vars[v[2]])
+			tb:SetPlaceholderText(v[table.Count(v)])
+			tb:SetUpdateOnType(true)
+			
+			tb.OnValueChange = function(self, new)
+				vars[v[2]] = new
+			end
+		elseif v[1] == "num" then
+			local ns = vgui.Create("DNumSlider", panel)
+			local df = vars[v[2]]
+			
+			meta_pn.SetSize(ns, v[5], v[6])
+			meta_pn.SetPos(ns, v[3], v[4])
+			ns:SetDecimals(v[9])
+			ns:SetMin(v[7])
+			ns:SetMax(v[8])
+			ns:SetValue(df)
+			ns:SetDefaultValue(df)
+			ns:SetDark(true)
+			ns:SetText(v[table.Count(v)])
+			
+			ns.OnValueChanged = function(self, new)
+				vars[v[2]] = new
+			end
+		end
+	end
+end
+
+-- ConCommands
+
+for j, l in pairs(concommands) do
+	if not j or not l or not type(l) == "table" then
 		continue
 	end
 
@@ -2237,6 +2574,20 @@ for j, l in pairs(concommands) do
 		table.insert(addedCommands, k)
 	end
 end
+
+concommand.Add("st_menu", function()
+	if vars["menu_delay"] then
+		return
+	end
+	
+	toggleMenu()
+end, nil, nil, 0)
+
+main.OnClose = function()
+	toggleMenu()
+end
+
+-- Timer
 
 timer.Create(vars["timer_slow"], 1, 0, function()
 	local td = vars["tdetector"]
@@ -2391,7 +2742,9 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 	end
 end)
 
-if mrend then
+-- Let them know it loaded
+
+if ismeth and mrend then
 	mrend.PushAlert("Successfully loaded Swag Tools Beta!")
 else
 	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
