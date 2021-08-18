@@ -2403,14 +2403,24 @@ for i = 1, #menu_tabs do
 	local t = menu_tabs[i]
 	local tt = menu[t]
 	
-	local panel = vgui.Create("DPanel", sheet)
+	local panel = vgui.Create("DScrollPanel", sheet)
+	
+	panel.Paint = function(self)
+		surface.SetDrawColor(234, 234, 234, 255)
+		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	end
 	
 	local cpanel
 	
 	if t == "Render" then
 		local bpanel = vgui.Create("DPanel", sheet)
 		
-		cpanel = vgui.Create("DPanel", sheet)
+		cpanel = vgui.Create("DScrollPanel", sheet)
+		
+		cpanel.Paint = function(self)
+			surface.SetDrawColor(234, 234, 234, 255)
+			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		end
 		
 		local div = vgui.Create("DHorizontalDivider", bpanel)
 		
@@ -2443,7 +2453,7 @@ for i = 1, #menu_tabs do
 			clist:SetSpacing(5)
 			clist:EnableHorizontal(false)
 			clist:EnableVerticalScrollbar(true)
-			meta_pn.SetSize(clist, 300, 450)
+			meta_pn.SetSize(clist, 300, meta_pn.GetTall(main) - 150)
 			meta_pn.SetPos(clist, 25, 75)
 		
 			for _, su in pairs(v) do
