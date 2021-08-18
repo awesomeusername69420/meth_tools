@@ -380,15 +380,18 @@ local menu = {
 		{"cb", "devtexture", 25, 175, "Devtextures"},
 		{"cb", "devtexture_o", 50, 200, "Orange"},
 		{"cb", "fog", 25, 225, "Draw Fog"},
-		{"cb", "fov_force", 25, 250, "Force FOV"},
-		{"cb", "fullbright", 25, 275, "Fullbright"},
-		{"cb", "nightmode", 25, 300, "Nightmode"},
-		{"cb", "hitboxonhit", 25, 325, "Show hitboxes on damage"},
-		{"cb", "reddeath", 25, 350, "Render red deathscreen"},
-		{"cb", "rgb", 25, 375, "Rainbow Player & Weapon"},
-		{"cb", "silentviz", 25, 400, "Vizualize Silent Aim"},
-		{"cb", "snaplines", 25, 425, "Snaplines"},
-		{"cb", "thirdpersonfix", 25, 450, "Fix Thirdperson"},
+		
+		{"num", "cfov", 25, 245, 200, 25, 1, 179, 0, "FOV"},
+		
+		{"cb", "fov_force", 50, 275, "Force FOV"},
+		{"cb", "fullbright", 25, 300, "Fullbright"},
+		{"cb", "nightmode", 25, 325, "Nightmode"},
+		{"cb", "hitboxonhit", 25, 350, "Show hitboxes on damage"},
+		{"cb", "reddeath", 25, 375, "Render red deathscreen"},
+		{"cb", "rgb", 25, 400, "Rainbow Player & Weapon"},
+		{"cb", "silentviz", 25, 425, "Vizualize Silent Aim"},
+		{"cb", "snaplines", 25, 450, "Snaplines"},
+		{"cb", "thirdpersonfix", 25, 475, "Fix Thirdperson"},
 		
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
