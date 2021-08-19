@@ -1922,8 +1922,8 @@ hook.Add("Tick", vars["hookname"], function()
 			meta_pn.SetVisible(main, false)
 			meta_pn.SetVisible(sheet, false)
 		else
-			meta_pn.SetVisible(main, false)
-			meta_pn.SetVisible(sheet, false)
+			meta_pn.SetVisible(main, true)
+			meta_pn.SetVisible(sheet, true)
 		end
 	end
 	
