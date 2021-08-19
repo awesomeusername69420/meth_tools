@@ -138,6 +138,7 @@ main:SetDeleteOnClose(false) -- If there is a metatable for these, I couldn't fi
 main:SetTitle("Swag Tools")
 meta_pn.SetVisible(main, false)
 main:ShowCloseButton(true)
+meta_pn.SetPaintedManually(main, true)
 
 local sheet = vgui.Create("DPropertySheet", main)
 
@@ -1652,6 +1653,10 @@ end
 if ismeth and mcall then
 	mcall.Add("OnHUDPaint", vars["hookname"], function()
 		vars["renderpanic"] = false
+		
+		if vars["menu"] then
+			meta_pn.PaintManual(main)
+		end
 	
 		if canRender() then
 			draw.NoTexture()
@@ -1847,6 +1852,10 @@ hook.Add("HUDPaint", vars["hookname"], function()
 		
 		if vars["specdetector"] then
 			drawSpectators()
+		end
+		
+		if vars["menu"] then
+			meta_pn.PaintManual(main)
 		end
 	end
 	
@@ -2062,17 +2071,6 @@ hook.Add("Tick", vars["hookname"], function()
 					mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
 					vars["delayaf_dp"] = false
 				end
-			end
-		end
-		
-		
-		if vars["menu"] then
-			if shouldPanic() then
-				meta_pn.SetVisible(main, false)
-				meta_pn.SetVisible(sheet, false)
-			else
-				meta_pn.SetVisible(main, true)
-				meta_pn.SetVisible(sheet, true)
 			end
 		end
 	end
