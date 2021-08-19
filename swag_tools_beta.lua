@@ -1060,7 +1060,7 @@ local function toggleMenu()
 	
 	vars["menu_delay"] = true
 	
-	timer.Simple(0.3, function()
+	timer.Simple(0.1, function()
 		vars["menu_delay"] = false
 	end)
 end
