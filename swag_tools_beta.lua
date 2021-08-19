@@ -1917,14 +1917,6 @@ hook.Add("Tick", vars["hookname"], function()
 				end
 			end
 		end
-		
-		if vars["menu"] and shouldPanic() then
-			meta_pn.SetVisible(main, false)
-			meta_pn.SetVisible(sheet, false)
-		else
-			meta_pn.SetVisible(main, true)
-			meta_pn.SetVisible(sheet, true)
-		end
 	end
 	
 	if vars["gesture_loop"] then
