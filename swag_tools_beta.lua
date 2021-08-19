@@ -116,6 +116,16 @@ local MOVETYPE_NOCLIP = 8
 local MOVETYPE_OBSERVER = 10
 local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
 
+local COLOR_BLACK = Color(0, 0, 0, 255)
+local COLOR_LIGHT = Color(222, 222, 222, 255)
+local COLOR_LIGHT_RED = Color(255, 100, 100, 255)
+local COLOR_MAIN_BACK = Color(55, 55, 55, 255)
+local COLOR_MAIN_BACK_A = Color(12, 255, 12, 255)
+local COLOR_MAIN_BACK_T = Color(24, 24, 24, 150)
+local COLOR_MAIN_OUTLINE = Color(12, 12, 12, 255)
+local COLOR_PANEL = Color(234, 234, 234, 255)
+local COLOR_WHITE = Color(255, 255, 255, 255)
+
 -- Menu
 
 local menu_w, menu_h = ScrW() * (500 / 1920), ScrH() * (600 / 1080)
@@ -561,7 +571,7 @@ local function alert(event, data)
 			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 		end
 
-		MsgC(Color(255, 100, 100), "[$W467001Z_8374] ", Color(222, 222, 222), "Blocked ", Color(255, 100, 100), tostring(event) .. "(" .. tostring(data) .. ")", Color(222, 222, 222), "\n")
+		MsgC(COLOR_LIGHT_RED, "[$W467001Z_8374] ", COLOR_LIGHT, "Blocked ", COLOR_LIGHT_RED, tostring(event) .. "(" .. tostring(data) .. ")", COLOR_LIGHT, "\n")
 	end
 end
 
@@ -691,7 +701,7 @@ local function shrtxt(text, maxw)
 end
 
 local function strColor(str)
-	local ret = Color(255, 255, 255, 255)
+	local ret = COLOR_WHITE
 	
 	if not str then
 		return ret
@@ -776,17 +786,18 @@ local function drawTraitorDetector()
 				vars["tdetector_list_y"] = y
 			end
 		
-			surface.SetDrawColor(55, 55, 55, 255)
+			surface.SetDrawColor(COLOR_MAIN_BACK)
 			surface.DrawRect(x, y, w, h)
 			
-			surface.SetDrawColor(12, 12, 12, 255)
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 			surface.DrawOutlinedRect(x, y, w, h)
-			surface.SetDrawColor(12, 255, 12, 255)
+			
+			surface.SetDrawColor(COLOR_MAIN_BACK_A)
 			
 			local tw, th = surface.GetTextSize("Player")
 			
 			surface.SetTextPos(x + (w - dw) - (tw / 2), y + 3)
-			surface.SetTextColor(255, 255, 255, 255)
+			surface.SetTextColor(COLOR_WHITE)
 			surface.DrawText("Player")
 			
 			tw, th = surface.GetTextSize("Role")
@@ -822,7 +833,7 @@ local function drawTraitorDetector()
 						role = "Innocent"
 						surface.SetDrawColor(0, 200, 0, 150)
 					else
-						surface.SetDrawColor(24, 24, 24, 150)
+						surface.SetDrawColor(COLOR_MAIN_BACK_T)
 					end
 				elseif mode == 1 and not has then
 					surface.SetDrawColor(0, 0, 200, 150)
@@ -831,7 +842,7 @@ local function drawTraitorDetector()
 					surface.SetDrawColor(200, 0, 0, 150)
 					role = "Traitor"
 				else
-					surface.SetDrawColor(24, 24, 24, 150)
+					surface.SetDrawColor(COLOR_MAIN_BACK_T)
 					role = "ERROR"
 				end
 				
@@ -844,7 +855,7 @@ local function drawTraitorDetector()
 				
 				local tw, th = surface.GetTextSize(n)
 				
-				surface.SetTextColor(255, 255, 255, 255)
+				surface.SetTextColor(COLOR_WHITE)
 				surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
 				surface.DrawText(n)
 				
@@ -853,7 +864,7 @@ local function drawTraitorDetector()
 				surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), offsety + 3)
 				surface.DrawText(role)
 				
-				surface.SetDrawColor(12, 12, 12, 255)
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 				surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
 				
 				ofs = ofs + 1
@@ -875,7 +886,7 @@ local function drawTraitorDetector()
 		end
 		
 		if vars["tdetector_list"] then
-			surface.SetDrawColor(12, 12, 12, 255)
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 			surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
 			surface.DrawLine(x + (w - (w / 3)), y, x + (w - (w / 3)), y + h + ((ofs - 1) * 20))
 		end
@@ -919,17 +930,18 @@ local function drawSpectators()
 	
 	local dw = w - (w / 4)
 	
-	surface.SetDrawColor(55, 55, 55, 255)
+	surface.SetDrawColor(COLOR_MAIN_BACK)
 	surface.DrawRect(x, y, w, h)
 	
-	surface.SetDrawColor(12, 12, 12, 255)
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 	surface.DrawOutlinedRect(x, y, w, h)
-	surface.SetDrawColor(12, 255, 12, 255)
+	
+	surface.SetDrawColor(COLOR_MAIN_BACK_A)
 	
 	local tw, th = surface.GetTextSize("Spectator")
 	
 	surface.SetTextPos(x + (w - dw) - (tw / 2), y + 3)
-	surface.SetTextColor(255, 255, 255, 255)
+	surface.SetTextColor(COLOR_WHITE)
 	surface.DrawText("Spectator")
 	
 	tw, th = surface.GetTextSize("OBS-Mode")
@@ -972,7 +984,7 @@ local function drawSpectators()
 			if all and meta_en.IsValid(starg) and starg == LocalPlayer() then
 				surface.SetDrawColor(200, 0, 0, 150)
 			else
-				surface.SetDrawColor(24, 24, 24, 150)
+				surface.SetDrawColor(COLOR_MAIN_BACK_T)
 			end
 			
 			if starg == LocalPlayer() then
@@ -981,7 +993,7 @@ local function drawSpectators()
 				sname = shrtxt(meta_pl.GetName(starg), w - dw)
 			end
 		else
-			surface.SetDrawColor(24, 24, 24, 150)
+			surface.SetDrawColor(COLOR_MAIN_BACK_T)
 		end
 		
 		surface.DrawRect(x, offsety, w, h)
@@ -1021,13 +1033,13 @@ local function drawSpectators()
 		surface.SetTextPos(x + fw - (tw / 2), offsety + 3)
 		surface.DrawText(tmode)
 		
-		surface.SetDrawColor(12, 12, 12, 255)
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 		surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
 		
 		ofs = ofs + 1
 	end
 	
-	surface.SetDrawColor(12, 12, 12, 255)
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 	surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
 	surface.DrawLine(x + nw, y, x + nw, y + h + ((ofs - 1) * 20))
 	surface.DrawLine(x + dw, y, x + dw, y + h + ((ofs - 1) * 20))
@@ -1542,7 +1554,7 @@ if ismeth and mcall then
 					cam.Start3D()
 						if vars["beamtracers"] then
 							render.SetMaterial(beammat)
-							render.DrawBeam(v.src, v.endpos, 8, 1, 1, Color(255, 255, 255, 255))
+							render.DrawBeam(v.src, v.endpos, 8, 1, 1, COLOR_WHITE)
 						else
 							render.DrawLine(v.src, v.endpos, v.col, true)
 						end
@@ -1558,7 +1570,7 @@ if ismeth and mcall then
 					
 					local tw, th = surface.GetTextSize(text)
 					
-					surface.SetTextColor(255, 255, 255, 255)
+					surface.SetTextColor(COLOR_WHITE)
 					surface.SetTextPos((ScrW() / 2) - (tw / 2), 15)
 					surface.DrawText(text)
 				end
@@ -2146,7 +2158,7 @@ hook.Add("PreDrawEffects", vars["hookname"], function()
 		
 				if vars["beamtracers"] then
 					render.SetMaterial(beammat)
-					render.DrawBeam(v.src, v.endpos, 8, 1, 1, Color(255, 255, 255, 255))
+					render.DrawBeam(v.src, v.endpos, 8, 1, 1, COLOR_WHITE)
 				else
 					render.DrawLine(v.src, v.endpos, v.col, true)
 				end
@@ -2407,7 +2419,8 @@ for i = 1, #menu_tabs do
 	
 	panel.Paint = function(self)
 		draw.NoTexture()
-		draw.RoundedBox(4, 0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self), Color(234, 234, 234, 255))
+		
+		draw.RoundedBox(4, 0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self), COLOR_PANEL)
 	end
 	
 	local cpanel
@@ -2415,11 +2428,14 @@ for i = 1, #menu_tabs do
 	if t == "Render" then
 		local bpanel = vgui.Create("DPanel", sheet)
 		
+		bpanel.Paint = function() end
+		
 		cpanel = vgui.Create("DScrollPanel", sheet)
 		
 		cpanel.Paint = function(self)
 			draw.NoTexture()
-			draw.RoundedBox(4, 0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self), Color(234, 234, 234, 255))
+			
+			draw.RoundedBox(4, 0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self), COLOR_PANEL)
 		end
 		
 		local div = vgui.Create("DHorizontalDivider", bpanel)
@@ -2431,8 +2447,6 @@ for i = 1, #menu_tabs do
 		div:SetLeftMin(10)
 		div:SetRightMin(10)
 		div:SetLeftWidth((menu_w / 2) + 10)
-		
-		bpanel.Paint = function() end
 		
 		sheet:AddSheet(t, bpanel, tt.icon)
 	else
@@ -2450,6 +2464,7 @@ for i = 1, #menu_tabs do
 			end
 		
 			local clist = vgui.Create("DPanelList", cpanel)
+
 			clist:SetSpacing(5)
 			clist:EnableHorizontal(false)
 			clist:EnableVerticalScrollbar(true)
@@ -2466,7 +2481,7 @@ for i = 1, #menu_tabs do
 						lb:SetFont("DermaLarge")
 					end
 
-					lb:SetTextColor(Color(0, 0, 0, 255))
+					lb:SetTextColor(COLOR_BLACK)
 					lb:SetText(su[table.Count(su)])
 					meta_pn.SetPos(lb, su[2], su[3])
 				elseif su[1] == "clr" then
@@ -2502,7 +2517,7 @@ for i = 1, #menu_tabs do
 			local cb = vgui.Create("DCheckBoxLabel", panel)
 			
 			meta_pn.SetPos(cb, v[3], v[4])
-			cb:SetTextColor(Color(0, 0, 0, 255))
+			cb:SetTextColor(COLOR_BLACK)
 			cb:SetText(v[table.Count(v)])
 			cb:SetValue(vars[v[2]])
 			
@@ -2767,7 +2782,7 @@ if ismeth and mrend then
 else
 	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 
-	MsgC(Color(255, 100, 100), "[$W467001Z_8374] ", Color(222, 222, 222), "Loaded Successfully!\n")
+	MsgC(COLOR_LIGHT_RED, "[$W467001Z_8374] ", COLOR_LIGHT, "Loaded Successfully!\n")
 end
 
 jit.flush()
