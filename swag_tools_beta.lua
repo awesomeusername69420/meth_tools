@@ -121,8 +121,11 @@ local COLOR_LIGHT = Color(222, 222, 222, 255)
 local COLOR_LIGHT_RED = Color(255, 100, 100, 255)
 local COLOR_MAIN_BACK = Color(55, 55, 55, 255)
 local COLOR_MAIN_BACK_A = Color(12, 255, 12, 255)
+local COLOR_MAIN_BACK_M = Color(45, 45, 45, 255)
 local COLOR_MAIN_BACK_T = Color(24, 24, 24, 150)
+local COLOR_MAIN_BACK_T_O = Color(24, 24, 24, 255)
 local COLOR_MAIN_OUTLINE = Color(12, 12, 12, 255)
+local COLOR_ORANGE = Color(255, 150, 0, 255)
 local COLOR_PANEL = Color(234, 234, 234, 255)
 local COLOR_WHITE = Color(255, 255, 255, 255)
 
@@ -135,16 +138,57 @@ local main = vgui.Create("DFrame")
 meta_pn.SetSize(main, menu_w, menu_h)
 meta_pn.Center(main)
 main:SetDeleteOnClose(false) -- If there is a metatable for these, I couldn't find it
-main:SetTitle("Swag Tools")
+main:SetTitle("")
 meta_pn.SetVisible(main, false)
 main:ShowCloseButton(true)
 meta_pn.SetPaintedManually(main, true)
+meta_pn.DockPadding(main, 12, 24, 12, 12)
+
+main.Paint = function(self)
+	surface.SetDrawColor(COLOR_BLACK)
+	surface.DrawRect(0, 0, menu_w, menu_h)
+
+	local c = 55
+	local cs = c
+	
+	for i = 1, cs do
+		surface.SetDrawColor(Color(c, c, c, 255))
+		surface.DrawLine(0, i, menu_w, i)
+		
+		c = c - 1
+	end
+
+	surface.SetDrawColor(COLOR_MAIN_BACK_M)
+	surface.DrawRect(12, 40, menu_w - 24, menu_h - 52)
+	
+	surface.SetFont("BudgetLabel")
+	
+	local title = "Swag Tools"
+	local tw, th = surface.GetTextSize(title)
+	
+	surface.SetTextColor(COLOR_WHITE)
+	surface.SetTextPos((menu_w / 2) - (tw / 2), 5)
+	surface.DrawText(title)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(0, 0, menu_w, menu_h)
+end
 
 local sheet = vgui.Create("DPropertySheet", main)
 
 meta_pn.Dock(sheet, FILL)
 meta_pn.SetVisible(sheet, false)
 sheet:SetFadeTime(0)
+meta_pn.SetFontInternal(sheet, "BudgetLabel")
+
+sheet.Paint = function(self)
+	surface.SetDrawColor(COLOR_MAIN_BACK)
+	surface.DrawRect(0, 0, meta_pn.GetWide(self), 20)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawLine(0, 19, meta_pn.GetWide(self), 19)
+	surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+end
 
 -- The rest
 
@@ -436,21 +480,71 @@ local menu = {
 local hookpanel = vgui.Create("DScrollPanel", sheet)
 	
 hookpanel.Paint = function(self)
-	draw.NoTexture()
+	surface.SetDrawColor(COLOR_MAIN_BACK_M)
+	surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+end
+
+local hpsb = meta_pn.GetChildren(hookpanel)[2]
+local hpcc = meta_pn.GetChildren(hpsb)
+
+hpsb.Paint = function(self)
+	surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+	surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
 	
-	draw.RoundedBox(4, 0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self), COLOR_PANEL)
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+end
+
+for _, v in ipairs(hpcc) do
+	v.Paint = function(self)
+		surface.SetDrawColor(COLOR_MAIN_BACK)
+		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	end
 end
 
 local hbpanel = vgui.Create("DPanel", sheet)
 
 hbpanel.Paint = function() end
 
+for _, v in ipairs(hpcc) do
+	v.Paint = function(self)
+		surface.SetDrawColor(COLOR_MAIN_BACK)
+		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	end
+end
+
 local hooksidepanel = vgui.Create("DScrollPanel", sheet)
 
 hooksidepanel.Paint = function(self)
-	draw.NoTexture()
+	surface.SetDrawColor(COLOR_MAIN_BACK_M)
+	surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+end
+
+local hspsb = meta_pn.GetChildren(hooksidepanel)[2]
+local hspcc = meta_pn.GetChildren(hspsb)
+
+hspsb.Paint = function(self)
+	surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+	surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
 	
-	draw.RoundedBox(4, 0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self), COLOR_PANEL)
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+end
+
+for _, v in ipairs(hspcc) do
+	v.Paint = function(self)
+		surface.SetDrawColor(COLOR_MAIN_BACK)
+		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	end
 end
 
 local hdiv = vgui.Create("DHorizontalDivider", hbpanel)
@@ -462,6 +556,14 @@ hdiv:SetDividerWidth(4)
 hdiv:SetLeftMin(10)
 hdiv:SetRightMin(10)
 hdiv:SetLeftWidth((menu_w / 2) + 10)
+
+hdiv.Paint = function(self)
+	surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+	surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+end
 
 local hlist = vgui.Create("DListLayout", hookpanel)
 
@@ -1061,12 +1163,32 @@ end
 local function dButton(x, y, w, h, parent, label, action) -- Retarded
 	local btn = vgui.Create("DButton", parent)
 	
+	btn:SetFont("BudgetLabel")
+	btn:SetTextColor(COLOR_WHITE)
 	meta_pn.SetText(btn, label)
 	meta_pn.SetSize(btn, w, h)
 	meta_pn.SetPos(btn, x, y)
 	
 	btn.DoClick = function()
 		action()
+	end
+	
+	btn.Paint = function(self)
+		local bw, bh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+	
+		local c = 55
+		local cm = math.Round(55 / bh)
+		local cs = math.ceil(c / cm)
+
+		for i = 1, cs do
+			surface.SetDrawColor(Color(c, c, c, 255))
+			surface.DrawLine(0, i, bw, i)
+			
+			c = c - cm
+		end
+	
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawOutlinedRect(0, 0, bw, bh)
 	end
 end
 
@@ -1267,10 +1389,37 @@ local function refreshHookBrowser()
 	
 	for k, v in pairs(getHookTable()) do
 		local cat = vgui.Create("DCollapsibleCategory", hookpanel)
+		
+		meta_pn.GetChildren(cat)[1]:SetFont("BudgetLabel")
+		
 		cat:SetLabel(k)
 		cat:SetAnimTime(0)
 		cat:SetExpanded(false)
 		meta_pn.SetSize(cat, 300, 200)
+		
+		cat.Paint = function(self)
+			local cw, ch = meta_pn.GetWide(self), 20
+		
+			surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+			surface.DrawRect(0, 0, cw, ch)
+			
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+			surface.DrawOutlinedRect(0, 0, cw, ch)
+			
+			surface.SetDrawColor(COLOR_MAIN_BACK_M)
+			surface.DrawRect(cw - 20, 0, 20, ch)
+			
+			if not self:GetExpanded() then
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+				surface.DrawLine(cw - 11, 5, cw - 11, ch - 4)
+				surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+			else
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+				surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+			end
+		end
 		
 		local ipnl = vgui.Create("DScrollPanel")
 		
@@ -1293,9 +1442,28 @@ local function refreshHookBrowser()
 			
 			local btn = vgui.Create("DButton")
 
+			btn:SetFont("BudgetLabel")
 			btn:SetTextColor(COLOR_LIGHT_RED)
 			meta_pn.SetText(btn, tostring(name))
 			meta_pn.Dock(btn, FILL)
+			
+			btn.Paint = function(self)
+				local bw, bh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+			
+				local c = 55
+				local cm = math.Round(55 / bh)
+				local cs = math.ceil(c / cm)
+		
+				for i = 1, cs do
+					surface.SetDrawColor(Color(c, c, c, 255))
+					surface.DrawLine(0, i, bw, i)
+					
+					c = c - cm
+				end
+			
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, bw, bh)
+			end
 			
 			btn.DoClick = function()
 				vars["selected_hook"] = {
@@ -1311,8 +1479,28 @@ local function refreshHookBrowser()
 		for n, f in pairs(v) do
 			local btn = vgui.Create("DButton")
 			
+			btn:SetFont("BudgetLabel")
+			btn:SetTextColor(COLOR_WHITE)
 			meta_pn.SetText(btn, tostring(n))
 			meta_pn.Dock(btn, FILL)
+			
+			btn.Paint = function(self)
+				local bw, bh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+			
+				local c = 55
+				local cm = math.Round(55 / bh)
+				local cs = math.ceil(c / cm)
+		
+				for i = 1, cs do
+					surface.SetDrawColor(Color(c, c, c, 255))
+					surface.DrawLine(0, i, bw, i)
+					
+					c = c - cm
+				end
+			
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, bw, bh)
+			end
 			
 			btn.DoClick = function()
 				vars["selected_hook"] = {
@@ -2555,9 +2743,29 @@ for i = 1, #menu_tabs do
 	local panel = vgui.Create("DScrollPanel", sheet)
 	
 	panel.Paint = function(self)
-		draw.NoTexture()
+		surface.SetDrawColor(COLOR_MAIN_BACK_M)
+		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	end
+	
+	local psb = meta_pn.GetChildren(panel)[2]
+	local pcc = meta_pn.GetChildren(psb)
+	
+	psb.Paint = function(self)
+		surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
 		
-		draw.RoundedBox(4, 0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self), COLOR_PANEL)
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	end
+	
+	for _, v in ipairs(pcc) do
+		v.Paint = function(self)
+			surface.SetDrawColor(COLOR_MAIN_BACK)
+			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+			
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+			surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		end
 	end
 	
 	local cpanel
@@ -2570,9 +2778,29 @@ for i = 1, #menu_tabs do
 		cpanel = vgui.Create("DScrollPanel", sheet)
 		
 		cpanel.Paint = function(self)
-			draw.NoTexture()
+			surface.SetDrawColor(COLOR_MAIN_BACK_M)
+			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		end
+		
+		local cpsb = meta_pn.GetChildren(cpanel)[2]
+		local cpcc = meta_pn.GetChildren(cpsb)
+		
+		cpsb.Paint = function(self)
+			surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
 			
-			draw.RoundedBox(4, 0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self), COLOR_PANEL)
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+			surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		end
+		
+		for _, v in ipairs(cpcc) do
+			v.Paint = function(self)
+				surface.SetDrawColor(COLOR_MAIN_BACK)
+				surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+			end
 		end
 		
 		local div = vgui.Create("DHorizontalDivider", bpanel)
@@ -2584,6 +2812,14 @@ for i = 1, #menu_tabs do
 		div:SetLeftMin(10)
 		div:SetRightMin(10)
 		div:SetLeftWidth((menu_w / 2) + 10)
+		
+		div.Paint = function(self)
+			surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+			surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		end
 		
 		sheet:AddSheet(t, bpanel, tt.icon)
 	else
@@ -2615,17 +2851,46 @@ for i = 1, #menu_tabs do
 						lb:SetFont("DermaLarge")
 					end
 
-					lb:SetTextColor(COLOR_BLACK)
+					lb:SetFont("BudgetLabel")
+					lb:SetTextColor(COLOR_WHITE)
 					lb:SetText(su[table.Count(su)])
 					meta_pn.SetPos(lb, su[2], su[3])
 				elseif su[1] == "clr" then
 					local cat = vgui.Create("DCollapsibleCategory", cpanel)
+					
+					meta_pn.GetChildren(cat)[1]:SetFont("BudgetLabel")
+					
 					cat:SetLabel(su[table.Count(su)])
 					cat:SetExpanded(false)
 					meta_pn.SetSize(cat, 300, 200)
 					
+					cat.Paint = function(self)
+						local cw, ch = meta_pn.GetWide(self), 20
+					
+						surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+						surface.DrawRect(0, 0, cw, ch)
+						
+						surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+						surface.DrawOutlinedRect(0, 0, cw, ch)
+						
+						surface.SetDrawColor(COLOR_MAIN_BACK_M)
+						surface.DrawRect(cw - 20, 0, 20, ch)
+						
+						if not self:GetExpanded() then
+							surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+							surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+							surface.DrawLine(cw - 11, 5, cw - 11, ch - 4)
+							surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+						else
+							surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+							surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+							surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+						end
+					end
+					
 					local pck = vgui.Create("DColorMixer")
 					
+					meta_pn.SetFontInternal(pck, "BudgetLabel")
 					meta_pn.SetSize(pck, 250, 150)
 					pck:SetPalette(false)
 					pck:SetAlphaBar(true)
@@ -2648,21 +2913,41 @@ for i = 1, #menu_tabs do
 		end
 		
 		if v[1] == "cb" then
-			local cb = vgui.Create("DCheckBoxLabel", panel)
+			local cb = vgui.Create("DCheckBox", panel)
+			local cbl = vgui.Create("DLabel", panel)
 			
 			meta_pn.SetPos(cb, v[3], v[4])
-			cb:SetTextColor(COLOR_BLACK)
-			cb:SetText(v[table.Count(v)])
 			cb:SetValue(vars[v[2]])
+			
+			cbl:SetFont("BudgetLabel")
+			cbl:SetTextColor(COLOR_WHITE)
+			cbl:SetText(v[table.Count(v)])
+			meta_pn.SetSize(cbl, 999, 25)
+			meta_pn.SetPos(cbl, v[3] + 20, v[4] - 5)
 			
 			cb.OnChange = function(self, new)
 				vars[v[2]] = new
+			end
+			
+			cb.Paint = function(self)
+				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+				surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+				
+				if self:GetChecked() then
+					surface.SetDrawColor(COLOR_ORANGE)
+					surface.DrawRect(2, 2, meta_pn.GetWide(self) - 3, meta_pn.GetTall(self) - 3)
+				end
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
 			end
 		elseif v[1] == "str" then
 			local tb = vgui.Create("DTextEntry", panel)
 			
 			meta_pn.SetSize(tb, v[5], v[6])
 			meta_pn.SetPos(tb, v[3], v[4])
+			tb:SetFont("BudgetLabel")
+			tb:SetTextColor(COLOR_WHITE)
 			tb:SetValue(vars[v[2]])
 			tb:SetPlaceholderText(v[table.Count(v)])
 			tb:SetUpdateOnType(true)
@@ -2674,6 +2959,10 @@ for i = 1, #menu_tabs do
 			local ns = vgui.Create("DNumSlider", panel)
 			local df = vars[v[2]]
 			
+			local nst = ns:GetTextArea()
+			
+			nst:SetFont("BudgetLabel")
+			
 			meta_pn.SetSize(ns, v[5], v[6])
 			meta_pn.SetPos(ns, v[3], v[4])
 			ns:SetDecimals(v[9])
@@ -2681,11 +2970,54 @@ for i = 1, #menu_tabs do
 			ns:SetMax(v[8])
 			ns:SetValue(df)
 			ns:SetDefaultValue(df)
-			ns:SetDark(true)
 			ns:SetText(v[table.Count(v)])
 			
 			ns.OnValueChanged = function(self, new)
 				vars[v[2]] = new
+			end
+			
+			nst.Paint = function(self)
+				local thw = meta_pn.GetWide(self)
+				local tho = meta_pn.GetTall(self)
+				local th = tho - (tho / 4)
+	
+				local y = 3
+			
+				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+				surface.DrawRect(0, y, thw, th)
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, y, thw, th)
+				
+				local val = tostring(math.Round(vars[v[2]], v[9]))
+				
+				surface.SetFont("BudgetLabel")
+				
+				local tw, th = surface.GetTextSize(val)
+				
+				surface.SetTextColor(COLOR_WHITE)
+				surface.SetTextPos((thw / 2) - (tw / 2), th / 3)
+				surface.DrawText(val)
+			end
+			
+			local nsc = meta_pn.GetChildren(ns)
+			
+			nsc[3]:SetFont("BudgetLabel")
+
+			meta_pn.GetChildren(nsc[2])[1].Paint = function(self)
+				local swo = meta_pn.GetWide(self)
+				local sw = swo - (swo / 4)
+			
+				surface.SetDrawColor(COLOR_MAIN_BACK)
+				surface.DrawRect(0, 0, sw, meta_pn.GetTall(self))
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, sw, meta_pn.GetTall(self))
+			end
+			
+			nsc[2].Paint = function(self)
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawLine(0, meta_pn.GetTall(self) / 2, meta_pn.GetWide(self) - 5, meta_pn.GetTall(self) / 2)
 			end
 		end
 	end
@@ -2693,13 +3025,43 @@ end
 
 sheet:AddSheet("Hooks", hbpanel, menu["Hooks"].icon)
 
+for _, d in ipairs(sheet:GetItems()) do
+	for k, v in pairs(d) do
+		if k ~= "Tab" then
+			continue
+		end
+		
+		v:SetFont("BudgetLabel")
+		
+		v.Paint = function(self)
+			local ac = sheet:GetActiveTab() == self
+		
+			if ac then
+				surface.SetDrawColor(COLOR_MAIN_BACK_M)
+			else
+				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+			end
+		
+			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		
+			if ac then
+				surface.SetDrawColor(COLOR_ORANGE)
+				surface.DrawLine(0, 0, meta_pn.GetWide(self), 0)
+			else
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawLine(0, 19, meta_pn.GetWide(self), 19)
+			end
+		end
+	end
+end
+
 -- Hook Browser buttons
 
-dButton(25, 25, 100, 25, hooksidepanel, "Refresh", function()
+dButton(25, 25, 125, 25, hooksidepanel, "Refresh", function()
 	refreshHookBrowser()
 end)
 
-dButton(25, 75, 100, 25, hooksidepanel, "De-Activate Hook", function()
+dButton(25, 75, 125, 25, hooksidepanel, "De-Activate Hook", function()
 	local sel = vars["selected_hook"]
 	
 	if table.IsEmpty(sel) then
@@ -2729,7 +3091,7 @@ dButton(25, 75, 100, 25, hooksidepanel, "De-Activate Hook", function()
 	refreshHookBrowser()
 end)
 
-dButton(25, 125, 100, 25, hooksidepanel, "Re-Activate Hook", function()
+dButton(25, 125, 125, 25, hooksidepanel, "Re-Activate Hook", function()
 	local sel = vars["selected_hook"]
 	
 	if table.IsEmpty(sel) then
