@@ -119,6 +119,7 @@ local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
 local COLOR_BLACK = Color(0, 0, 0, 255)
 local COLOR_LIGHT = Color(222, 222, 222, 255)
 local COLOR_LIGHT_RED = Color(255, 100, 100, 255)
+local COLOR_LIGHT_WHITE = Color(175, 175, 175, 255)
 local COLOR_MAIN_BACK = Color(55, 55, 55, 255)
 local COLOR_MAIN_BACK_A = Color(12, 255, 12, 255)
 local COLOR_MAIN_BACK_M = Color(45, 45, 45, 255)
@@ -2950,8 +2951,6 @@ for i = 1, #menu_tabs do
 			
 			meta_pn.SetSize(tb, v[5], v[6])
 			meta_pn.SetPos(tb, v[3], v[4])
-			tb:SetFont("BudgetLabel")
-			tb:SetTextColor(COLOR_WHITE)
 			tb:SetValue(vars[v[2]])
 			tb:SetPlaceholderText(v[table.Count(v)])
 			tb:SetUpdateOnType(true)
@@ -2959,6 +2958,21 @@ for i = 1, #menu_tabs do
 			tb.OnValueChange = function(self, new)
 				vars[v[2]] = new
 			end
+			
+			tb.Paint = function(self)
+				local tbho = meta_pn.GetTall(self)
+				local tbh = tbho - (tbho / 4)
+			
+				surface.SetDrawColor(COLOR_LIGHT_WHITE)
+				surface.DrawRect(0, 0, meta_pn.GetWide(self), tbh)
+				
+				surface.SetFont("BudgetLabel")
+				surface.SetTextColor(COLOR_WHITE)
+				surface.SetTextPos(3, 3)
+				surface.DrawText(tostring(vars[v[2]]))
+			end
+			
+			
 		elseif v[1] == "num" then
 			local ns = vgui.Create("DNumSlider", panel)
 			local df = vars[v[2]]
