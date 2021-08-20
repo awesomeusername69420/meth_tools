@@ -1389,8 +1389,10 @@ local function refreshHookBrowser()
 	
 	for k, v in pairs(getHookTable()) do
 		local cat = vgui.Create("DCollapsibleCategory", hookpanel)
+		local catlbl = meta_pn.GetChildren(cat)[1]
 		
-		meta_pn.GetChildren(cat)[1]:SetFont("BudgetLabel")
+		catlbl:SetTextColor(COLOR_WHITE)
+		catlbl:SetFont("BudgetLabel")
 		
 		cat:SetLabel(k)
 		cat:SetAnimTime(0)
@@ -2857,8 +2859,10 @@ for i = 1, #menu_tabs do
 					meta_pn.SetPos(lb, su[2], su[3])
 				elseif su[1] == "clr" then
 					local cat = vgui.Create("DCollapsibleCategory", cpanel)
-					
-					meta_pn.GetChildren(cat)[1]:SetFont("BudgetLabel")
+					local catlbl = meta_pn.GetChildren(cat)[1]
+		
+					catlbl:SetTextColor(COLOR_WHITE)
+					catlbl:SetFont("BudgetLabel")
 					
 					cat:SetLabel(su[table.Count(su)])
 					cat:SetExpanded(false)
@@ -2961,6 +2965,7 @@ for i = 1, #menu_tabs do
 			
 			local nst = ns:GetTextArea()
 			
+			nst:SetTextColor(COLOR_WHITE)
 			nst:SetFont("BudgetLabel")
 			
 			meta_pn.SetSize(ns, v[5], v[6])
@@ -3031,6 +3036,7 @@ for _, d in ipairs(sheet:GetItems()) do
 			continue
 		end
 		
+		v:SetTextColor(COLOR_WHITE)
 		v:SetFont("BudgetLabel")
 		
 		v.Paint = function(self)
