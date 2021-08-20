@@ -3006,8 +3006,13 @@ for i = 1, #menu_tabs do
 			end
 			
 			local nsc = meta_pn.GetChildren(ns)
+			local nsn = nsc[3]
+			local nsns = meta_pn.GetChildren(nsn)[1]
 			
-			nsc[3]:SetFont("BudgetLabel")
+			nsns:SetEnabled(false)
+			
+			nsn:SetTextColor(COLOR_WHITE)
+			nsn:SetFont("BudgetLabel")
 
 			meta_pn.GetChildren(nsc[2])[1].Paint = function(self)
 				local swo = meta_pn.GetWide(self)
