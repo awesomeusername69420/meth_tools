@@ -605,7 +605,6 @@ local badCommands = {
 	"engine_no_focus_sleep",
 	"exit",
 	"fps_max",
-	"impulse",
 	"jpeg",
 	"kill",
 	"mat_texture_limit",
