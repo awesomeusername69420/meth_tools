@@ -133,7 +133,7 @@ local COLOR_WHITE = Color(255, 255, 255, 255)
 
 -- Menu
 
-local menu_w, menu_h = ScrW() * (500 / 1920), ScrH() * (600 / 1080)
+local menu_w, menu_h = ScrW() * (600 / 1920), ScrH() * (700 / 1080)
 
 local main = vgui.Create("DFrame")
 
