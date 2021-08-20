@@ -1381,14 +1381,26 @@ local function getHookTable()
 		end
 	end
 	
-	return ret
+	local keys = {}
+	
+	for k, _ in pairs(ret) do
+		table.insert(keys, k)
+	end
+	
+	table.sort(keys)
+	
+	return ret, keys
 end
 
 local function refreshHookBrowser()
 	hlist:Clear()
 	vars["selected_hook"] = {}
 	
-	for k, v in pairs(getHookTable()) do
+	local htable, keys = getHookTable()
+
+	for _, k in ipairs(keys) do
+		local v = htable[k]
+		
 		local cat = vgui.Create("DCollapsibleCategory", hookpanel)
 		local catlbl = meta_pn.GetChildren(cat)[1]
 		
