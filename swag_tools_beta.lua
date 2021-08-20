@@ -45,6 +45,7 @@ local cam = tCopy(cam)
 local Color = Color
 local concommand = tCopy(concommand)
 local cvars = tCopy(cvars)
+local dragndrop = tCopy(dragndrop)
 local draw = tCopy(draw)
 local engine = tCopy(engine)
 local ents = tCopy(ents)
@@ -1368,7 +1369,7 @@ local function isClickable(a, b, c, d)
 		return false
 	end
 
-	return input.IsMouseDown(MOUSE_LEFT) and mouseIn(a, b, c, d) and not meta_pn.IsDragging(main) and not vars["spec_dragging"] and not vars["td_dragging"]
+	return input.IsMouseDown(MOUSE_LEFT) and mouseIn(a, b, c, d) and not dragndrop.IsDragging() and not meta_pn.IsDragging(main) and not vars["spec_dragging"] and not vars["td_dragging"]
 end
 
 local function getHookTable()
