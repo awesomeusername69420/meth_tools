@@ -1408,7 +1408,6 @@ local function refreshHookBrowser()
 		catlbl:SetFont("BudgetLabel")
 		
 		cat:SetLabel(k)
-		cat:SetAnimTime(0)
 		cat:SetExpanded(false)
 		meta_pn.SetSize(cat, 300, 200)
 		
@@ -1531,6 +1530,10 @@ local function refreshHookBrowser()
 		cat:SetContents(ipnl)
 		
 		hlist:Add(cat)
+		
+		cat:SetAnimTime(0)
+		cat:DoExpansion(true)
+		cat:DoExpansion(false)
 	end
 end
 
