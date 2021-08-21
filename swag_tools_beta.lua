@@ -184,12 +184,14 @@ sheet:SetFadeTime(0)
 meta_pn.SetFontInternal(sheet, "BudgetLabel")
 
 sheet.Paint = function(self)
+	local w, h =  meta_pn.GetWide(self), meta_pn.GetTall(self)
+
 	surface.SetDrawColor(COLOR_MAIN_BACK)
-	surface.DrawRect(0, 0, meta_pn.GetWide(self), 20)
+	surface.DrawRect(0, 0, w, 20)
 	
 	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-	surface.DrawLine(0, 19, meta_pn.GetWide(self), 19)
-	surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	surface.DrawLine(0, 19, w, 19)
+	surface.DrawOutlinedRect(0, 0, w, h)
 end
 
 -- The rest
@@ -490,20 +492,24 @@ local hpsb = meta_pn.GetChildren(hookpanel)[2]
 local hpcc = meta_pn.GetChildren(hpsb)
 
 hpsb.Paint = function(self)
+	local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+
 	surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
-	surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	surface.DrawRect(0, 0, w, h)
 	
 	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-	surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	surface.DrawOutlinedRect(0, 0, w, h)
 end
 
 for _, v in ipairs(hpcc) do
 	v.Paint = function(self)
+		local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+	
 		surface.SetDrawColor(COLOR_MAIN_BACK)
-		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		surface.DrawRect(0, 0, w, h)
 		
 		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-		surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 end
 
@@ -513,11 +519,13 @@ hbpanel.Paint = function() end
 
 for _, v in ipairs(hpcc) do
 	v.Paint = function(self)
+		local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+	
 		surface.SetDrawColor(COLOR_MAIN_BACK)
-		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		surface.DrawRect(0, 0, w, h)
 		
 		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-		surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 end
 
@@ -532,20 +540,24 @@ local hspsb = meta_pn.GetChildren(hooksidepanel)[2]
 local hspcc = meta_pn.GetChildren(hspsb)
 
 hspsb.Paint = function(self)
+	local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+
 	surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
-	surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	surface.DrawRect(0, 0, w, h)
 	
 	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-	surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	surface.DrawOutlinedRect(0, 0, w, h)
 end
 
 for _, v in ipairs(hspcc) do
 	v.Paint = function(self)
+		local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+	
 		surface.SetDrawColor(COLOR_MAIN_BACK)
-		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		surface.DrawRect(0, 0, w, h)
 		
 		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-		surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 end
 
@@ -560,11 +572,13 @@ hdiv:SetRightMin(10)
 hdiv:SetLeftWidth((menu_w / 2) + 10)
 
 hdiv.Paint = function(self)
+	local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+
 	surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
-	surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	surface.DrawRect(0, 0, w, h)
 
 	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-	surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	surface.DrawOutlinedRect(0, 0, w, h)
 end
 
 local hlist = vgui.Create("DListLayout", hookpanel)
@@ -2769,20 +2783,24 @@ for i = 1, #menu_tabs do
 	local pcc = meta_pn.GetChildren(psb)
 	
 	psb.Paint = function(self)
+		local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+	
 		surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
-		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		surface.DrawRect(0, 0, w, h)
 		
 		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-		surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 	
 	for _, v in ipairs(pcc) do
 		v.Paint = function(self)
+			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+		
 			surface.SetDrawColor(COLOR_MAIN_BACK)
-			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+			surface.DrawRect(0, 0, w, h)
 			
 			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-			surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+			surface.DrawOutlinedRect(0, 0, w, h)
 		end
 	end
 	
@@ -2804,20 +2822,24 @@ for i = 1, #menu_tabs do
 		local cpcc = meta_pn.GetChildren(cpsb)
 		
 		cpsb.Paint = function(self)
+			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+		
 			surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
-			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+			surface.DrawRect(0, 0, w, h)
 			
 			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-			surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+			surface.DrawOutlinedRect(0, 0, w, h)
 		end
 		
 		for _, v in ipairs(cpcc) do
 			v.Paint = function(self)
+				local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+			
 				surface.SetDrawColor(COLOR_MAIN_BACK)
-				surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+				surface.DrawRect(0, 0, w, h)
 				
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-				surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+				surface.DrawOutlinedRect(0, 0, w, h)
 			end
 		end
 		
@@ -2832,11 +2854,13 @@ for i = 1, #menu_tabs do
 		div:SetLeftWidth((menu_w / 2) + 10)
 		
 		div.Paint = function(self)
+			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+		
 			surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
-			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+			surface.DrawRect(0, 0, w, h)
 		
 			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-			surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+			surface.DrawOutlinedRect(0, 0, w, h)
 		end
 		
 		sheet:AddSheet(t, bpanel, tt.icon)
@@ -2950,16 +2974,18 @@ for i = 1, #menu_tabs do
 			end
 			
 			cb.Paint = function(self)
+				local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+			
 				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
-				surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+				surface.DrawRect(0, 0, w, h)
 				
 				if self:GetChecked() then
 					surface.SetDrawColor(COLOR_ORANGE)
-					surface.DrawRect(2, 2, meta_pn.GetWide(self) - 3, meta_pn.GetTall(self) - 3)
+					surface.DrawRect(2, 2, w - 3, h - 3)
 				end
 				
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-				surface.DrawOutlinedRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+				surface.DrawOutlinedRect(0, 0, w, h)
 			end
 		elseif v[1] == "str" then
 			local tb = vgui.Create("DTextEntry", panel)
@@ -3045,18 +3071,20 @@ for i = 1, #menu_tabs do
 
 			meta_pn.GetChildren(nsc[2])[1].Paint = function(self)
 				local swo = meta_pn.GetWide(self)
-				local sw = swo - (swo / 4)
+				local sw, sh = swo - (swo / 4), meta_pn.GetTall(self)
 			
 				surface.SetDrawColor(COLOR_MAIN_BACK)
-				surface.DrawRect(0, 0, sw, meta_pn.GetTall(self))
+				surface.DrawRect(0, 0, sw, sh)
 				
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-				surface.DrawOutlinedRect(0, 0, sw, meta_pn.GetTall(self))
+				surface.DrawOutlinedRect(0, 0, sw, sh)
 			end
 			
 			nsc[2].Paint = function(self)
+				local hh = meta_pn.GetTall(self) / 2
+			
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-				surface.DrawLine(0, meta_pn.GetTall(self) / 2, meta_pn.GetWide(self) - 5, meta_pn.GetTall(self) / 2)
+				surface.DrawLine(0, hh, meta_pn.GetWide(self) - 5, hh)
 			end
 		end
 	end
@@ -3074,6 +3102,7 @@ for _, d in ipairs(sheet:GetItems()) do
 		v:SetFont("BudgetLabel")
 		
 		v.Paint = function(self)
+			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
 			local ac = sheet:GetActiveTab() == self
 		
 			if ac then
@@ -3082,14 +3111,14 @@ for _, d in ipairs(sheet:GetItems()) do
 				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
 			end
 		
-			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+			surface.DrawRect(0, 0, w, h)
 		
 			if ac then
 				surface.SetDrawColor(COLOR_ORANGE)
-				surface.DrawLine(0, 0, meta_pn.GetWide(self), 0)
+				surface.DrawLine(0, 0, w, 0)
 			else
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-				surface.DrawLine(0, 19, meta_pn.GetWide(self), 19)
+				surface.DrawLine(0, 19, w, 19)
 			end
 		end
 	end
