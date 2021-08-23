@@ -117,6 +117,8 @@ local MOVETYPE_NOCLIP = 8
 local MOVETYPE_OBSERVER = 10
 local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
 
+-- Colors
+
 local COLOR_BLACK = Color(0, 0, 0, 255)
 local COLOR_LIGHT = Color(222, 222, 222, 255)
 local COLOR_LIGHT_RED = Color(255, 100, 100, 255)
@@ -423,7 +425,7 @@ local menu = {
 		{"cb", "tdetector_list", 50, 275, "Draw List"},
 		{"cb", "gesture_loop", 25, 300, "Gesture Loop"},
 		
-		{"str", "gesture", 50, 320, 100, 25, "Gesture"},
+		{"com", "gesture", 50, 320, 100, 25, {"dance", "muscle", "wave", "robot", "bow", "cheer", "laugh", "zombie", "agree", "disagree", "forward", "becon", "salute", "pose", "halt", "group"}, "Gesture"},
 		
 		{"cb", "psays", 25, 350, "ULX PSay Spammer"},
 		
@@ -443,7 +445,7 @@ local menu = {
 		{"cb", "devtexture_o", 50, 200, "Orange"},
 		{"cb", "fog", 25, 225, "Draw Fog"},
 		
-		{"num", "cfov", 25, 245, 200, 25, 1, 179, 0, "FOV"},
+		{"num", "cfov", 25, 245, 200, 25, 2, 179, 0, "FOV"},
 		
 		{"cb", "fov_force", 50, 275, "Force FOV"},
 		{"cb", "fullbright", 25, 300, "Fullbright"},
@@ -2199,8 +2201,6 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	
 	nfov = math.Clamp(nfov, 2, 179)
 	
-	vars["afov"] = nfov
-
 	if vars["thirdpersonfix"] then
 		if meta_pl.ShouldDrawLocalPlayer(ply) then
 			local tr = util.TraceLine({
@@ -2226,26 +2226,20 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	}
 
 	if meta_en.IsValid(v) then
+		vars["afov"] = nview.fov
+	
 		return hook.Run("CalcVehicleView", v, ply, nview)
 	end
 
-	if meta_en.IsValid(w) then
+	if not force and meta_en.IsValid(w) then
 		local wCV = w.CalcView
-
+	
 		if wCV then
-			local wFOV
-		
-			nview.origin, nview.angles, wFOV = wCV(w, ply, pos * 1, ang * 1, nfov)
-			
-			if not force then
-				nview.fov = wFOV
-			
-				if wFOV ~= nfov then
-					vars["afov"] = wFOV
-				end
-			end
+			nview.origin, nview.angles, nview.fov = wCV(w, ply, pos * 1, ang * 1, nfov)
 		end
 	end
+	
+	vars["afov"] = nview.fov
 
 	return nview
 end)
@@ -2942,6 +2936,10 @@ for i = 1, #menu_tabs do
 					pck:SetColor(strColor(vars[su[2]]))
 					
 					pck.ValueChanged = function(self, new)
+						if new == nil then
+							return
+						end
+					
 						local r, g, b, a = tostring(new.r), tostring(new.g), tostring(new.b), tostring(new.a)
 					
 						vars[su[2]] = r .. " " .. g .. " " .. b .. " " .. a
@@ -2956,7 +2954,9 @@ for i = 1, #menu_tabs do
 			continue
 		end
 		
-		if v[1] == "cb" then
+		local etype = string.lower(v[1])
+		
+		if etype == "cb" then
 			local cb = vgui.Create("DCheckBox", panel)
 			local cbl = vgui.Create("DLabel", panel)
 			
@@ -2970,6 +2970,10 @@ for i = 1, #menu_tabs do
 			meta_pn.SetPos(cbl, v[3] + 20, v[4] - 5)
 			
 			cb.OnChange = function(self, new)
+				if new == nil then
+							return
+						end
+			
 				vars[v[2]] = new
 			end
 			
@@ -2987,7 +2991,7 @@ for i = 1, #menu_tabs do
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 				surface.DrawOutlinedRect(0, 0, w, h)
 			end
-		elseif v[1] == "str" then
+		elseif etype == "str" then
 			local tb = vgui.Create("DTextEntry", panel)
 			
 			meta_pn.SetSize(tb, v[5], v[6])
@@ -2997,6 +3001,10 @@ for i = 1, #menu_tabs do
 			tb:SetUpdateOnType(true)
 			
 			tb.OnValueChange = function(self, new)
+				if new == nil then
+					return
+				end
+			
 				vars[v[2]] = new
 			end
 			
@@ -3012,9 +3020,7 @@ for i = 1, #menu_tabs do
 				surface.SetTextPos(3, 3)
 				surface.DrawText(tostring(vars[v[2]]))
 			end
-			
-			
-		elseif v[1] == "num" then
+		elseif etype == "num" then
 			local ns = vgui.Create("DNumSlider", panel)
 			local df = vars[v[2]]
 			
@@ -3033,6 +3039,10 @@ for i = 1, #menu_tabs do
 			ns:SetText(v[table.Count(v)])
 			
 			ns.OnValueChanged = function(self, new)
+				if new == nil then
+					return
+				end
+			
 				vars[v[2]] = new
 			end
 			
@@ -3086,6 +3096,54 @@ for i = 1, #menu_tabs do
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 				surface.DrawLine(0, hh, meta_pn.GetWide(self) - 5, hh)
 			end
+		elseif etype == "com" then
+			local cmb = vgui.Create("DComboBox", panel)
+			
+			cmb:SetTextColor(COLOR_WHITE)
+			cmb:SetFont("BudgetLabel")
+			
+			cmb:GetChildren()[1].Paint = function() end
+			
+			meta_pn.SetSize(cmb, v[5], v[6])
+			meta_pn.SetPos(cmb, v[3], v[4])
+			
+			for _, v in ipairs(v[7]) do
+				cmb:AddChoice(v)
+			end
+			
+			cmb:ChooseOptionID(1)
+			
+			cmb.OnSelect = function(self, new)
+				if new == nil then
+					return
+				end
+			
+				vars[v[2]] = cmb:GetOptionText(new)
+			end
+		
+			cmb.Paint = function(self)
+				local cw, ch = meta_pn.GetWide(self), 20
+			
+				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+				surface.DrawRect(0, 0, cw, ch)
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, cw, ch)
+				
+				surface.SetDrawColor(COLOR_MAIN_BACK_M)
+				surface.DrawRect(cw - 20, 0, 20, ch)
+				
+				if not self:IsMenuOpen() then
+					surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+					surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+					surface.DrawLine(cw - 11, 5, cw - 11, ch - 4)
+					surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+				else
+					surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+					surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+					surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+				end
+			end
 		end
 	end
 end
@@ -3114,6 +3172,10 @@ for _, d in ipairs(sheet:GetItems()) do
 			surface.DrawRect(0, 0, w, h)
 		
 			if ac then
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawLine(0, 0, 0, h - 8)
+				surface.DrawLine(w - 1, 0, w - 1, h - 8)
+			
 				surface.SetDrawColor(COLOR_ORANGE)
 				surface.DrawLine(0, 0, w, 0)
 			else
@@ -3276,10 +3338,24 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 		if GAMEMODE.round_state == ROUND_ACTIVE then
 			safefuncs.tempty(vars["ttable"])
 			
-			local mp = GetConVar("ttt_minimum_players")
+			local shouldforce = true
 			
-			if mp and meta_cv.GetInt(mp) == player.GetCount() then
-				if (meta_pl.IsTraitor and not meta_pl.IsTraitor(LocalPlayer())) or (meta_pl.IsDetective and meta_pl.IsDetective(LocalPlayer())) then
+			if meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer()) then
+				shouldforce = false
+			end
+			
+			if shouldforce then
+				local alivecount = 0
+				
+				for _, v in ipairs(player.GetAll()) do
+					if not meta_en.IsValid(v) or v == LocalPlayer() or not meta_pl.Alive(v) then
+						continue
+					end
+					
+					alivecount = alivecount + 1
+				end
+				
+				if alivecount == 1 then
 					force = true
 				end
 			end
