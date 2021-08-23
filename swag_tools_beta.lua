@@ -102,6 +102,15 @@ local meta_wn = tCopy(debug.getregistry()["Weapon"])
 
 -- Enums
 
+local ACT_GMOD_GESTURE_AGREE = 1610
+local ACT_GMOD_GESTURE_BECON = 1611
+local ACT_GMOD_GESTURE_BOW = 1612
+local ACT_GMOD_GESTURE_DISAGREE = 1613
+local ACT_GMOD_GESTURE_WAVE = 1615
+local ACT_GMOD_TAUNT_DANCE = 1642
+local ACT_GMOD_TAUNT_LAUGH = 1618
+local ACT_GMOD_TAUNT_MUSCLE = 1617
+local ACT_GMOD_TAUNT_PERSISTENCE = 1616
 local FILL = 1
 local IN_BACK = 16
 local IN_FORWARD = 8
@@ -116,6 +125,7 @@ local MOVETYPE_LADDER = 9
 local MOVETYPE_NOCLIP = 8
 local MOVETYPE_OBSERVER = 10
 local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
+
 
 -- Colors
 
@@ -267,6 +277,24 @@ local vars = {
 	["menu_open"] = false,
 	["menu_mouse"] = false,
 	["menu_delay"] = false,
+	["darkrp_gestures"] = {
+		["dance"] = ACT_GMOD_TAUNT_DANCE,
+		["muscle"] = ACT_GMOD_TAUNT_MUSCLE,
+		["wave"] = ACT_GMOD_GESTURE_WAVE,
+		["robot"] = -1, -- These animations don't exist (In base DarkRP)
+		["bow"] = ACT_GMOD_GESTURE_BOW,
+		["cheer"] = -1,
+		["laugh"] = ACT_GMOD_TAUNT_LAUGH,
+		["zombie"] = -1,
+		["agree"] = ACT_GMOD_GESTURE_AGREE,
+		["disagree"] = ACT_GMOD_GESTURE_DISAGREE,
+		["forward"] = -1,
+		["becon"] = -1,
+		["salute"] = -1,
+		["pose"] = ACT_GMOD_TAUNT_PERSISTENCE,
+		["halt"] = ACT_GMOD_GESTURE_BECON,
+		["group"] = -1,
+	},
 
 	-- Render
 	["afov"] = 75,
@@ -312,6 +340,7 @@ local vars = {
 	["followtarg"] = LocalPlayer(),
 	["gesture"] = "dance",
 	["gesture_loop"] = false,
+	["gesture_loop_delay"] = false,
 	["gopen"] = true,
 	["psays"] = false,
 	["psays_message"] = "message",
@@ -2291,7 +2320,31 @@ hook.Add("Tick", vars["hookname"], function()
 	
 	if vars["gesture_loop"] then
 		if meta_pl.IsPlayingTaunt and not meta_pl.IsPlayingTaunt(LocalPlayer()) then
-			meta_pl.ConCommand(LocalPlayer(), "act " .. vars["gesture"])
+			local tdance = vars["gesture"]
+		
+			if engine.ActiveGamemode() == "darkrp" then
+				if not vars["gesture_loop_delay"] then
+					local id = -1
+				
+					id = vars["darkrp_gestures"][tdance]
+	
+					if id ~= -1 then
+						meta_pl.ConCommand(LocalPlayer(), "_darkrp_doanimation " .. id)
+						
+						local id, len = meta_en.LookupSequence(LocalPlayer(), meta_en.GetSequenceName(LocalPlayer(), meta_en.SelectWeightedSequence(LocalPlayer(), id)))
+						
+						if id and len then
+							vars["gesture_loop_delay"] = true
+						
+							timer.Simple(len, function()
+								vars["gesture_loop_delay"] = false
+							end)
+						end
+					end
+				end
+			else
+				meta_pl.ConCommand(LocalPlayer(), "act " .. tdance)
+			end
 		end
 	end
 
