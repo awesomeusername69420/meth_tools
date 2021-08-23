@@ -289,10 +289,10 @@ local vars = {
 		["agree"] = ACT_GMOD_GESTURE_AGREE,
 		["disagree"] = ACT_GMOD_GESTURE_DISAGREE,
 		["forward"] = -1,
-		["becon"] = -1,
+		["becon"] = ACT_GMOD_GESTURE_BECON,
 		["salute"] = -1,
 		["pose"] = ACT_GMOD_TAUNT_PERSISTENCE,
-		["halt"] = ACT_GMOD_GESTURE_BECON,
+		["halt"] = -1,
 		["group"] = -1,
 	},
 
@@ -2327,7 +2327,7 @@ hook.Add("Tick", vars["hookname"], function()
 					local id = -1
 				
 					id = vars["darkrp_gestures"][tdance]
-	
+
 					if id ~= -1 then
 						meta_pl.ConCommand(LocalPlayer(), "_darkrp_doanimation " .. id)
 						
