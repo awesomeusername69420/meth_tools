@@ -707,6 +707,7 @@ local badWeapons = {
 	"hand",
 	"ied",
 	"knife",
+	"lightsaber",
 	"medkit",
 	"physcannon",
 	"physgun",
@@ -2090,13 +2091,8 @@ if ismeth and mcall then
 			end
 		end
 	end)
-end
-
-
-hook.Add("HUDPaint", vars["hookname"], function()
-	vars["renderpanic"] = true
-
-	if not ismeth then
+elseif not ismeth then
+	hook.Add("DrawOverlay", vars["hookname"], function()
 		if vars["tdetector"] then
 			drawTraitorDetector()
 		end
@@ -2108,8 +2104,12 @@ hook.Add("HUDPaint", vars["hookname"], function()
 		if vars["menu"] then
 			meta_pn.PaintManual(main)
 		end
-	end
-	
+	end)
+end
+
+hook.Add("HUDPaint", vars["hookname"], function()
+	vars["renderpanic"] = true
+
 	if vars["antiblind"] then
 		hook.Remove("HUDPaint", "ulx_blind")
 		hook.Remove("HUDPaint", "Blind")
