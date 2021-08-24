@@ -487,13 +487,16 @@ local menu = {
 		{"cb", "fov_force", 50, 275, "Force FOV"},
 		{"cb", "fullbright", 25, 300, "Fullbright"},
 		{"cb", "nightmode", 25, 325, "Nightmode"},
-		{"cb", "hitboxonhit", 25, 350, "Show hitboxes on damage"},
-		{"cb", "reddeath", 25, 375, "Render red deathscreen"},
-		{"cb", "rgb", 25, 400, "Rainbow Player & Weapon"},
-		{"cb", "silentviz", 25, 425, "Vizualize Silent Aim"},
-		{"cb", "snaplines", 25, 450, "Snaplines"},
-		{"cb", "thirdpersonfix", 25, 475, "Fix Thirdperson"},
 		
+		{"num", "nightmode_intensity", 50, 345, 200, 25, 0, 1, 2, "Intensity"},
+		
+		{"cb", "hitboxonhit", 25, 375, "Show hitboxes on damage"},
+		{"cb", "reddeath", 25, 400, "Render red deathscreen"},
+		{"cb", "rgb", 25, 425, "Rainbow Player & Weapon"},
+		{"cb", "silentviz", 25, 450, "Vizualize Silent Aim"},
+		{"cb", "snaplines", 25, 475, "Snaplines"},
+		{"cb", "thirdpersonfix", 25, 500, "Fix Thirdperson"},
+	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
 		
