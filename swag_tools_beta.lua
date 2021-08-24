@@ -148,6 +148,9 @@ local COLOR_WHITE = Color(255, 255, 255, 255)
 
 -- Menu
 
+local title = "Swag Tools Beta"
+local title_short = "STB"
+
 local menu_w, menu_h = ScrW() * (600 / 1920), ScrH() * (700 / 1080)
 
 local main = vgui.Create("DFrame")
@@ -180,7 +183,6 @@ main.Paint = function(self)
 	
 	surface.SetFont("BudgetLabel")
 	
-	local title = "Swag Tools"
 	local tw, th = surface.GetTextSize(title)
 	
 	surface.SetTextColor(COLOR_WHITE)
@@ -278,7 +280,6 @@ local vars = {
 	["td_drag_x"] = 0,
 	["td_drag_y"] = 0,
 	["menu_open"] = false,
-	["menu_mouse"] = false,
 	["menu_delay"] = false,
 	["darkrp_gestures"] = {
 		["dance"] = ACT_GMOD_TAUNT_DANCE,
@@ -777,7 +778,7 @@ local function alert(event, data)
 			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 		end
 
-		MsgC(COLOR_LIGHT_RED, "[$W467001Z_8374] ", COLOR_LIGHT, "Blocked ", COLOR_LIGHT_RED, tostring(event) .. "(" .. tostring(data) .. ")", COLOR_LIGHT, "\n")
+		MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Blocked ", COLOR_LIGHT_RED, tostring(event) .. "(" .. tostring(data) .. ")", COLOR_LIGHT, "\n")
 	end
 end
 
@@ -3587,11 +3588,11 @@ end)
 -- Let them know it loaded
 
 if ismeth and mrend then
-	mrend.PushAlert("Successfully loaded Swag Tools Beta!")
+	mrend.PushAlert("Successfully loaded " .. title "!")
 else
 	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 
-	MsgC(COLOR_LIGHT_RED, "[$W467001Z_8374] ", COLOR_LIGHT, "Loaded Successfully!\n")
+	MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Loaded Successfully!\n")
 end
 
 jit.flush()
