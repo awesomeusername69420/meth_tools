@@ -18,7 +18,7 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | --- | --- | --- | --- |
  | st_render_damageboxes_life_set | Sets life for damageboxes (in seconds) | `integer` | `3` |
  | st_render_fov_set | Sets FOV | `integer` | FOV at load time |
- | st_render_nightmode_intensity_set | Set how dark nightmode is | `float` | `0.05` |
+ | st_render_nightmode_intensity_set | Set how dark nightmode is | `float` | `0.8` |
  | st_render_tracers_life_set | Sets bullet tracer lifespan (in seconds) | `integer` | `3` |
  | st_render_tracers_max_set | Sets maximum amount of bullet tracers allowed | `integer` | `1000` |
  | st_render_catpng_color_set | Sets color for catpng fov | `string` | `255 255 255 100` |
@@ -37,6 +37,7 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | st_render_nightmode | Toggles nightmode | `boolean` | `false` |
  | st_render_rgb | Toggles rgb for the LocalPlayer | `boolean` | `false` |
  | st_render_snaplines | Toggles snaplines | `boolean` | `false` |
+ | st_render_tracers | Toggles bullet tracers | `boolean` | `false` |
  | st_render_tracers_beam | Toggles bullet tracers being a beam instead of a line | `boolean` | `false` |
  | st_render_tracers_local | Toggles bullet tracers for LocalPlayer | `boolean` | `false` |
  | st_render_tracers_other | Toggles bullet tracers for other players | `boolean` | `false` |
