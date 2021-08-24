@@ -41,6 +41,7 @@ local function tCopy(n, t)
 	return c
 end
 
+local bit = tCopy(bit)
 local cam = tCopy(cam)
 local Color = Color
 local concommand = tCopy(concommand)
@@ -114,10 +115,12 @@ local ACT_GMOD_TAUNT_PERSISTENCE = 1616
 local FILL = 1
 local IN_BACK = 16
 local IN_FORWARD = 8
+local IN_JUMP = 2
 local IN_MOVELEFT = 512
 local IN_MOVERIGHT = 1024
 local IN_RELOAD = 8192
 local IN_SPEED = 131072
+local KEY_SPACE = input.GetKeyCode("SPACE")
 local MASK_SHOT = 1174421507
 local MATERIAL_FOG_NONE = 0
 local MOUSE_LEFT = 107
@@ -330,6 +333,8 @@ local vars = {
 
 	-- Tools
 	["antigag"] = false,
+	["autohop"] = false,
+	["autostrafe"] = false,
 	["delayaf"] = false,
 	["delayaf_a"] = 0.05,
 	["delayaf_dp"] = false,
@@ -459,6 +464,9 @@ local menu = {
 		{"cb", "psays", 25, 350, "ULX PSay Spammer"},
 		
 		{"str", "psays_message", 50, 370, 250, 25, "Spam Message"},
+		
+		{"cb", "autohop", 25, 395, "Auto BHop"},
+		{"cb", "autostrafe", 25, 420, "Auto Strafe"},
 	},
 	
 	["Render"] = {
@@ -2134,74 +2142,100 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 
 	local mvtyp =  meta_en.GetMoveType(LocalPlayer())
 
-	if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) and mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER then
-		local tply = vars["followtarg"]
-		
-		if vEnt(tply) then
-			if meta_cd.KeyDown(cmd, IN_FORWARD) or meta_cd.KeyDown(cmd, IN_BACK) or meta_cd.KeyDown(cmd, IN_MOVELEFT) or meta_cd.KeyDown(cmd, IN_MOVERIGHT) then
-				vars["following"] = false
+	if mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER then
+		if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) then
+			local tply = vars["followtarg"]
+			
+			if vEnt(tply) then
+				if meta_cd.KeyDown(cmd, IN_FORWARD) or meta_cd.KeyDown(cmd, IN_BACK) or meta_cd.KeyDown(cmd, IN_MOVELEFT) or meta_cd.KeyDown(cmd, IN_MOVERIGHT) then
+					vars["following"] = false
+					
+					return
+				end
+			
+				local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
 				
-				return
-			end
-		
-			local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
-			
-			local tpos =  meta_en.GetPos(tply)
-			local lpos = meta_en.GetPos(LocalPlayer())
-			
-			if not ontop then
-				if not meta_en.IsOnGround(LocalPlayer()) then
-					if lpos.z - tpos.z > meta_en.LocalToWorld(tply, meta_en.OBBCenter(tply) * 2).z - 5 then
-						ontop = true
+				local tpos =  meta_en.GetPos(tply)
+				local lpos = meta_en.GetPos(LocalPlayer())
+				
+				if not ontop then
+					if not meta_en.IsOnGround(LocalPlayer()) then
+						if lpos.z - tpos.z > meta_en.LocalToWorld(tply, meta_en.OBBCenter(tply) * 2).z - 5 then
+							ontop = true
+						end
 					end
 				end
-			end
-			
-			local lang
-			
-			if ontop or not vars["following"] then
-				lang = meta_cd.GetViewAngles(cmd)
-				vars["followang"] = lang
 				
-				vars["following"] = true
-			else
-				lang = vars["followang"]
-			end
-
-			local dir = tpos - lpos
-			local mvec = Vector(dir.x, dir.y, 0)
-			local ang = meta_vc.Angle(mvec)
-			
-			local lposnz = Vector(lpos.x, lpos.y, 0)
-			local tposnz = Vector(tpos.x, tpos.y, 0)
-			local dis = math.Round(meta_vc.Distance(lposnz, tposnz))
-
-			local yaw = math.rad(ang.y - lang.y)
-
-			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and dis > 15 then
-				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
-			end
-			
-			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and meta_pl.IsSprinting(tply) then
-				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
-			end
+				local lang
+				
+				if ontop or not vars["following"] then
+					lang = meta_cd.GetViewAngles(cmd)
+					vars["followang"] = lang
+					
+					vars["following"] = true
+				else
+					lang = vars["followang"]
+				end
 	
-			if dis > 4 then
-				local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
-			
-				if ontop then
-					meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
+				local dir = tpos - lpos
+				local mvec = Vector(dir.x, dir.y, 0)
+				local ang = meta_vc.Angle(mvec)
+				
+				local lposnz = Vector(lpos.x, lpos.y, 0)
+				local tposnz = Vector(tpos.x, tpos.y, 0)
+				local dis = math.Round(meta_vc.Distance(lposnz, tposnz))
+	
+				local yaw = math.rad(ang.y - lang.y)
+	
+				if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and dis > 15 then
+					meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 				end
 				
-				meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
+				if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and meta_pl.IsSprinting(tply) then
+					meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
+				end
+		
+				if dis > 4 then
+					local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
+				
+					if ontop then
+						meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
+					end
+					
+					meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
+				end
+			else
+				vars["followtarg"] = getClosest(false)
 			end
 		else
-			vars["followtarg"] = getClosest(false)
+			vars["followtarg"] = nil
+			vars["following"] = false
+			vars["followang"] = Angle(0, 0, 0)
 		end
-	else
-		vars["followtarg"] = nil
-		vars["following"] = false
-		vars["followang"] = Angle(0, 0, 0)
+		
+		if vars["autohop"] then
+			local ishopping = meta_cd.KeyDown(cmd, IN_JUMP)
+			
+			if ismeth then
+				ishopping = input.IsKeyDown(KEY_SPACE)
+			end
+			
+			if ishopping and not meta_en.IsOnGround(LocalPlayer()) then
+				meta_cd.SetButtons(cmd, bit.band(meta_cd.GetButtons(cmd), bit.bnot(IN_JUMP)))
+			end
+		end
+		
+		if vars["autostrafe"] then
+			if not meta_en.IsOnGround(LocalPlayer()) then
+				local mx = meta_cd.GetMouseX(cmd)
+				
+				if mx > 0 then
+					meta_cd.SetSideMove(cmd, 10^4)
+				elseif mx < 0 then
+					meta_cd.SetSideMove(cmd, 0 - 10^4)
+				end
+			end
+		end
 	end
 end)
 
