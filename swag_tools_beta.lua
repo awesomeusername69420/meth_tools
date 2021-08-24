@@ -317,7 +317,7 @@ local vars = {
 	["hitbox_delay"] = 3,
 	["maxtracers"] = 1000,
 	["nightmode"] = false,
-	["nightmode_intensity"] = 0.05,
+	["nightmode_intensity"] = 0.8,
 	["nightmode_rs"] = false,
 	["reddeath"] = true,
 	["renderpanic"] = false,
@@ -2483,7 +2483,7 @@ hook.Add("RenderScene", vars["hookname"], function()
 	local nmrs = vars["nightmode_rs"]
 	
 	if dv or (nm and not fb) or (not nm and not vars["nightmode_rs"]) then
-		local int = math.Clamp(vars["nightmode_intensity"], 0, 1)
+		local int = math.abs(math.Clamp(vars["nightmode_intensity"], 0, 1) - 1)
 		local rsvec = Vector(1, 1, 1)
 	
 		for _, v in ipairs(meta_en.GetMaterials(game.GetWorld())) do
