@@ -35,10 +35,12 @@ local function tCopy(n, t)
 	return c
 end
 
+local bit = tCopy(bit)
 local cam = tCopy(cam)
 local Color = Color
 local concommand = tCopy(concommand)
 local cvars = tCopy(cvars)
+local dragndrop = tCopy(dragndrop)
 local draw = tCopy(draw)
 local engine = tCopy(engine)
 local ents = tCopy(ents)
@@ -53,6 +55,7 @@ local gui = tCopy(gui)
 local hook = tCopy(hook)
 local HSVToColor = HSVToColor
 local http = tCopy(http)
+local input = tCopy(input)
 local ipairs = ipairs
 local IsConCommandBlocked = IsConCommandBlocked
 local IsValid = IsValid
@@ -61,6 +64,7 @@ local LocalPlayer = LocalPlayer
 local Material = Material
 local math = tCopy(math)
 local MsgC = MsgC
+local Player = Player
 local player = tCopy(player)
 local render = tCopy(render)
 local RunConsoleCommand = RunConsoleCommand
@@ -76,6 +80,8 @@ local util = tCopy(util)
 local Vector = Vector
 local vgui = tCopy(vgui)
 
+-- Metatables
+
 local meta_an = tCopy(debug.getregistry()["Angle"])
 local meta_cd_g = debug.getregistry()["CUserCmd"]
 local meta_cd = tCopy(meta_cd_g)
@@ -84,22 +90,122 @@ local meta_en = tCopy(debug.getregistry()["Entity"])
 local meta_im = tCopy(debug.getregistry()["IMaterial"])
 local meta_pl_g = debug.getregistry()["Player"]
 local meta_pl = tCopy(meta_pl_g)
+local meta_pn = tCopy(debug.getregistry()["Panel"])
 local meta_vc = tCopy(debug.getregistry()["Vector"])
 local meta_vm = tCopy(debug.getregistry()["VMatrix"])
 local meta_wn = tCopy(debug.getregistry()["Weapon"])
 
+-- Enums
+
+local ACT_GMOD_GESTURE_AGREE = 1610
+local ACT_GMOD_GESTURE_BECON = 1611
+local ACT_GMOD_GESTURE_BOW = 1612
+local ACT_GMOD_GESTURE_DISAGREE = 1613
+local ACT_GMOD_GESTURE_WAVE = 1615
+local ACT_GMOD_TAUNT_DANCE = 1642
+local ACT_GMOD_TAUNT_LAUGH = 1618
+local ACT_GMOD_TAUNT_MUSCLE = 1617
+local ACT_GMOD_TAUNT_PERSISTENCE = 1616
+local FILL = 1
 local IN_BACK = 16
 local IN_FORWARD = 8
+local IN_JUMP = 2
 local IN_MOVELEFT = 512
 local IN_MOVERIGHT = 1024
 local IN_RELOAD = 8192
 local IN_SPEED = 131072
+local KEY_SPACE = input.GetKeyCode("SPACE")
 local MASK_SHOT = 1174421507
 local MATERIAL_FOG_NONE = 0
+local MOUSE_LEFT = 107
 local MOVETYPE_LADDER = 9
 local MOVETYPE_NOCLIP = 8
 local MOVETYPE_OBSERVER = 10
 local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
+
+
+-- Colors
+
+local COLOR_BLACK = Color(0, 0, 0, 255)
+local COLOR_LIGHT = Color(222, 222, 222, 255)
+local COLOR_LIGHT_RED = Color(255, 100, 100, 255)
+local COLOR_LIGHT_WHITE = Color(175, 175, 175, 255)
+local COLOR_MAIN_BACK = Color(55, 55, 55, 255)
+local COLOR_MAIN_BACK_A = Color(12, 255, 12, 255)
+local COLOR_MAIN_BACK_M = Color(45, 45, 45, 255)
+local COLOR_MAIN_BACK_T = Color(24, 24, 24, 150)
+local COLOR_MAIN_BACK_T_O = Color(24, 24, 24, 255)
+local COLOR_MAIN_OUTLINE = Color(12, 12, 12, 255)
+local COLOR_ORANGE = Color(255, 150, 0, 255)
+local COLOR_PANEL = Color(234, 234, 234, 255)
+local COLOR_WHITE = Color(255, 255, 255, 255)
+
+-- Menu
+
+local title = "Swag Tools"
+local title_short = "ST"
+
+local menu_w, menu_h = ScrW() * (600 / 1920), ScrH() * (700 / 1080)
+
+local main = vgui.Create("DFrame")
+
+meta_pn.SetSize(main, menu_w, menu_h)
+meta_pn.Center(main)
+main:SetDeleteOnClose(false) -- If there is a metatable for these, I couldn't find it
+main:SetTitle("")
+meta_pn.SetVisible(main, false)
+main:ShowCloseButton(true)
+meta_pn.SetPaintedManually(main, true)
+meta_pn.DockPadding(main, 12, 24, 12, 12)
+
+main.Paint = function(self)
+	surface.SetDrawColor(COLOR_BLACK)
+	surface.DrawRect(0, 0, menu_w, menu_h)
+
+	local c = 55
+	local cs = c
+	
+	for i = 1, cs do
+		surface.SetDrawColor(Color(c, c, c, 255))
+		surface.DrawLine(0, i, menu_w, i)
+		
+		c = c - 1
+	end
+
+	surface.SetDrawColor(COLOR_MAIN_BACK_M)
+	surface.DrawRect(12, 40, menu_w - 24, menu_h - 52)
+	
+	surface.SetFont("BudgetLabel")
+	
+	local tw, th = surface.GetTextSize(title)
+	
+	surface.SetTextColor(COLOR_WHITE)
+	surface.SetTextPos((menu_w / 2) - (tw / 2), 5)
+	surface.DrawText(title)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(0, 0, menu_w, menu_h)
+end
+
+local sheet = vgui.Create("DPropertySheet", main)
+
+meta_pn.Dock(sheet, FILL)
+meta_pn.SetVisible(sheet, false)
+sheet:SetFadeTime(0)
+meta_pn.SetFontInternal(sheet, "BudgetLabel")
+
+sheet.Paint = function(self)
+	local w, h =  meta_pn.GetWide(self), meta_pn.GetTall(self)
+
+	surface.SetDrawColor(COLOR_MAIN_BACK)
+	surface.DrawRect(0, 0, w, 20)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawLine(0, 19, w, 19)
+	surface.DrawOutlinedRect(0, 0, w, h)
+end
+
+-- The rest
 
 local beammat = Material("cable/redlaser")
 
@@ -156,9 +262,37 @@ local hits = {}
 local bullets = {}
 
 local vars = {
-	-- Cunt
+	-- Stuffs
 	["hookname"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
 	["timer_slow"] = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
+	["selected_hook"] = {},
+	["hook_backups"] = {},
+	["spec_dragging"] = false,
+	["spec_drag_x"] = 0,
+	["spec_drag_y"] = 0,
+	["td_dragging"] = false,
+	["td_drag_x"] = 0,
+	["td_drag_y"] = 0,
+	["menu_open"] = false,
+	["menu_delay"] = false,
+	["darkrp_gestures"] = {
+		["dance"] = ACT_GMOD_TAUNT_DANCE,
+		["muscle"] = ACT_GMOD_TAUNT_MUSCLE,
+		["wave"] = ACT_GMOD_GESTURE_WAVE,
+		["robot"] = -1, -- These animations don't exist (In base DarkRP)
+		["bow"] = ACT_GMOD_GESTURE_BOW,
+		["cheer"] = -1,
+		["laugh"] = ACT_GMOD_TAUNT_LAUGH,
+		["zombie"] = -1,
+		["agree"] = ACT_GMOD_GESTURE_AGREE,
+		["disagree"] = ACT_GMOD_GESTURE_DISAGREE,
+		["forward"] = -1,
+		["becon"] = ACT_GMOD_GESTURE_BECON,
+		["salute"] = -1,
+		["pose"] = ACT_GMOD_TAUNT_PERSISTENCE,
+		["halt"] = -1,
+		["group"] = -1,
+	},
 
 	-- Render
 	["afov"] = 75,
@@ -178,7 +312,7 @@ local vars = {
 	["hitbox_delay"] = 3,
 	["maxtracers"] = 1000,
 	["nightmode"] = false,
-	["nightmode_intensity"] = 0.05,
+	["nightmode_intensity"] = 0.8,
 	["nightmode_rs"] = false,
 	["reddeath"] = true,
 	["renderpanic"] = false,
@@ -186,13 +320,16 @@ local vars = {
 	["silentviz"] = false,
 	["snaplines"] = false,
 	["snaplines_color"] = "255 255 255 255",
-	["thirdpersonfix"] = false,
+	["thirdpersonfix"] = true,
 	["tracerlife"] = 3,
+	["tracers"] = false,
 	["tracers_local"] = false,
 	["tracers_other"] = false,
 
 	-- Tools
 	["antigag"] = false,
+	["autohop"] = false,
+	["autostrafe"] = false,
 	["delayaf"] = false,
 	["delayaf_a"] = 0.05,
 	["delayaf_dp"] = false,
@@ -203,6 +340,7 @@ local vars = {
 	["followtarg"] = LocalPlayer(),
 	["gesture"] = "dance",
 	["gesture_loop"] = false,
+	["gesture_loop_delay"] = false,
 	["gopen"] = true,
 	["psays"] = false,
 	["psays_message"] = "message",
@@ -267,6 +405,7 @@ local concommands = {
 		["st_render_nightmode"] = "nightmode",
 		["st_render_rgb"] = "rgb",
 		["st_render_snaplines"] = "snaplines",
+		["st_render_tracers"] = "tracers",
 		["st_render_tracers_beam"] = "beamtracers",
 		["st_render_tracers_local"] = "tracers_local",
 		["st_render_tracers_other"] = "tracers_other",
@@ -292,7 +431,197 @@ local concommands = {
 	}
 }
 
-local addedCommands = {}
+local addedCommands = {"st_menu"}
+
+local menu_tabs = {"Tools", "Render", "Miscellaneous", "Hooks"}
+
+local menu = {
+	["Tools"] = {
+		["icon"] = "icon16/wrench.png",
+		
+		{"cb", "antigag", 25, 25, "Anti Gag"},
+		{"cb", "delayaf", 25, 50, "Autofire Delay"},
+		
+		{"num", "delayaf_a", 50, 70, 300, 25, 0, 5, 2, "Delay Time"},
+		
+		{"cb", "detourcmd", 25, 100, "Detour Commands"},
+		{"cb", "followbot", 25, 125, "Follow Bot"},
+		{"cb", "gopen", 25, 150, "Allow gui.OpenURL()"},
+		{"cb", "specdetector", 25, 175, "Spectator List"},
+		{"cb", "specdetector_all", 50, 200, "Show All Spectators"},
+		{"cb", "tdetector", 25, 225, "Traitor Detector"},
+		{"cb", "tdetector_icons", 50, 250, "Draw Icons"},
+		{"cb", "tdetector_list", 50, 275, "Draw List"},
+		{"cb", "gesture_loop", 25, 300, "Gesture Loop"},
+		
+		{"com", "gesture", 50, 320, 100, 25, {"dance", "muscle", "wave", "robot", "bow", "cheer", "laugh", "zombie", "agree", "disagree", "forward", "becon", "salute", "pose", "halt", "group"}, "Gesture"},
+		
+		{"cb", "psays", 25, 350, "ULX PSay Spammer"},
+		
+		{"str", "psays_message", 50, 370, 250, 25, "Spam Message"},
+		
+		{"cb", "autohop", 25, 395, "Auto BHop"},
+		{"cb", "autostrafe", 25, 420, "Auto Strafe"},
+	},
+	
+	["Render"] = {
+		["icon"] = "icon16/monitor.png",
+		
+		{"cb", "antiblind", 25, 25, "Anti Blind"},
+		{"cb", "tracers", 25, 50, "Bullet Tracers"},
+		{"cb", "beamtracers", 50, 75, "Draw Beams"},
+		{"cb", "tracers_local", 50, 100, "Local Player"},
+		{"cb", "tracers_other", 50, 125, "Other Players"},
+		{"cb", "catpng", 25, 150, "Cat PNG FOV"},
+		{"cb", "devtexture", 25, 175, "Devtextures"},
+		{"cb", "devtexture_o", 50, 200, "Orange"},
+		{"cb", "fog", 25, 225, "Draw Fog"},
+		
+		{"num", "cfov", 25, 245, 200, 25, 2, 179, 0, "FOV"},
+		
+		{"cb", "fov_force", 50, 275, "Force FOV"},
+		{"cb", "fullbright", 25, 300, "Fullbright"},
+		{"cb", "nightmode", 25, 325, "Nightmode"},
+		
+		{"num", "nightmode_intensity", 50, 345, 200, 25, 0, 1, 2, "Intensity"},
+		
+		{"cb", "hitboxonhit", 25, 375, "Show hitboxes on damage"},
+		{"cb", "reddeath", 25, 400, "Render red deathscreen"},
+		{"cb", "rgb", 25, 425, "Rainbow Player & Weapon"},
+		{"cb", "silentviz", 25, 450, "Vizualize Silent Aim"},
+		{"cb", "snaplines", 25, 475, "Snaplines"},
+		{"cb", "thirdpersonfix", 25, 500, "Fix Thirdperson"},
+	
+		["right"] = {
+			{"lbl", 50, 25, 1, "Colors"},
+		
+			{"clr", "catpng_color", "Cat PNG FOV"},
+			{"clr", "hitbox_color", "Damagebox Hit"},
+			{"clr", "hitbox_color_ovr", "Damagebox Kill"},
+			{"clr", "snaplines", "Snaplines"},
+		},
+	},
+	
+	["Miscellaneous"] = {
+		["icon"] = "icon16/bomb.png",
+		
+		{"cb", "alerts", 25, 25, "Alerts"},
+		{"cb", "alerts_sound", 50, 50, "Alert Sounds"},
+	},
+	
+	["Hooks"] = {
+		["icon"] = "icon16/book.png",
+	
+		["HOOKBROWSER"] = {},
+	},
+}
+
+-- For the Hook Browser
+
+local hookpanel = vgui.Create("DScrollPanel", sheet)
+	
+hookpanel.Paint = function(self)
+	surface.SetDrawColor(COLOR_MAIN_BACK_M)
+	surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+end
+
+local hpsb = meta_pn.GetChildren(hookpanel)[2]
+local hpcc = meta_pn.GetChildren(hpsb)
+
+hpsb.Paint = function(self)
+	local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+
+	surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+	surface.DrawRect(0, 0, w, h)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(0, 0, w, h)
+end
+
+for _, v in ipairs(hpcc) do
+	v.Paint = function(self)
+		local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+	
+		surface.SetDrawColor(COLOR_MAIN_BACK)
+		surface.DrawRect(0, 0, w, h)
+		
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawOutlinedRect(0, 0, w, h)
+	end
+end
+
+local hbpanel = vgui.Create("DPanel", sheet)
+
+hbpanel.Paint = function() end
+
+for _, v in ipairs(hpcc) do
+	v.Paint = function(self)
+		local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+	
+		surface.SetDrawColor(COLOR_MAIN_BACK)
+		surface.DrawRect(0, 0, w, h)
+		
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawOutlinedRect(0, 0, w, h)
+	end
+end
+
+local hooksidepanel = vgui.Create("DScrollPanel", sheet)
+
+hooksidepanel.Paint = function(self)
+	surface.SetDrawColor(COLOR_MAIN_BACK_M)
+	surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+end
+
+local hspsb = meta_pn.GetChildren(hooksidepanel)[2]
+local hspcc = meta_pn.GetChildren(hspsb)
+
+hspsb.Paint = function(self)
+	local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+
+	surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+	surface.DrawRect(0, 0, w, h)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(0, 0, w, h)
+end
+
+for _, v in ipairs(hspcc) do
+	v.Paint = function(self)
+		local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+	
+		surface.SetDrawColor(COLOR_MAIN_BACK)
+		surface.DrawRect(0, 0, w, h)
+		
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawOutlinedRect(0, 0, w, h)
+	end
+end
+
+local hdiv = vgui.Create("DHorizontalDivider", hbpanel)
+
+meta_pn.Dock(hdiv, FILL)
+hdiv:SetLeft(hookpanel)
+hdiv:SetRight(hooksidepanel)
+hdiv:SetDividerWidth(4)
+hdiv:SetLeftMin(10)
+hdiv:SetRightMin(10)
+hdiv:SetLeftWidth((menu_w / 2) + 10)
+
+hdiv.Paint = function(self)
+	local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+
+	surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+	surface.DrawRect(0, 0, w, h)
+
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(0, 0, w, h)
+end
+
+local hlist = vgui.Create("DListLayout", hookpanel)
+
+meta_pn.SetSize(hlist, 300, meta_pn.GetTall(main) - 150)
+meta_pn.SetPos(hlist, 0, 0)
 
 -- nonozone
 
@@ -328,7 +657,6 @@ local badCommands = {
 	"engine_no_focus_sleep",
 	"exit",
 	"fps_max",
-	"impulse",
 	"jpeg",
 	"kill",
 	"mat_texture_limit",
@@ -385,6 +713,7 @@ local badWeapons = {
 	"hand",
 	"ied",
 	"knife",
+	"lightsaber",
 	"medkit",
 	"physcannon",
 	"physgun",
@@ -420,7 +749,7 @@ local tWeapons = {
 }
 
 --[[
-	Fuccncs
+	Alert function goes up here now
 ]]
 
 local function alert(event, data)
@@ -443,411 +772,8 @@ local function alert(event, data)
 			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 		end
 
-		MsgC(Color(255, 100, 100), "[$W467001Z] ", Color(222, 222, 222), "Blocked ", Color(255, 100, 100), tostring(event) .. "(" .. tostring(data) .. ")", Color(222, 222, 222), "\n")
+		MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Blocked ", COLOR_LIGHT_RED, tostring(event) .. "(" .. tostring(data) .. ")", COLOR_LIGHT, "\n")
 	end
-end
-
-local function isBadWeapon(weapon)
-	if not weapon or not meta_en.IsValid(weapon) then
-		return true
-	end
-
-	local class = meta_en.GetClass(weapon)
-	
-	if class then
-		class = string.lower(class)
-	end
-
-	for _, v in ipairs(badWeapons) do
-		if string.find(class, v) then
-			return true
-		end
-	end
-
-	return false
-end
-
-local function vMat(mat)
-	if not mat then
-		return false
-	end
-
-	mat = string.lower(mat)
-
-	for _, v in ipairs(badMaterials) do
-		if string.find(mat, v) then
-			return false
-		end
-	end
-	
-	return true
-end
-
-local function vEnt(ent)
-	if not ent then
-		return false
-	end
-
-	if meta_en.GetClass(ent) == "player" then
-		return meta_en.IsValid(ent) and meta_pl.Alive(ent) and meta_pl.GetObserverMode(ent) == 0 and meta_pl.Team(ent) ~= 1002 and meta_en.GetColor(ent).a > 0
-	end
-	
-	return meta_en.IsValid(ent)
-end
-
-local function getClosest(doFov)
-	local fov, retardednumber, rad, hw, hh = 0, 2.6, 0, ScrW() / 2, ScrH() / 2
-
-	if doFov then
-		fov = mvar.GetVarInt("Aimbot.Target.FoV")
-
-		rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
-	end
-
-	local d = math.huge
-	local cur = nil
-
-	for _, v in ipairs(player.GetAll()) do
-		if v == LocalPlayer() or not vEnt(v) or meta_en.IsDormant(v) then
-			continue
-		end
-		
-		local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
-
-		if doFov and fov > 0 and fov < 180 then
-			local mdist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
-			
-			if mdist > math.ceil(rad) then
-				continue
-			end
-		end
-
-		local dist = meta_vc.Distance(meta_en.GetPos(v), meta_en.GetPos(LocalPlayer()))
-
-		if dist < d then
-			d = dist
-			cur = v
-		end
-	end
-
-	return cur
-end
-
-local function shouldPanic()
-	return ismeth and vars["renderpanic"]
-end
-
-local function canRender()
-	local mesp = true
-	
-	if ismeth and mvar then
-		mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
-	end
-
-	return mesp and not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer())
-end
-
-local function shrtxt(text, maxw)
-	surface.SetFont("BudgetLabel")
-	
-	if not text then
-		text = ""
-	end
-	
-	local md = false
-	local tw, th = surface.GetTextSize(text)
-	
-	while tw + 5 > maxw do
-		md = true
-	
-		text = string.sub(text, 1, string.len(text) - 1)
-	
-		tw, th = surface.GetTextSize(text .. "...")
-	end
-	
-	if md then
-		text = text .. "..."
-	end
-	
-	return text
-end
-
-local function strColor(str)
-	local ret = Color(255, 255, 255, 255)
-	
-	if not str then
-		return ret
-	end
-	
-	ret = string.Split(str, " ")
-	
-	if not ret[1] then
-		ret[1] = 255
-	end
-	
-	if not ret[2] then
-		ret[2] = 255
-	end
-	
-	if not ret[3] then
-		ret[3] = 255
-	end
-	
-	if not ret[4] then
-		ret[4] = 255
-	end
-	
-	return Color(ret[1] % 256, ret[2] % 256, ret[3] % 256, ret[4] % 256)
-end
-
-local function drawTraitorDetector()
-	if shouldPanic() then
-		return
-	end
-
-	if engine.ActiveGamemode() == "terrortown" then
-		draw.NoTexture()
-		surface.SetFont("BudgetLabel")
-	
-		local x, y, w, h = vars["tdetector_list_x"], vars["tdetector_list_y"], ScrW() * (375 / 1920), 20
-		local ofs = 1
-		local dw = w - (w / 3)
-		
-		if vars["tdetector_list"] then
-			surface.SetDrawColor(55, 55, 55, 255)
-			surface.DrawRect(x, y, w, h)
-			
-			surface.SetDrawColor(12, 12, 12, 255)
-			surface.DrawOutlinedRect(x, y, w, h)
-			surface.SetDrawColor(12, 255, 12, 255)
-			
-			local tw, th = surface.GetTextSize("Player")
-			
-			surface.SetTextPos(x + (w - dw) - (tw / 2), y + 3)
-			surface.SetTextColor(255, 255, 255, 255)
-			surface.DrawText("Player")
-			
-			tw, th = surface.GetTextSize("Role")
-			
-			surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), y + 3)
-			surface.DrawText("Role")
-		end
-	
-		for _, v in ipairs(vars["ttable"]) do
-			if shouldPanic() then
-				return
-			end
-		
-			local ply = v[1]
-			local has = table.HasValue(vars["tcache"], ply)
-			
-			if not meta_en.IsValid(ply) then
-				continue
-			end
-
-			if vars["tdetector_list"] then
-				local offsety = y + (ofs * 20)
-				
-				if offsety > ScrH() then
-					continue
-				end
-				
-				local mode = v[2]
-				local role = "Unknown"
-				
-				if mode == 0 and not has then
-					if meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer()) then
-						role = "Innocent"
-						surface.SetDrawColor(0, 200, 0, 150)
-					else
-						surface.SetDrawColor(24, 24, 24, 150)
-					end
-				elseif mode == 1 and not has then
-					surface.SetDrawColor(0, 0, 200, 150)
-					role = "Detective"
-				elseif mode == 2 or has then
-					surface.SetDrawColor(200, 0, 0, 150)
-					role = "Traitor"
-				else
-					surface.SetDrawColor(24, 24, 24, 150)
-					role = "ERROR"
-				end
-				
-				role = shrtxt(role, w - dw)
-				
-				surface.DrawRect(x, offsety, w, h)
-				
-				local n = shrtxt(meta_pl.GetName(ply), dw)
-				local md = false
-				
-				local tw, th = surface.GetTextSize(n)
-				
-				surface.SetTextColor(255, 255, 255, 255)
-				surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
-				surface.DrawText(n)
-				
-				tw, th = surface.GetTextSize(role)
-				
-				surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), offsety + 3)
-				surface.DrawText(role)
-				
-				surface.SetDrawColor(12, 12, 12, 255)
-				surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
-				
-				ofs = ofs + 1
-			end
-			
-			if (meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer())) or meta_en.IsDormant(ply) or not meta_pl.Alive(ply) or meta_en.GetColor(ply).a < 1 then
-				continue
-			end
-			
-			cam.Start3D()
-				if vars["tdetector_icons"] and has then
-					local dir = meta_en.GetForward(LocalPlayer()) * -1
-					local rpos = meta_en.LocalToWorld(ply, (meta_en.OBBCenter(ply) * 2) + Vector(0, 0, 2))
-					
-					render.SetMaterial(trmat)
-					render.DrawQuadEasy(rpos, dir, 8,  8, Color(255, 255, 255, 130), 180)
-				end
-			cam.End3D()
-		end
-		
-		if vars["tdetector_list"] then
-			surface.SetDrawColor(12, 12, 12, 255)
-			surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
-			surface.DrawLine(x + (w - (w / 3)), y, x + (w - (w / 3)), y + h + ((ofs - 1) * 20))
-		end
-	end
-end
-
-local function drawSpectators()
-	if shouldPanic() then
-		return
-	end
-
-	draw.NoTexture()
-	surface.SetFont("BudgetLabel")
-	
-	local x, y, w, h = vars["specdetector_x"], vars["specdetector_y"], ScrW() * (500 / 1920), 20
-	local ofs = 1
-	
-	local fw = w - (w / 8)
-	local nw = w - (w / 2)
-	
-	local dw = w - (w / 4)
-	
-	surface.SetDrawColor(55, 55, 55, 255)
-	surface.DrawRect(x, y, w, h)
-	
-	surface.SetDrawColor(12, 12, 12, 255)
-	surface.DrawOutlinedRect(x, y, w, h)
-	surface.SetDrawColor(12, 255, 12, 255)
-	
-	local tw, th = surface.GetTextSize("Spectator")
-	
-	surface.SetTextPos(x + (w - dw) - (tw / 2), y + 3)
-	surface.SetTextColor(255, 255, 255, 255)
-	surface.DrawText("Spectator")
-	
-	tw, th = surface.GetTextSize("OBS-Mode")
-	
-	surface.SetTextPos(x + fw - (tw / 2), y + 3)
-	surface.DrawText("OBS-Mode")
-	
-	tw, th = surface.GetTextSize("Target")
-	
-	surface.SetTextPos(x + (w - (dw / 2)) - (tw / 2), y + 3)
-	surface.DrawText("Target")
-
-	for _, v in ipairs(vars["spectators"]) do
-		if shouldPanic() then
-			return
-		end
-	
-		if not meta_en.IsValid(v) then
-			continue
-		end
-		
-		local offsety = y + (ofs * 20)
-		
-		if offsety > ScrH() then
-			continue
-		end
-		
-		local starg = meta_pl.GetObserverTarget(v)
-		local sname = "UNKNOWN"
-		
-		if meta_en.IsValid(starg) then
-			if string.lower(meta_en.GetClass(starg)) ~= "player" then
-				starg = nil
-			end
-		end
-		
-		local all = vars["specdetector_all"]
-		
-		if meta_en.IsValid(starg) then
-			if all and meta_en.IsValid(starg) and starg == LocalPlayer() then
-				surface.SetDrawColor(200, 0, 0, 150)
-			else
-				surface.SetDrawColor(24, 24, 24, 150)
-			end
-			
-			if starg == LocalPlayer() then
-				sname = shrtxt("LocalPlayer", w - dw)
-			else
-				sname = shrtxt(meta_pl.GetName(starg), w - dw)
-			end
-		else
-			surface.SetDrawColor(24, 24, 24, 150)
-		end
-		
-		surface.DrawRect(x, offsety, w, h)
-		
-		local n = shrtxt(meta_pl.GetName(v), w - nw)
-		tw, th = surface.GetTextSize(n)
-
-		surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
-		surface.DrawText(n)
-		
-		tw, th = surface.GetTextSize(sname)
-
-		surface.SetTextPos(x + (w - (dw / 2)) - (tw / 2), offsety + 3)
-		surface.DrawText(sname)
-		
-		local smode = meta_pl.GetObserverMode(v)
-		local tmode = "UNKNOWN"
-	
-		if smode == 1 then
-			tmode = "Deathcam"
-		elseif smode == 2 then
-			tmode = "Freezecam"
-		elseif smode == 3 then
-			tmode = "Fixed"
-		elseif smode == 4 then
-			tmode = "Firstperson"
-		elseif smode == 5 then
-			tmode = "Thirdperson"
-		elseif smode == 6 then
-			tmode = "Roaming"
-		end
-		
-		tmode = shrtxt(tmode, w - dw)
-		
-		tw, th = surface.GetTextSize(tmode)
-		
-		surface.SetTextPos(x + fw - (tw / 2), offsety + 3)
-		surface.DrawText(tmode)
-		
-		surface.SetDrawColor(12, 12, 12, 255)
-		surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
-		
-		ofs = ofs + 1
-	end
-	
-	surface.SetDrawColor(12, 12, 12, 255)
-	surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
-	surface.DrawLine(x + nw, y, x + nw, y + h + ((ofs - 1) * 20))
-	surface.DrawLine(x + dw, y, x + dw, y + h + ((ofs - 1) * 20))
 end
 
 --[[
@@ -1284,12 +1210,711 @@ meta_pl_g.ConCommand = function(cmd)
 end
 
 --[[
+	Fuccncs
+]]
+
+local function dButton(x, y, w, h, parent, label, action) -- Retarded
+	local btn = vgui.Create("DButton", parent)
+	
+	btn:SetFont("BudgetLabel")
+	btn:SetTextColor(COLOR_WHITE)
+	meta_pn.SetText(btn, label)
+	meta_pn.SetSize(btn, w, h)
+	meta_pn.SetPos(btn, x, y)
+	
+	btn.DoClick = function()
+		action()
+	end
+	
+	btn.Paint = function(self)
+		local bw, bh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+	
+		local c = 55
+		local cm = math.Round(55 / bh)
+		local cs = math.ceil(c / cm)
+
+		for i = 1, cs do
+			surface.SetDrawColor(Color(c, c, c, 255))
+			surface.DrawLine(0, i, bw, i)
+			
+			c = c - cm
+		end
+	
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawOutlinedRect(0, 0, bw, bh)
+	end
+end
+
+local function isBadWeapon(weapon)
+	if not weapon or not meta_en.IsValid(weapon) then
+		return true
+	end
+
+	local class = meta_en.GetClass(weapon)
+	
+	if class then
+		class = string.lower(class)
+	end
+
+	for _, v in ipairs(badWeapons) do
+		if string.find(class, v) then
+			return true
+		end
+	end
+
+	return false
+end
+
+local function vMat(mat)
+	if not mat then
+		return false
+	end
+
+	mat = string.lower(mat)
+
+	for _, v in ipairs(badMaterials) do
+		if string.find(mat, v) then
+			return false
+		end
+	end
+	
+	return true
+end
+
+local function vEnt(ent)
+	if not ent then
+		return false
+	end
+
+	if meta_en.GetClass(ent) == "player" then
+		return meta_en.IsValid(ent) and meta_pl.Alive(ent) and meta_pl.GetObserverMode(ent) == 0 and meta_pl.Team(ent) ~= 1002 and meta_en.GetColor(ent).a > 0
+	end
+	
+	return meta_en.IsValid(ent)
+end
+
+local function getClosest(doFov)
+	local fov, retardednumber, rad, hw, hh = 0, 2.6, 0, ScrW() / 2, ScrH() / 2
+
+	if doFov then
+		fov = mvar.GetVarInt("Aimbot.Target.FoV")
+
+		rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
+	end
+
+	local d = math.huge
+	local cur = nil
+
+	for _, v in ipairs(player.GetAll()) do
+		if v == LocalPlayer() or not vEnt(v) or meta_en.IsDormant(v) then
+			continue
+		end
+		
+		local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
+
+		if doFov and fov > 0 and fov < 180 then
+			local mdist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
+			
+			if mdist > math.ceil(rad) then
+				continue
+			end
+		end
+
+		local dist = meta_vc.Distance(meta_en.GetPos(v), meta_en.GetPos(LocalPlayer()))
+
+		if dist < d then
+			d = dist
+			cur = v
+		end
+	end
+
+	return cur
+end
+
+local function shouldPanic()
+	return ismeth and vars["renderpanic"]
+end
+
+local function canRender()
+	local mesp = true
+	
+	if ismeth and mvar then
+		mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
+	end
+
+	if vars["menu"] then
+		return mesp and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer())
+	end
+
+	return mesp and not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer())
+end
+
+local function shrtxt(text, maxw)
+	surface.SetFont("BudgetLabel")
+	
+	if not text then
+		text = ""
+	end
+	
+	local md = false
+	local tw, th = surface.GetTextSize(text)
+	
+	while tw + 5 > maxw do
+		md = true
+	
+		text = string.sub(text, 1, string.len(text) - 1)
+	
+		tw, th = surface.GetTextSize(text .. "...")
+	end
+	
+	if md then
+		text = text .. "..."
+	end
+	
+	return text
+end
+
+local function strColor(str)
+	local ret = COLOR_WHITE
+	
+	if not str then
+		return ret
+	end
+	
+	ret = string.Split(str, " ")
+	
+	if not ret[1] then
+		ret[1] = 255
+	end
+	
+	if not ret[2] then
+		ret[2] = 255
+	end
+	
+	if not ret[3] then
+		ret[3] = 255
+	end
+	
+	if not ret[4] then
+		ret[4] = 255
+	end
+	
+	return Color(tonumber(ret[1]) % 256, tonumber(ret[2]) % 256, tonumber(ret[3]) % 256, tonumber(ret[4]) % 256)
+end
+
+local function mouseIn(a, b, c, d)
+	local mx, my = gui.MouseX(), gui.MouseY()
+	
+	if not mx or not my then
+		return false
+	end
+	
+	if not a or not b or not c or not d then
+		return false
+	end
+	
+	return mx >= a and my >= b and mx <= c and my <= d
+end
+
+local function isClickable(a, b, c, d)
+	if not a or not b or not c or not d then
+		return false
+	end
+
+	return input.IsMouseDown(MOUSE_LEFT) and mouseIn(a, b, c, d) and not dragndrop.IsDragging() and not meta_pn.IsDragging(main) and not vars["spec_dragging"] and not vars["td_dragging"]
+end
+
+local function getHookTable()
+	local ret = safefuncs.htable()
+	
+	for k, _ in pairs(vars["hook_backups"]) do
+		if not ret[k] then
+			ret[k] = {}
+		end
+	end
+	
+	local keys = {}
+	
+	for k, _ in pairs(ret) do
+		table.insert(keys, k)
+	end
+	
+	table.sort(keys)
+	
+	return ret, keys
+end
+
+local function refreshHookBrowser()
+	hlist:Clear()
+	vars["selected_hook"] = {}
+	
+	local htable, keys = getHookTable()
+
+	for _, k in ipairs(keys) do
+		local v = htable[k]
+		
+		local cat = vgui.Create("DCollapsibleCategory", hookpanel)
+		local catlbl = meta_pn.GetChildren(cat)[1]
+		
+		catlbl:SetTextColor(COLOR_WHITE)
+		catlbl:SetFont("BudgetLabel")
+		
+		cat:SetLabel(k)
+		cat:SetExpanded(false)
+		meta_pn.SetSize(cat, 300, 200)
+		
+		cat.Paint = function(self)
+			local cw, ch = meta_pn.GetWide(self), 20
+		
+			surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+			surface.DrawRect(0, 0, cw, ch)
+			
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+			surface.DrawOutlinedRect(0, 0, cw, ch)
+			
+			surface.SetDrawColor(COLOR_MAIN_BACK_M)
+			surface.DrawRect(cw - 20, 0, 20, ch)
+			
+			if not self:GetExpanded() then
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+				surface.DrawLine(cw - 11, 5, cw - 11, ch - 4)
+				surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+			else
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+				surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+			end
+		end
+		
+		local ipnl = vgui.Create("DScrollPanel")
+		
+		ipnl.Paint = function() end
+		
+		local ipnl_l = vgui.Create("DListLayout", ipnl)
+		
+		meta_pn.Dock(ipnl_l, FILL)
+		
+		for a, b in pairs(vars["hook_backups"]) do
+			if a ~= k then
+				continue
+			end
+			
+			local name = "UNKNOWN_HOOK"
+			
+			for bn, _ in pairs(b) do
+				name = bn
+			end
+			
+			local btn = vgui.Create("DButton")
+
+			btn:SetFont("BudgetLabel")
+			btn:SetTextColor(COLOR_LIGHT_RED)
+			meta_pn.SetText(btn, tostring(name))
+			meta_pn.Dock(btn, FILL)
+			
+			btn.Paint = function(self)
+				local bw, bh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+			
+				local c = 55
+				local cm = math.Round(55 / bh)
+				local cs = math.ceil(c / cm)
+		
+				for i = 1, cs do
+					surface.SetDrawColor(Color(c, c, c, 255))
+					surface.DrawLine(0, i, bw, i)
+					
+					c = c - cm
+				end
+			
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, bw, bh)
+			end
+			
+			btn.DoClick = function()
+				vars["selected_hook"] = {
+					["type"] = a,
+					["name"] = name,
+					["func"] = "REMOVED"
+				}
+			end
+			
+			ipnl_l:Add(btn)
+		end
+		
+		for n, f in pairs(v) do
+			local btn = vgui.Create("DButton")
+			
+			btn:SetFont("BudgetLabel")
+			btn:SetTextColor(COLOR_WHITE)
+			meta_pn.SetText(btn, tostring(n))
+			meta_pn.Dock(btn, FILL)
+			
+			btn.Paint = function(self)
+				local bw, bh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+			
+				local c = 55
+				local cm = math.Round(55 / bh)
+				local cs = math.ceil(c / cm)
+		
+				for i = 1, cs do
+					surface.SetDrawColor(Color(c, c, c, 255))
+					surface.DrawLine(0, i, bw, i)
+					
+					c = c - cm
+				end
+			
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, bw, bh)
+			end
+			
+			btn.DoClick = function()
+				vars["selected_hook"] = {
+					["type"] = k,
+					["name"] = n,
+					["func"] = f
+				}
+			end
+			
+			ipnl_l:Add(btn)
+		end
+		
+		cat:SetContents(ipnl)
+		
+		hlist:Add(cat)
+		
+		cat:SetAnimTime(0)
+		cat:DoExpansion(true)
+		cat:DoExpansion(false)
+	end
+end
+
+local function drawTraitorDetector()
+	if shouldPanic() then
+		return
+	end
+
+	if engine.ActiveGamemode() == "terrortown" then
+		draw.NoTexture()
+		surface.SetFont("BudgetLabel")
+	
+		local x, y, w, h = vars["tdetector_list_x"], vars["tdetector_list_y"], ScrW() * (375 / 1920), 20
+		
+		local ofs = 1
+		local dw = w - (w / 3)
+		
+		if vars["tdetector_list"] then
+			local mx, my = gui.MouseX(), gui.MouseY()
+		
+			if vars["menu"] and isClickable(x, y, x + w, y + h) then
+				vars["td_drag_x"] = mx - x
+				vars["td_drag_y"] = my - y
+				
+				vars["td_dragging"] = true
+			else
+				if not vars["menu"] or not input.IsMouseDown(MOUSE_LEFT) then
+					vars["td_dragging"] = false
+				end
+			end
+			
+			if vars["td_dragging"] then
+				x = math.Clamp(mx - vars["td_drag_x"], 0, ScrW() - w)
+				y = math.Clamp(my - vars["td_drag_y"], 0, ScrH() - h)
+				
+				vars["tdetector_list_x"] = x
+				vars["tdetector_list_y"] = y
+			end
+		
+			surface.SetDrawColor(COLOR_MAIN_BACK)
+			surface.DrawRect(x, y, w, h)
+			
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+			surface.DrawOutlinedRect(x, y, w, h)
+			
+			surface.SetDrawColor(COLOR_MAIN_BACK_A)
+			
+			local tw, th = surface.GetTextSize("Player")
+			
+			surface.SetTextPos(x + (w - dw) - (tw / 2), y + 3)
+			surface.SetTextColor(COLOR_WHITE)
+			surface.DrawText("Player")
+			
+			tw, th = surface.GetTextSize("Role")
+			
+			surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), y + 3)
+			surface.DrawText("Role")
+		end
+	
+		for _, v in ipairs(vars["ttable"]) do
+			if shouldPanic() then
+				return
+			end
+		
+			local ply = v[1]
+			local has = table.HasValue(vars["tcache"], ply)
+			
+			if not meta_en.IsValid(ply) then
+				continue
+			end
+
+			if vars["tdetector_list"] then
+				local offsety = y + (ofs * 20)
+				
+				if offsety > ScrH() then
+					continue
+				end
+				
+				local mode = v[2]
+				local role = "Unknown"
+				
+				if mode == 0 and not has then
+					if meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer()) then
+						role = "Innocent"
+						surface.SetDrawColor(0, 200, 0, 150)
+					else
+						surface.SetDrawColor(COLOR_MAIN_BACK_T)
+					end
+				elseif mode == 1 and not has then
+					surface.SetDrawColor(0, 0, 200, 150)
+					role = "Detective"
+				elseif mode == 2 or has then
+					surface.SetDrawColor(200, 0, 0, 150)
+					role = "Traitor"
+				else
+					surface.SetDrawColor(COLOR_MAIN_BACK_T)
+					role = "ERROR"
+				end
+				
+				role = shrtxt(role, w - dw)
+				
+				surface.DrawRect(x, offsety, w, h)
+				
+				local n = shrtxt(meta_pl.GetName(ply), dw)
+				local md = false
+				
+				local tw, th = surface.GetTextSize(n)
+				
+				surface.SetTextColor(COLOR_WHITE)
+				surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
+				surface.DrawText(n)
+				
+				tw, th = surface.GetTextSize(role)
+				
+				surface.SetTextPos(x + (w - (w / 6)) - (tw / 2), offsety + 3)
+				surface.DrawText(role)
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
+				
+				ofs = ofs + 1
+			end
+			
+			if (meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer())) or meta_en.IsDormant(ply) or not meta_pl.Alive(ply) or meta_en.GetColor(ply).a < 1 then
+				continue
+			end
+			
+			cam.Start3D()
+				if vars["tdetector_icons"] and has then
+					local dir = meta_en.GetForward(LocalPlayer()) * -1
+					local rpos = meta_en.LocalToWorld(ply, (meta_en.OBBCenter(ply) * 2) + Vector(0, 0, 2))
+					
+					render.SetMaterial(trmat)
+					render.DrawQuadEasy(rpos, dir, 8,  8, Color(255, 255, 255, 130), 180)
+				end
+			cam.End3D()
+		end
+		
+		if vars["tdetector_list"] then
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+			surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
+			surface.DrawLine(x + (w - (w / 3)), y, x + (w - (w / 3)), y + h + ((ofs - 1) * 20))
+		end
+	end
+end
+
+local function drawSpectators()
+	if shouldPanic() then
+		return
+	end
+
+	draw.NoTexture()
+	surface.SetFont("BudgetLabel")
+	
+	local x, y, w, h = vars["specdetector_x"], vars["specdetector_y"], ScrW() * (500 / 1920), 20
+	local mx, my = gui.MouseX(), gui.MouseY()
+	
+	if vars["menu"] and isClickable(x, y, x + w, y + h) then
+		vars["spec_drag_x"] = mx - x
+		vars["spec_drag_y"] = my - y
+		
+		vars["spec_dragging"] = true
+	else
+		if not vars["menu"] or not input.IsMouseDown(MOUSE_LEFT) then
+			vars["spec_dragging"] = false
+		end
+	end
+	
+	if vars["spec_dragging"] then
+		x = math.Clamp(mx - vars["spec_drag_x"], 0, ScrW() - w)
+		y = math.Clamp(my - vars["spec_drag_y"], 0, ScrH() - h)
+		
+		vars["specdetector_x"] = x
+		vars["specdetector_y"] = y
+	end
+	
+	local ofs = 1
+	
+	local fw = w - (w / 8)
+	local nw = w - (w / 2)
+	
+	local dw = w - (w / 4)
+	
+	surface.SetDrawColor(COLOR_MAIN_BACK)
+	surface.DrawRect(x, y, w, h)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(x, y, w, h)
+	
+	surface.SetDrawColor(COLOR_MAIN_BACK_A)
+	
+	local tw, th = surface.GetTextSize("Spectator")
+	
+	surface.SetTextPos(x + (w - dw) - (tw / 2), y + 3)
+	surface.SetTextColor(COLOR_WHITE)
+	surface.DrawText("Spectator")
+	
+	tw, th = surface.GetTextSize("OBS-Mode")
+	
+	surface.SetTextPos(x + fw - (tw / 2), y + 3)
+	surface.DrawText("OBS-Mode")
+	
+	tw, th = surface.GetTextSize("Target")
+	
+	surface.SetTextPos(x + (w - (dw / 2)) - (tw / 2), y + 3)
+	surface.DrawText("Target")
+
+	for _, v in ipairs(vars["spectators"]) do
+		if shouldPanic() then
+			return
+		end
+	
+		if not meta_en.IsValid(v) then
+			continue
+		end
+		
+		local offsety = y + (ofs * 20)
+		
+		if offsety > ScrH() then
+			continue
+		end
+		
+		local starg = meta_pl.GetObserverTarget(v)
+		local sname = "UNKNOWN"
+		
+		if meta_en.IsValid(starg) then
+			if string.lower(meta_en.GetClass(starg)) ~= "player" then
+				starg = nil
+			end
+		end
+		
+		local all = vars["specdetector_all"]
+		
+		if meta_en.IsValid(starg) then
+			if all and meta_en.IsValid(starg) and starg == LocalPlayer() then
+				surface.SetDrawColor(200, 0, 0, 150)
+			else
+				surface.SetDrawColor(COLOR_MAIN_BACK_T)
+			end
+			
+			if starg == LocalPlayer() then
+				sname = shrtxt("LocalPlayer", w - dw)
+			else
+				sname = shrtxt(meta_pl.GetName(starg), w - dw)
+			end
+		else
+			surface.SetDrawColor(COLOR_MAIN_BACK_T)
+		end
+		
+		surface.DrawRect(x, offsety, w, h)
+		
+		local n = shrtxt(meta_pl.GetName(v), w - nw)
+		tw, th = surface.GetTextSize(n)
+
+		surface.SetTextPos(x + (w - dw) - (tw / 2), offsety + 3)
+		surface.DrawText(n)
+		
+		tw, th = surface.GetTextSize(sname)
+
+		surface.SetTextPos(x + (w - (dw / 2)) - (tw / 2), offsety + 3)
+		surface.DrawText(sname)
+		
+		local smode = meta_pl.GetObserverMode(v)
+		local tmode = "UNKNOWN"
+	
+		if smode == 1 then
+			tmode = "Deathcam"
+		elseif smode == 2 then
+			tmode = "Freezecam"
+		elseif smode == 3 then
+			tmode = "Fixed"
+		elseif smode == 4 then
+			tmode = "Firstperson"
+		elseif smode == 5 then
+			tmode = "Thirdperson"
+		elseif smode == 6 then
+			tmode = "Roaming"
+		end
+		
+		tmode = shrtxt(tmode, w - dw)
+		
+		tw, th = surface.GetTextSize(tmode)
+		
+		surface.SetTextPos(x + fw - (tw / 2), offsety + 3)
+		surface.DrawText(tmode)
+		
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawLine(x, offsety - 1 + h, x + w, offsety - 1 + h)
+		
+		ofs = ofs + 1
+	end
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
+	surface.DrawLine(x + nw, y, x + nw, y + h + ((ofs - 1) * 20))
+	surface.DrawLine(x + dw, y, x + dw, y + h + ((ofs - 1) * 20))
+end
+
+local function toggleMenu()
+	local ms = not vars["menu"]
+	vars["menu"] = ms
+	
+	meta_pn.SetVisible(main, ms)
+	meta_pn.SetVisible(sheet, ms)
+	
+	if ms then
+		meta_pn.MakePopup(main)
+	end
+	
+	gui.EnableScreenClicker(ms)
+	
+	vars["menu_delay"] = true
+	
+	timer.Simple(0.1, function()
+		vars["menu_delay"] = false
+	end)
+end
+
+--[[
 	The Hooks!!
 ]]
 
 if ismeth and mcall then
 	mcall.Add("OnHUDPaint", vars["hookname"], function()
 		vars["renderpanic"] = false
+		
+		if vars["menu"] then
+			meta_pn.PaintManual(main)
+		end
 	
 		if canRender() then
 			draw.NoTexture()
@@ -1339,7 +1964,7 @@ if ismeth and mcall then
 					cam.Start3D()
 						if vars["beamtracers"] then
 							render.SetMaterial(beammat)
-							render.DrawBeam(v.src, v.endpos, 8, 1, 1, Color(255, 255, 255, 255))
+							render.DrawBeam(v.src, v.endpos, 8, 1, 1, COLOR_WHITE)
 						else
 							render.DrawLine(v.src, v.endpos, v.col, true)
 						end
@@ -1355,7 +1980,7 @@ if ismeth and mcall then
 					
 					local tw, th = surface.GetTextSize(text)
 					
-					surface.SetTextColor(255, 255, 255, 255)
+					surface.SetTextColor(COLOR_WHITE)
 					surface.SetTextPos((ScrW() / 2) - (tw / 2), 15)
 					surface.DrawText(text)
 				end
@@ -1472,13 +2097,8 @@ if ismeth and mcall then
 			end
 		end
 	end)
-end
-
-
-hook.Add("HUDPaint", vars["hookname"], function()
-	vars["renderpanic"] = true
-
-	if not ismeth then
+elseif not ismeth then
+	hook.Add("DrawOverlay", vars["hookname"], function()
 		if vars["tdetector"] then
 			drawTraitorDetector()
 		end
@@ -1486,8 +2106,16 @@ hook.Add("HUDPaint", vars["hookname"], function()
 		if vars["specdetector"] then
 			drawSpectators()
 		end
-	end
-	
+		
+		if vars["menu"] then
+			meta_pn.PaintManual(main)
+		end
+	end)
+end
+
+hook.Add("HUDPaint", vars["hookname"], function()
+	vars["renderpanic"] = true
+
 	if vars["antiblind"] then
 		hook.Remove("HUDPaint", "ulx_blind")
 		hook.Remove("HUDPaint", "Blind")
@@ -1512,74 +2140,100 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 
 	local mvtyp =  meta_en.GetMoveType(LocalPlayer())
 
-	if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) and mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER then
-		local tply = vars["followtarg"]
-		
-		if vEnt(tply) then
-			if meta_cd.KeyDown(cmd, IN_FORWARD) or meta_cd.KeyDown(cmd, IN_BACK) or meta_cd.KeyDown(cmd, IN_MOVELEFT) or meta_cd.KeyDown(cmd, IN_MOVERIGHT) then
-				vars["following"] = false
+	if mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER then
+		if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) then
+			local tply = vars["followtarg"]
+			
+			if vEnt(tply) then
+				if meta_cd.KeyDown(cmd, IN_FORWARD) or meta_cd.KeyDown(cmd, IN_BACK) or meta_cd.KeyDown(cmd, IN_MOVELEFT) or meta_cd.KeyDown(cmd, IN_MOVERIGHT) then
+					vars["following"] = false
+					
+					return
+				end
+			
+				local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
 				
-				return
-			end
-		
-			local ontop = meta_en.GetGroundEntity(LocalPlayer()) == tply
-			
-			local tpos =  meta_en.GetPos(tply)
-			local lpos = meta_en.GetPos(LocalPlayer())
-			
-			if not ontop then
-				if not meta_en.IsOnGround(LocalPlayer()) then
-					if lpos.z - tpos.z > meta_en.LocalToWorld(tply, meta_en.OBBCenter(tply) * 2).z - 5 then
-						ontop = true
+				local tpos =  meta_en.GetPos(tply)
+				local lpos = meta_en.GetPos(LocalPlayer())
+				
+				if not ontop then
+					if not meta_en.IsOnGround(LocalPlayer()) then
+						if lpos.z - tpos.z > meta_en.LocalToWorld(tply, meta_en.OBBCenter(tply) * 2).z - 5 then
+							ontop = true
+						end
 					end
 				end
-			end
-			
-			local lang
-			
-			if ontop or not vars["following"] then
-				lang = meta_cd.GetViewAngles(cmd)
-				vars["followang"] = lang
 				
-				vars["following"] = true
-			else
-				lang = vars["followang"]
-			end
-
-			local dir = tpos - lpos
-			local mvec = Vector(dir.x, dir.y, 0)
-			local ang = meta_vc.Angle(mvec)
-			
-			local lposnz = Vector(lpos.x, lpos.y, 0)
-			local tposnz = Vector(tpos.x, tpos.y, 0)
-			local dis = math.Round(meta_vc.Distance(lposnz, tposnz))
-
-			local yaw = math.rad(ang.y - lang.y)
-
-			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and dis > 15 then
-				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
-			end
-			
-			if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and meta_pl.IsSprinting(tply) then
-				meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
-			end
+				local lang
+				
+				if ontop or not vars["following"] then
+					lang = meta_cd.GetViewAngles(cmd)
+					vars["followang"] = lang
+					
+					vars["following"] = true
+				else
+					lang = vars["followang"]
+				end
 	
-			if dis > 4 then
-				local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
-			
-				if ontop then
-					meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
+				local dir = tpos - lpos
+				local mvec = Vector(dir.x, dir.y, 0)
+				local ang = meta_vc.Angle(mvec)
+				
+				local lposnz = Vector(lpos.x, lpos.y, 0)
+				local tposnz = Vector(tpos.x, tpos.y, 0)
+				local dis = math.Round(meta_vc.Distance(lposnz, tposnz))
+	
+				local yaw = math.rad(ang.y - lang.y)
+	
+				if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and dis > 15 then
+					meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
 				end
 				
-				meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
+				if not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(tply) and meta_pl.IsSprinting(tply) then
+					meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
+				end
+		
+				if dis > 4 then
+					local max = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
+				
+					if ontop then
+						meta_cd.SetForwardMove(cmd, math.cos(yaw) * max)
+					end
+					
+					meta_cd.SetSideMove(cmd, (0 - math.sin(yaw)) * max)
+				end
+			else
+				vars["followtarg"] = getClosest(false)
 			end
 		else
-			vars["followtarg"] = getClosest(false)
+			vars["followtarg"] = nil
+			vars["following"] = false
+			vars["followang"] = Angle(0, 0, 0)
 		end
-	else
-		vars["followtarg"] = nil
-		vars["following"] = false
-		vars["followang"] = Angle(0, 0, 0)
+		
+		if vars["autohop"] then
+			local ishopping = meta_cd.KeyDown(cmd, IN_JUMP)
+			
+			if ismeth then
+				ishopping = input.IsKeyDown(KEY_SPACE)
+			end
+			
+			if ishopping and not meta_en.IsOnGround(LocalPlayer()) then
+				meta_cd.SetButtons(cmd, bit.band(meta_cd.GetButtons(cmd), bit.bnot(IN_JUMP)))
+			end
+		end
+		
+		if vars["autostrafe"] then
+			if not meta_en.IsOnGround(LocalPlayer()) then
+				local mx = meta_cd.GetMouseX(cmd)
+				
+				if mx > 0 then
+					meta_cd.SetSideMove(cmd, 10^4)
+				elseif mx < 0 then
+					meta_cd.SetSideMove(cmd, 0 - 10^4)
+				end
+			end
+		end
 	end
 end)
 
@@ -1608,8 +2262,6 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	
 	nfov = math.Clamp(nfov, 2, 179)
 	
-	vars["afov"] = nfov
-
 	if vars["thirdpersonfix"] then
 		if meta_pl.ShouldDrawLocalPlayer(ply) then
 			local tr = util.TraceLine({
@@ -1635,26 +2287,20 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	}
 
 	if meta_en.IsValid(v) then
+		vars["afov"] = nview.fov
+	
 		return hook.Run("CalcVehicleView", v, ply, nview)
 	end
 
-	if meta_en.IsValid(w) then
+	if not force and meta_en.IsValid(w) then
 		local wCV = w.CalcView
-
+	
 		if wCV then
-			local wFOV
-		
-			nview.origin, nview.angles, wFOV = wCV(w, ply, pos * 1, ang * 1, nfov)
-			
-			if not force then
-				nview.fov = wFOV
-			
-				if wFOV ~= nfov then
-					vars["afov"] = wFOV
-				end
-			end
+			nview.origin, nview.angles, nview.fov = wCV(w, ply, pos * 1, ang * 1, nfov)
 		end
 	end
+	
+	vars["afov"] = nview.fov
 
 	return nview
 end)
@@ -1679,30 +2325,58 @@ hook.Add("CalcViewModelView", vars["hookname"], function(wep, vm, opos, oang, po
 end)
 
 hook.Add("Tick", vars["hookname"], function()
-	if ismeth and vars["delayaf"] and mvar then
-		local at = mutil.GetAimbotTarget()
-
-		if at ~= 0 then
-			local ent = ents.GetByIndex(at)
-			
-			if meta_en.IsValid(ent) and meta_pl.Alive(ent) then
-				if mvar.GetVarInt("Aimbot.Options.Auto Fire") == 0 and not vars["delayaf_dp"] then
-					vars["delayaf_dp"] = true
-				
-					timer.Simple(vars["delayaf_a"], function()
-						mvar.SetVarInt("Aimbot.Options.Auto Fire", 1)
-					end)
+	if ismeth then
+		if mvar then
+			if vars["delayaf"] then
+				local at = mutil.GetAimbotTarget()
+	
+				if at ~= 0 then
+					local ent = ents.GetByIndex(at)
+					
+					if meta_en.IsValid(ent) and meta_pl.Alive(ent) then
+						if mvar.GetVarInt("Aimbot.Options.Auto Fire") == 0 and not vars["delayaf_dp"] then
+							vars["delayaf_dp"] = true
+						
+							timer.Simple(vars["delayaf_a"], function()
+								mvar.SetVarInt("Aimbot.Options.Auto Fire", 1)
+							end)
+						end
+					end
+				else
+					mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
+					vars["delayaf_dp"] = false
 				end
 			end
-		else
-			mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
-			vars["delayaf_dp"] = false
 		end
 	end
 	
 	if vars["gesture_loop"] then
 		if meta_pl.IsPlayingTaunt and not meta_pl.IsPlayingTaunt(LocalPlayer()) then
-			meta_pl.ConCommand(LocalPlayer(), "act " .. vars["gesture"])
+			local tdance = vars["gesture"]
+		
+			if engine.ActiveGamemode() == "darkrp" then
+				if not vars["gesture_loop_delay"] then
+					local id = -1
+				
+					id = vars["darkrp_gestures"][tdance]
+
+					if id ~= -1 then
+						meta_pl.ConCommand(LocalPlayer(), "_darkrp_doanimation " .. id)
+						
+						local id, len = meta_en.LookupSequence(LocalPlayer(), meta_en.GetSequenceName(LocalPlayer(), meta_en.SelectWeightedSequence(LocalPlayer(), id)))
+						
+						if id and len then
+							vars["gesture_loop_delay"] = true
+						
+							timer.Simple(len, function()
+								vars["gesture_loop_delay"] = false
+							end)
+						end
+					end
+				end
+			else
+				meta_pl.ConCommand(LocalPlayer(), "act " .. tdance)
+			end
 		end
 	end
 
@@ -1804,7 +2478,7 @@ hook.Add("RenderScene", vars["hookname"], function()
 	local nmrs = vars["nightmode_rs"]
 	
 	if dv or (nm and not fb) or (not nm and not vars["nightmode_rs"]) then
-		local int = math.Clamp(vars["nightmode_intensity"], 0, 1)
+		local int = math.abs(math.Clamp(vars["nightmode_intensity"], 0, 1) - 1)
 		local rsvec = Vector(1, 1, 1)
 	
 		for _, v in ipairs(meta_en.GetMaterials(game.GetWorld())) do
@@ -1931,7 +2605,7 @@ hook.Add("PreDrawEffects", vars["hookname"], function()
 		
 				if vars["beamtracers"] then
 					render.SetMaterial(beammat)
-					render.DrawBeam(v.src, v.endpos, 8, 1, 1, Color(255, 255, 255, 255))
+					render.DrawBeam(v.src, v.endpos, 8, 1, 1, COLOR_WHITE)
 				else
 					render.DrawLine(v.src, v.endpos, v.col, true)
 				end
@@ -1957,6 +2631,10 @@ hook.Add("player_hurt", vars["hookname"], function(data)
 	local tg = Player(data.userid)
 	
 	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) or not meta_pl.Alive(tg) then
+		return
+	end
+	
+	if data.health and data.health < 1 then
 		return
 	end
 	
@@ -2072,85 +2750,69 @@ hook.Add("entity_killed", vars["hookname"], function(data)
 	end)
 end)
 
-hook.Add("EntityFireBullets", vars["hookname"], function(ply, data)
-	if not meta_en.IsValid(ply) or not data then
-		return
-	end
-	
-	if ply ~= LocalPlayer() then
-		print("wtf how")
-		return
-	end
-	
-	local len = vars["tracers_local"]
-	
-	if not len or isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
-		return
-	end
-
-	if table.Count(bullets) > vars["maxtracers"] then
-		table.remove(bullets, 1)
-	end
-	
-	local startpos = data.Src
-	local col = Color(100, 255, 100, 255)
-	
-	if meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
-		for i = 0, meta_en.GetBoneCount(ply) - 1 do
-			if string.find(string.lower(meta_en.GetBoneName(ply, i)), "head") then
-				startpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ply, i)) + (data.Dir * 2)
-	
-				break
-			end
-		end
-	end
-	
-	local tr = util.TraceLine({
-		start = startpos,
-		endpos = startpos + (data.Dir * 32767),
-		filter = player.GetAll(),
-		ignoreworld = false,
-		mask = MASK_SHOT,
-	})
-	
-	table.insert(bullets, {
-		["src"] = startpos,
-		["endpos"] = tr.HitPos,
-		["col"] = col,
-	})
-	
-	local ttr = bullets[table.Count(bullets)]
-
-	timer.Simple(math.Round(vars["tracerlife"]), function()
-		table.RemoveByValue(bullets, ttr)
-	end)
-end)
-
 hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
-	if not (event == PLAYERANIMEVENT_ATTACK_PRIMARY and data == PLAYERANIMEVENT_ATTACK_PRIMARY) then
+	if not (event == PLAYERANIMEVENT_ATTACK_PRIMARY and data == PLAYERANIMEVENT_ATTACK_PRIMARY) or not vars["tracers"] then
 		return
 	end
 
 	local en = vars["tracers_other"]
-	
+	local len = vars["tracers_local"]
 
-	if not en or not meta_en.IsValid(ply) or ply == LocalPlayer() or isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
+	if (not len and not en) or not meta_en.IsValid(ply) or isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
 		return
+	end
+	
+	local isl = ply == LocalPlayer()
+	
+	if isl then
+		if not len then
+			return
+		end
+	else
+		if not en then
+			return
+		end
 	end
 
 	if table.Count(bullets) > vars["maxtracers"] then
 		table.remove(bullets, 1)
 	end
+
+	local usebones = true
 
 	local startpos = meta_pl.GetShootPos(ply)
 	local dir = meta_an.Forward(meta_en.EyeAngles(ply))
 	local col = Color(255, 100, 100, 255)
 
-	for i = 0, meta_en.GetBoneCount(ply) - 1 do
-		if string.find(string.lower(meta_en.GetBoneName(ply, i)), "head") then
-			startpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ply, i)) + (dir * 2)
+	if isl then
+		col = Color(100, 255, 100, 255)
 	
-			break
+		if not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
+			usebones = false
+		end
+	end
+
+	if usebones then
+		for i = 0, meta_en.GetBoneCount(ply) - 1 do
+			if string.find(string.lower(meta_en.GetBoneName(ply, i)), "head") then
+				startpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ply, i)) + (dir * 2)
+		
+				break
+			end
+		end
+	end
+	
+	if isl then
+		if ismeth and mutil then
+			local at = mutil.GetAimbotTarget()
+
+			if at ~= 0 then
+				local ent = ents.GetByIndex(at)
+				
+				if meta_en.IsValid(ent) then
+					dir = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - startpos
+				end
+			end
 		end
 	end
 
@@ -2179,12 +2841,516 @@ end)
 	The rest
 ]]
 
-for j, l in pairs(concommands) do
-	if not j or not l then
+-- Setting up menu
+
+for i = 1, #menu_tabs do
+	local t = menu_tabs[i]
+	local tt = menu[t]
+	
+	if t == "Hooks" then
 		continue
 	end
+	
+	local panel = vgui.Create("DScrollPanel", sheet)
+	
+	panel.Paint = function(self)
+		surface.SetDrawColor(COLOR_MAIN_BACK_M)
+		surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+	end
+	
+	local psb = meta_pn.GetChildren(panel)[2]
+	local pcc = meta_pn.GetChildren(psb)
+	
+	psb.Paint = function(self)
+		local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+	
+		surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+		surface.DrawRect(0, 0, w, h)
+		
+		surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+		surface.DrawOutlinedRect(0, 0, w, h)
+	end
+	
+	for _, v in ipairs(pcc) do
+		v.Paint = function(self)
+			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+		
+			surface.SetDrawColor(COLOR_MAIN_BACK)
+			surface.DrawRect(0, 0, w, h)
+			
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+			surface.DrawOutlinedRect(0, 0, w, h)
+		end
+	end
+	
+	local cpanel
+	
+	if t == "Render" then
+		local bpanel = vgui.Create("DPanel", sheet)
+		
+		bpanel.Paint = function() end
+		
+		cpanel = vgui.Create("DScrollPanel", sheet)
+		
+		cpanel.Paint = function(self)
+			surface.SetDrawColor(COLOR_MAIN_BACK_M)
+			surface.DrawRect(0, 0, meta_pn.GetWide(self), meta_pn.GetTall(self))
+		end
+		
+		local cpsb = meta_pn.GetChildren(cpanel)[2]
+		local cpcc = meta_pn.GetChildren(cpsb)
+		
+		cpsb.Paint = function(self)
+			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+		
+			surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+			surface.DrawRect(0, 0, w, h)
+			
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+			surface.DrawOutlinedRect(0, 0, w, h)
+		end
+		
+		for _, v in ipairs(cpcc) do
+			v.Paint = function(self)
+				local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+			
+				surface.SetDrawColor(COLOR_MAIN_BACK)
+				surface.DrawRect(0, 0, w, h)
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, w, h)
+			end
+		end
+		
+		local div = vgui.Create("DHorizontalDivider", bpanel)
+		
+		meta_pn.Dock(div, FILL)
+		div:SetLeft(panel)
+		div:SetRight(cpanel)
+		div:SetDividerWidth(4)
+		div:SetLeftMin(10)
+		div:SetRightMin(10)
+		div:SetLeftWidth((menu_w / 2) + 10)
+		
+		div.Paint = function(self)
+			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+		
+			surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+			surface.DrawRect(0, 0, w, h)
+		
+			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+			surface.DrawOutlinedRect(0, 0, w, h)
+		end
+		
+		sheet:AddSheet(t, bpanel, tt.icon)
+	else
+		sheet:AddSheet(t, panel, tt.icon)
+	end
+	
+	for k, v in pairs(tt) do
+		if k == "icon" then
+			continue
+		end
+		
+		if type(k) == "string" then
+			if not cpanel then
+				continue
+			end
+		
+			local clist = vgui.Create("DListLayout", cpanel)
 
-	if not type(l) == "table" then
+			meta_pn.SetSize(clist, 300, meta_pn.GetTall(main) - 150)
+			meta_pn.SetPos(clist, 25, 75)
+		
+			for _, su in pairs(v) do
+				if su[1] == "lbl" then
+					local lb = vgui.Create("DLabel", cpanel)
+					
+					meta_pn.SetSize(lb, 999, 25)
+					
+					if su[4] == 1 then
+						lb:SetFont("DermaLarge")
+					end
+
+					lb:SetFont("BudgetLabel")
+					lb:SetTextColor(COLOR_WHITE)
+					lb:SetText(su[table.Count(su)])
+					meta_pn.SetPos(lb, su[2], su[3])
+				elseif su[1] == "clr" then
+					local cat = vgui.Create("DCollapsibleCategory", cpanel)
+					local catlbl = meta_pn.GetChildren(cat)[1]
+		
+					catlbl:SetTextColor(COLOR_WHITE)
+					catlbl:SetFont("BudgetLabel")
+					
+					cat:SetLabel(su[table.Count(su)])
+					cat:SetExpanded(false)
+					meta_pn.SetSize(cat, 300, 200)
+					
+					cat.Paint = function(self)
+						local cw, ch = meta_pn.GetWide(self), 20
+					
+						surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+						surface.DrawRect(0, 0, cw, ch)
+						
+						surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+						surface.DrawOutlinedRect(0, 0, cw, ch)
+						
+						surface.SetDrawColor(COLOR_MAIN_BACK_M)
+						surface.DrawRect(cw - 20, 0, 20, ch)
+						
+						if not self:GetExpanded() then
+							surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+							surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+							surface.DrawLine(cw - 11, 5, cw - 11, ch - 4)
+							surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+						else
+							surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+							surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+							surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+						end
+					end
+					
+					local pck = vgui.Create("DColorMixer")
+					
+					meta_pn.SetFontInternal(pck, "BudgetLabel")
+					meta_pn.SetSize(pck, 250, 150)
+					pck:SetPalette(false)
+					pck:SetAlphaBar(true)
+					pck:SetWangs(true)
+					pck:SetColor(strColor(vars[su[2]]))
+					
+					pck.ValueChanged = function(self, new)
+						if new == nil then
+							return
+						end
+					
+						local r, g, b, a = tostring(new.r), tostring(new.g), tostring(new.b), tostring(new.a)
+					
+						vars[su[2]] = r .. " " .. g .. " " .. b .. " " .. a
+					end
+					
+					cat:SetContents(pck)
+					
+					clist:Add(cat)
+				end
+			end
+			
+			continue
+		end
+		
+		local etype = string.lower(v[1])
+		
+		if etype == "cb" then
+			local cb = vgui.Create("DCheckBox", panel)
+			local cbl = vgui.Create("DLabel", panel)
+			
+			meta_pn.SetPos(cb, v[3], v[4])
+			cb:SetValue(vars[v[2]])
+			
+			cbl:SetFont("BudgetLabel")
+			cbl:SetTextColor(COLOR_WHITE)
+			cbl:SetText(v[table.Count(v)])
+			meta_pn.SetSize(cbl, 999, 25)
+			meta_pn.SetPos(cbl, v[3] + 20, v[4] - 5)
+			
+			cb.OnChange = function(self, new)
+				if new == nil then
+							return
+						end
+			
+				vars[v[2]] = new
+			end
+			
+			cb.Paint = function(self)
+				local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+			
+				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+				surface.DrawRect(0, 0, w, h)
+				
+				if self:GetChecked() then
+					surface.SetDrawColor(COLOR_ORANGE)
+					surface.DrawRect(2, 2, w - 3, h - 3)
+				end
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, w, h)
+			end
+		elseif etype == "str" then
+			local tb = vgui.Create("DTextEntry", panel)
+			
+			meta_pn.SetSize(tb, v[5], v[6])
+			meta_pn.SetPos(tb, v[3], v[4])
+			tb:SetValue(vars[v[2]])
+			tb:SetPlaceholderText(v[table.Count(v)])
+			tb:SetUpdateOnType(true)
+			
+			tb.OnValueChange = function(self, new)
+				if new == nil then
+					return
+				end
+			
+				vars[v[2]] = new
+			end
+			
+			tb.Paint = function(self)
+				local tbho = meta_pn.GetTall(self)
+				local tbh = tbho - (tbho / 4)
+			
+				surface.SetDrawColor(COLOR_LIGHT_WHITE)
+				surface.DrawRect(0, 0, meta_pn.GetWide(self), tbh)
+				
+				surface.SetFont("BudgetLabel")
+				surface.SetTextColor(COLOR_WHITE)
+				surface.SetTextPos(3, 3)
+				surface.DrawText(tostring(vars[v[2]]))
+			end
+		elseif etype == "num" then
+			local ns = vgui.Create("DNumSlider", panel)
+			local df = vars[v[2]]
+			
+			local nst = ns:GetTextArea()
+			
+			nst:SetTextColor(COLOR_WHITE)
+			nst:SetFont("BudgetLabel")
+			
+			meta_pn.SetSize(ns, v[5], v[6])
+			meta_pn.SetPos(ns, v[3], v[4])
+			ns:SetDecimals(v[9])
+			ns:SetMin(v[7])
+			ns:SetMax(v[8])
+			ns:SetValue(df)
+			ns:SetDefaultValue(df)
+			ns:SetText(v[table.Count(v)])
+			
+			ns.OnValueChanged = function(self, new)
+				if new == nil then
+					return
+				end
+			
+				vars[v[2]] = new
+			end
+			
+			nst.Paint = function(self)
+				local thw = meta_pn.GetWide(self)
+				local tho = meta_pn.GetTall(self)
+				local th = tho - (tho / 4)
+	
+				local y = 3
+			
+				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+				surface.DrawRect(0, y, thw, th)
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, y, thw, th)
+				
+				local val = tostring(math.Round(vars[v[2]], v[9]))
+				
+				surface.SetFont("BudgetLabel")
+				
+				local tw, th = surface.GetTextSize(val)
+				
+				surface.SetTextColor(COLOR_WHITE)
+				surface.SetTextPos((thw / 2) - (tw / 2), th / 3)
+				surface.DrawText(val)
+			end
+			
+			local nsc = meta_pn.GetChildren(ns)
+			local nsn = nsc[3]
+			local nsns = meta_pn.GetChildren(nsn)[1]
+			
+			nsns:SetEnabled(false)
+			
+			nsn:SetTextColor(COLOR_WHITE)
+			nsn:SetFont("BudgetLabel")
+
+			meta_pn.GetChildren(nsc[2])[1].Paint = function(self)
+				local swo = meta_pn.GetWide(self)
+				local sw, sh = swo - (swo / 4), meta_pn.GetTall(self)
+			
+				surface.SetDrawColor(COLOR_MAIN_BACK)
+				surface.DrawRect(0, 0, sw, sh)
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, sw, sh)
+			end
+			
+			nsc[2].Paint = function(self)
+				local hh = meta_pn.GetTall(self) / 2
+			
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawLine(0, hh, meta_pn.GetWide(self) - 5, hh)
+			end
+		elseif etype == "com" then
+			local cmb = vgui.Create("DComboBox", panel)
+			
+			cmb:SetTextColor(COLOR_WHITE)
+			cmb:SetFont("BudgetLabel")
+			
+			cmb:GetChildren()[1].Paint = function() end
+			
+			meta_pn.SetSize(cmb, v[5], v[6])
+			meta_pn.SetPos(cmb, v[3], v[4])
+			
+			for _, v in ipairs(v[7]) do
+				cmb:AddChoice(v)
+			end
+			
+			cmb:ChooseOptionID(1)
+			
+			cmb.OnSelect = function(self, new)
+				if new == nil then
+					return
+				end
+			
+				vars[v[2]] = cmb:GetOptionText(new)
+			end
+		
+			cmb.Paint = function(self)
+				local cw, ch = meta_pn.GetWide(self), 20
+			
+				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+				surface.DrawRect(0, 0, cw, ch)
+				
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawOutlinedRect(0, 0, cw, ch)
+				
+				surface.SetDrawColor(COLOR_MAIN_BACK_M)
+				surface.DrawRect(cw - 20, 0, 20, ch)
+				
+				if not self:IsMenuOpen() then
+					surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+					surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+					surface.DrawLine(cw - 11, 5, cw - 11, ch - 4)
+					surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+				else
+					surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+					surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
+					surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+				end
+			end
+		end
+	end
+end
+
+sheet:AddSheet("Hooks", hbpanel, menu["Hooks"].icon)
+
+for _, d in ipairs(sheet:GetItems()) do
+	for k, v in pairs(d) do
+		if k ~= "Tab" then
+			continue
+		end
+		
+		v:SetTextColor(COLOR_WHITE)
+		v:SetFont("BudgetLabel")
+		
+		v.Paint = function(self)
+			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
+			local ac = sheet:GetActiveTab() == self
+		
+			if ac then
+				surface.SetDrawColor(COLOR_MAIN_BACK_M)
+			else
+				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+			end
+		
+			surface.DrawRect(0, 0, w, h)
+		
+			if ac then
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawLine(0, 0, 0, h - 8)
+				surface.DrawLine(w - 1, 0, w - 1, h - 8)
+			
+				surface.SetDrawColor(COLOR_ORANGE)
+				surface.DrawLine(0, 0, w, 0)
+			else
+				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+				surface.DrawLine(0, 19, w, 19)
+			end
+		end
+	end
+end
+
+-- Hook Browser buttons
+
+dButton(25, 25, 125, 25, hooksidepanel, "Refresh", function()
+	refreshHookBrowser()
+end)
+
+dButton(25, 75, 125, 25, hooksidepanel, "De-Activate Hook", function()
+	local sel = vars["selected_hook"]
+	
+	if table.IsEmpty(sel) then
+		return
+	end
+	
+	local t = sel.type
+	local n = sel.name
+	local f = sel.func
+
+	if not t or not n or f == "REMOVED" then
+		return
+	end
+	
+	local bu = vars["hook_backups"]
+	
+	if not bu[t] then
+		bu[t] = {}
+	end
+	
+	if not bu[t][n] then
+		bu[t][n] = f
+	end
+	
+	hook.Remove(t, n)
+	
+	refreshHookBrowser()
+end)
+
+dButton(25, 125, 125, 25, hooksidepanel, "Re-Activate Hook", function()
+	local sel = vars["selected_hook"]
+	
+	if table.IsEmpty(sel) then
+		return
+	end
+	
+	local t = sel.type
+	local n = sel.name
+	local f = sel.func
+	
+	if not t or not n or f ~= "REMOVED" then
+		return
+	end
+	
+	local bu = vars["hook_backups"]
+	
+	for k, v in pairs(bu) do
+		if k ~= sel.type then
+			continue
+		end
+	
+		for bn, bf in pairs(v) do
+			if bn == n then
+				hook.Add(t, n, bf)
+				
+				bu[t][n] = nil
+				
+				if table.Count(bu[t]) == 0 then
+					bu[t] = nil
+				end
+				
+				break
+			end
+		end
+	end
+	
+	refreshHookBrowser()
+end)
+
+-- ConCommands
+
+for j, l in pairs(concommands) do
+	if not j or not l or not type(l) == "table" then
 		continue
 	end
 
@@ -2232,6 +3398,20 @@ for j, l in pairs(concommands) do
 	end
 end
 
+concommand.Add("st_menu", function()
+	if vars["menu_delay"] then
+		return
+	end
+	
+	toggleMenu()
+end, nil, nil, 0)
+
+main.OnClose = function()
+	toggleMenu()
+end
+
+-- Timer
+
 timer.Create(vars["timer_slow"], 1, 0, function()
 	local td = vars["tdetector"]
 	local sd = vars["specdetector"]
@@ -2243,10 +3423,24 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 		if GAMEMODE.round_state == ROUND_ACTIVE then
 			safefuncs.tempty(vars["ttable"])
 			
-			local mp = GetConVar("ttt_minimum_players")
+			local shouldforce = true
 			
-			if mp and meta_cv.GetInt(mp) == player.GetCount() then
-				if (meta_pl.IsTraitor and not meta_pl.IsTraitor(LocalPlayer())) or (meta_pl.IsDetective and meta_pl.IsDetective(LocalPlayer())) then
+			if meta_pl.IsTraitor and meta_pl.IsTraitor(LocalPlayer()) then
+				shouldforce = false
+			end
+			
+			if shouldforce then
+				local alivecount = 0
+				
+				for _, v in ipairs(player.GetAll()) do
+					if not meta_en.IsValid(v) or v == LocalPlayer() or not meta_pl.Alive(v) then
+						continue
+					end
+					
+					alivecount = alivecount + 1
+				end
+				
+				if alivecount == 1 then
 					force = true
 				end
 			end
@@ -2385,12 +3579,14 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 	end
 end)
 
-if mrend then
-	mrend.PushAlert("Successfully loaded Swag Tools!")
+-- Let them know it loaded
+
+if ismeth and mrend then
+	mrend.PushAlert("Successfully loaded " .. title "!")
 else
 	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 
-	MsgC(Color(255, 100, 100), "[$W467001Z] ", Color(222, 222, 222), "Loaded Successfully!\n")
+	MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Loaded Successfully!\n")
 end
 
 jit.flush()
