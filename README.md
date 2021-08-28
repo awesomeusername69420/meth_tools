@@ -73,6 +73,7 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  
  Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
+ | st_menu | Toggles the menu | `N/A` | `N/A` |
  | st_alerts | Toggles detour alerts | `boolean` | `true` |
  | st_alerts_sound | Toggles detour alert sound | `boolean` | `true` |
 </details>
