@@ -727,6 +727,19 @@ local badWeapons = {
 	"slam",
 	"stunstick",
 	"sword",
+	"tfa_csgo_bayonet",
+	"tfa_csgo_bowie",
+	"tfa_csgo_butfly",
+	"tfa_csgo_falch",
+	"tfa_csgo_flip",
+	"tfa_csgo_gut",
+	"tfa_csgo_karam",
+	"tfa_csgo_m9",
+	"tfa_csgo_pushkn",
+	"tfa_csgo_stiletto",
+	"tfa_csgo_tackni",
+	"tfa_csgo_ursus",
+	"tfa_csgo_widowmaker",
 }
 
 local tWeapons = {
@@ -3062,8 +3075,8 @@ for i = 1, #menu_tabs do
 			
 			cb.OnChange = function(self, new)
 				if new == nil then
-							return
-						end
+					return
+				end
 			
 				vars[v[2]] = new
 			end
