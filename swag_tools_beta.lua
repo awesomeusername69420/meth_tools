@@ -3206,14 +3206,14 @@ for i = 1, #menu_tabs do
 			cmb:SetTextColor(COLOR_WHITE)
 			cmb:SetFont("BudgetLabel")
 			
-			cmb:GetChildren()[1].Paint = function() end
-			
 			meta_pn.SetSize(cmb, v[5], v[6])
 			meta_pn.SetPos(cmb, v[3], v[4])
 			
 			for _, v in ipairs(v[7]) do
 				cmb:AddChoice(v)
 			end
+			
+			meta_pn.GetChildren(cmb)[1].Paint = function() end
 			
 			cmb:ChooseOptionID(1)
 			
@@ -3601,7 +3601,7 @@ end)
 -- Let them know it loaded
 
 if ismeth and mrend then
-	mrend.PushAlert("Successfully loaded " .. title "!")
+	mrend.PushAlert("Successfully loaded " .. title .. "!")
 else
 	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 
