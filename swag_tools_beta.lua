@@ -157,10 +157,10 @@ local main = vgui.Create("DFrame")
 
 meta_pn.SetSize(main, menu_w, menu_h)
 meta_pn.Center(main)
-main:SetDeleteOnClose(false) -- If there is a metatable for these, I couldn't find it
-main:SetTitle("")
+main.SetDeleteOnClose(main, false)
+main.SetTitle(main, "")
 meta_pn.SetVisible(main, false)
-main:ShowCloseButton(true)
+main.ShowCloseButton(main, true)
 meta_pn.SetPaintedManually(main, true)
 meta_pn.DockPadding(main, 12, 24, 12, 12)
 
@@ -197,7 +197,7 @@ local sheet = vgui.Create("DPropertySheet", main)
 
 meta_pn.Dock(sheet, FILL)
 meta_pn.SetVisible(sheet, false)
-sheet:SetFadeTime(0)
+sheet.SetFadeTime(sheet, 0)
 meta_pn.SetFontInternal(sheet, "BudgetLabel")
 
 sheet.Paint = function(self)
@@ -607,12 +607,12 @@ end
 local hdiv = vgui.Create("DHorizontalDivider", hbpanel)
 
 meta_pn.Dock(hdiv, FILL)
-hdiv:SetLeft(hookpanel)
-hdiv:SetRight(hooksidepanel)
-hdiv:SetDividerWidth(4)
-hdiv:SetLeftMin(10)
-hdiv:SetRightMin(10)
-hdiv:SetLeftWidth((menu_w / 2) + 10)
+hdiv.SetLeft(hdiv, hookpanel)
+hdiv.SetRight(hdiv, hooksidepanel)
+hdiv.SetDividerWidth(hdiv, 4)
+hdiv.SetLeftMin(hdiv, 10)
+hdiv.SetRightMin(hdiv, 10)
+hdiv.SetLeftWidth(hdiv, (menu_w / 2) + 10)
 
 hdiv.Paint = function(self)
 	local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
@@ -1235,8 +1235,8 @@ end
 local function dButton(x, y, w, h, parent, label, action) -- Retarded
 	local btn = vgui.Create("DButton", parent)
 	
-	btn:SetFont("BudgetLabel")
-	btn:SetTextColor(COLOR_WHITE)
+	btn.SetFont(btn, "BudgetLabel")
+	btn.SetTextColor(btn, COLOR_WHITE)
 	meta_pn.SetText(btn, label)
 	meta_pn.SetSize(btn, w, h)
 	meta_pn.SetPos(btn, x, y)
@@ -1464,7 +1464,7 @@ local function getHookTable()
 end
 
 local function refreshHookBrowser()
-	hlist:Clear()
+	hlist.Clear(hlist)
 	vars["selected_hook"] = {}
 	
 	local htable, keys = getHookTable()
@@ -1475,11 +1475,11 @@ local function refreshHookBrowser()
 		local cat = vgui.Create("DCollapsibleCategory", hookpanel)
 		local catlbl = meta_pn.GetChildren(cat)[1]
 		
-		catlbl:SetTextColor(COLOR_WHITE)
-		catlbl:SetFont("BudgetLabel")
+		catlbl.SetTextColor(catlbl, COLOR_WHITE)
+		catlbl.SetFont(catlbl, "BudgetLabel")
 		
-		cat:SetLabel(k)
-		cat:SetExpanded(false)
+		cat.SetLabel(cat, k)
+		cat.SetExpanded(cat, false)
 		meta_pn.SetSize(cat, 300, 200)
 		
 		cat.Paint = function(self)
@@ -1494,7 +1494,7 @@ local function refreshHookBrowser()
 			surface.SetDrawColor(COLOR_MAIN_BACK_M)
 			surface.DrawRect(cw - 20, 0, 20, ch)
 			
-			if not self:GetExpanded() then
+			if not self.GetExpanded(self) then
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 				surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
 				surface.DrawLine(cw - 11, 5, cw - 11, ch - 4)
@@ -1527,8 +1527,8 @@ local function refreshHookBrowser()
 			
 			local btn = vgui.Create("DButton")
 
-			btn:SetFont("BudgetLabel")
-			btn:SetTextColor(COLOR_LIGHT_RED)
+			btn.SetFont(btn, "BudgetLabel")
+			btn.SetTextColor(btn, COLOR_LIGHT_RED)
 			meta_pn.SetText(btn, tostring(name))
 			meta_pn.Dock(btn, FILL)
 			
@@ -1558,14 +1558,14 @@ local function refreshHookBrowser()
 				}
 			end
 			
-			ipnl_l:Add(btn)
+			ipnl_l.Add(ipnl_l, btn)
 		end
 		
 		for n, f in pairs(v) do
 			local btn = vgui.Create("DButton")
 			
-			btn:SetFont("BudgetLabel")
-			btn:SetTextColor(COLOR_WHITE)
+			btn.SetFont(btn, "BudgetLabel")
+			btn.SetTextColor(btn, COLOR_WHITE)
 			meta_pn.SetText(btn, tostring(n))
 			meta_pn.Dock(btn, FILL)
 			
@@ -1595,16 +1595,16 @@ local function refreshHookBrowser()
 				}
 			end
 			
-			ipnl_l:Add(btn)
+			ipnl_l.Add(ipnl_l, btn)
 		end
 		
-		cat:SetContents(ipnl)
+		cat.SetContents(cat, ipnl)
 		
-		hlist:Add(cat)
+		hlist.Add(hlist, cat)
 		
-		cat:SetAnimTime(0)
-		cat:DoExpansion(true)
-		cat:DoExpansion(false)
+		cat.SetAnimTime(cat, 0)
+		cat.DoExpansion(cat, true)
+		cat.DoExpansion(cat, false)
 	end
 end
 
@@ -2944,12 +2944,12 @@ for i = 1, #menu_tabs do
 		local div = vgui.Create("DHorizontalDivider", bpanel)
 		
 		meta_pn.Dock(div, FILL)
-		div:SetLeft(panel)
-		div:SetRight(cpanel)
-		div:SetDividerWidth(4)
-		div:SetLeftMin(10)
-		div:SetRightMin(10)
-		div:SetLeftWidth((menu_w / 2) + 10)
+		div.SetLeft(div, panel)
+		div.SetRight(div, cpanel)
+		div.SetDividerWidth(div, 4)
+		div.SetLeftMin(div, 10)
+		div.SetRightMin(div, 10)
+		div.SetLeftWidth(div, (menu_w / 2) + 10)
 		
 		div.Paint = function(self)
 			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
@@ -2961,9 +2961,9 @@ for i = 1, #menu_tabs do
 			surface.DrawOutlinedRect(0, 0, w, h)
 		end
 		
-		sheet:AddSheet(t, bpanel, tt.icon)
+		sheet.AddSheet(sheet, t, bpanel, tt.icon)
 	else
-		sheet:AddSheet(t, panel, tt.icon)
+		sheet.AddSheet(sheet, t, panel, tt.icon)
 	end
 	
 	for k, v in pairs(tt) do
@@ -2988,22 +2988,22 @@ for i = 1, #menu_tabs do
 					meta_pn.SetSize(lb, 999, 25)
 					
 					if su[4] == 1 then
-						lb:SetFont("DermaLarge")
+						lb.SetFont(lb, "DermaLarge")
 					end
 
-					lb:SetFont("BudgetLabel")
-					lb:SetTextColor(COLOR_WHITE)
-					lb:SetText(su[table.Count(su)])
+					lb.SetFont(lb, "BudgetLabel")
+					lb.SetTextColor(lb, COLOR_WHITE)
+					lb.SetText(lb, su[table.Count(su)])
 					meta_pn.SetPos(lb, su[2], su[3])
 				elseif su[1] == "clr" then
 					local cat = vgui.Create("DCollapsibleCategory", cpanel)
 					local catlbl = meta_pn.GetChildren(cat)[1]
 		
-					catlbl:SetTextColor(COLOR_WHITE)
-					catlbl:SetFont("BudgetLabel")
+					catlbl.SetTextColor(catlbl, COLOR_WHITE)
+					catlbl.SetFont(catlbl, "BudgetLabel")
 					
-					cat:SetLabel(su[table.Count(su)])
-					cat:SetExpanded(false)
+					cat.SetLabel(cat, su[table.Count(su)])
+					cat.SetExpanded(cat, false)
 					meta_pn.SetSize(cat, 300, 200)
 					
 					cat.Paint = function(self)
@@ -3018,7 +3018,7 @@ for i = 1, #menu_tabs do
 						surface.SetDrawColor(COLOR_MAIN_BACK_M)
 						surface.DrawRect(cw - 20, 0, 20, ch)
 						
-						if not self:GetExpanded() then
+						if not self.GetExpanded(self) then
 							surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 							surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
 							surface.DrawLine(cw - 11, 5, cw - 11, ch - 4)
@@ -3034,10 +3034,10 @@ for i = 1, #menu_tabs do
 					
 					meta_pn.SetFontInternal(pck, "BudgetLabel")
 					meta_pn.SetSize(pck, 250, 150)
-					pck:SetPalette(false)
-					pck:SetAlphaBar(true)
-					pck:SetWangs(true)
-					pck:SetColor(strColor(vars[su[2]]))
+					pck.SetPalette(pck, false)
+					pck.SetAlphaBar(pck, true)
+					pck.SetWangs(pck, true)
+					pck.SetColor(pck, strColor(vars[su[2]]))
 					
 					pck.ValueChanged = function(self, new)
 						if new == nil then
@@ -3049,9 +3049,9 @@ for i = 1, #menu_tabs do
 						vars[su[2]] = r .. " " .. g .. " " .. b .. " " .. a
 					end
 					
-					cat:SetContents(pck)
+					cat.SetContents(cat, pck)
 					
-					clist:Add(cat)
+					clist.Add(clist, cat)
 				end
 			end
 			
@@ -3065,11 +3065,11 @@ for i = 1, #menu_tabs do
 			local cbl = vgui.Create("DLabel", panel)
 			
 			meta_pn.SetPos(cb, v[3], v[4])
-			cb:SetValue(vars[v[2]])
+			cb.SetValue(cb, vars[v[2]])
 			
-			cbl:SetFont("BudgetLabel")
-			cbl:SetTextColor(COLOR_WHITE)
-			cbl:SetText(v[table.Count(v)])
+			cbl.SetFont(cbl, "BudgetLabel")
+			cbl.SetTextColor(cbl, COLOR_WHITE)
+			cbl.SetText(cbl, v[table.Count(v)])
 			meta_pn.SetSize(cbl, 999, 25)
 			meta_pn.SetPos(cbl, v[3] + 20, v[4] - 5)
 			
@@ -3087,7 +3087,7 @@ for i = 1, #menu_tabs do
 				surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
 				surface.DrawRect(0, 0, w, h)
 				
-				if self:GetChecked() then
+				if self.GetChecked(self) then
 					surface.SetDrawColor(COLOR_ORANGE)
 					surface.DrawRect(2, 2, w - 3, h - 3)
 				end
@@ -3100,9 +3100,9 @@ for i = 1, #menu_tabs do
 			
 			meta_pn.SetSize(tb, v[5], v[6])
 			meta_pn.SetPos(tb, v[3], v[4])
-			tb:SetValue(vars[v[2]])
-			tb:SetPlaceholderText(v[table.Count(v)])
-			tb:SetUpdateOnType(true)
+			tb.SetValue(tb, vars[v[2]])
+			tb.SetPlaceholderText(tb, v[table.Count(v)])
+			tb.SetUpdateOnType(tb, true)
 			
 			tb.OnValueChange = function(self, new)
 				if new == nil then
@@ -3128,19 +3128,19 @@ for i = 1, #menu_tabs do
 			local ns = vgui.Create("DNumSlider", panel)
 			local df = vars[v[2]]
 			
-			local nst = ns:GetTextArea()
+			local nst = ns.GetTextArea(ns)
 			
-			nst:SetTextColor(COLOR_WHITE)
-			nst:SetFont("BudgetLabel")
+			nst.SetTextColor(nst, COLOR_WHITE)
+			nst.SetFont(nst, "BudgetLabel")
 			
 			meta_pn.SetSize(ns, v[5], v[6])
 			meta_pn.SetPos(ns, v[3], v[4])
-			ns:SetDecimals(v[9])
-			ns:SetMin(v[7])
-			ns:SetMax(v[8])
-			ns:SetValue(df)
-			ns:SetDefaultValue(df)
-			ns:SetText(v[table.Count(v)])
+			ns.SetDecimals(ns, v[9])
+			ns.SetMin(ns, v[7])
+			ns.SetMax(ns, v[8])
+			ns.SetValue(ns, df)
+			ns.SetDefaultValue(ns, df)
+			ns.SetText(ns, v[table.Count(v)])
 			
 			ns.OnValueChanged = function(self, new)
 				if new == nil then
@@ -3178,10 +3178,10 @@ for i = 1, #menu_tabs do
 			local nsn = nsc[3]
 			local nsns = meta_pn.GetChildren(nsn)[1]
 			
-			nsns:SetEnabled(false)
+			nsns.SetEnabled(nsns, false)
 			
-			nsn:SetTextColor(COLOR_WHITE)
-			nsn:SetFont("BudgetLabel")
+			nsn.SetTextColor(nsn, COLOR_WHITE)
+			nsn.SetFont(nsn, "BudgetLabel")
 
 			meta_pn.GetChildren(nsc[2])[1].Paint = function(self)
 				local swo = meta_pn.GetWide(self)
@@ -3203,26 +3203,26 @@ for i = 1, #menu_tabs do
 		elseif etype == "com" then
 			local cmb = vgui.Create("DComboBox", panel)
 			
-			cmb:SetTextColor(COLOR_WHITE)
-			cmb:SetFont("BudgetLabel")
+			cmb.SetTextColor(cmb, COLOR_WHITE)
+			cmb.SetFont(cmb, "BudgetLabel")
 			
 			meta_pn.SetSize(cmb, v[5], v[6])
 			meta_pn.SetPos(cmb, v[3], v[4])
 			
 			for _, v in ipairs(v[7]) do
-				cmb:AddChoice(v)
+				cmb.AddChoice(cmb, v)
 			end
 			
 			meta_pn.GetChildren(cmb)[1].Paint = function() end
 			
-			cmb:ChooseOptionID(1)
+			cmb.ChooseOptionID(cmb, 1)
 			
 			cmb.OnSelect = function(self, new)
 				if new == nil then
 					return
 				end
 			
-				vars[v[2]] = cmb:GetOptionText(new)
+				vars[v[2]] = cmb.GetOptionText(cmb, new)
 			end
 		
 			cmb.Paint = function(self)
@@ -3237,7 +3237,7 @@ for i = 1, #menu_tabs do
 				surface.SetDrawColor(COLOR_MAIN_BACK_M)
 				surface.DrawRect(cw - 20, 0, 20, ch)
 				
-				if not self:IsMenuOpen() then
+				if not self.IsMenuOpen(self) then
 					surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 					surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
 					surface.DrawLine(cw - 11, 5, cw - 11, ch - 4)
@@ -3252,20 +3252,20 @@ for i = 1, #menu_tabs do
 	end
 end
 
-sheet:AddSheet("Hooks", hbpanel, menu["Hooks"].icon)
+sheet.AddSheet(sheet, "Hooks", hbpanel, menu["Hooks"].icon)
 
-for _, d in ipairs(sheet:GetItems()) do
+for _, d in ipairs(sheet.GetItems(sheet)) do
 	for k, v in pairs(d) do
 		if k ~= "Tab" then
 			continue
 		end
 		
-		v:SetTextColor(COLOR_WHITE)
-		v:SetFont("BudgetLabel")
+		v.SetTextColor(v, COLOR_WHITE)
+		v.SetFont(v, "BudgetLabel")
 		
 		v.Paint = function(self)
 			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
-			local ac = sheet:GetActiveTab() == self
+			local ac = sheet.GetActiveTab(sheet) == self
 		
 			if ac then
 				surface.SetDrawColor(COLOR_MAIN_BACK_M)
