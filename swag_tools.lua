@@ -3582,7 +3582,7 @@ end)
 -- Let them know it loaded
 
 if ismeth and mrend then
-	mrend.PushAlert("Successfully loaded " .. title "!")
+	mrend.PushAlert("Successfully loaded " .. title .. "!")
 else
 	surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 
