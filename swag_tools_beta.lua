@@ -441,6 +441,8 @@ local addedCommands = {"st_menu"}
 
 local menu_tabs = {"Tools", "Render", "Miscellaneous", "Hooks"}
 
+local menu_drawing = {main}
+
 local menu = {
 	["Tools"] = {
 		["icon"] = "icon16/wrench.png",
@@ -1932,7 +1934,11 @@ if ismeth and mcall then
 		vars["renderpanic"] = false
 		
 		if vars["menu"] then
-			meta_pn.PaintManual(main)
+			for _, v in ipairs(menu_drawing) do
+				if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
+					meta_pn.PaintManual(v)
+				end
+			end
 		end
 	
 		if canRender() then
@@ -2127,7 +2133,11 @@ elseif not ismeth then
 		end
 		
 		if vars["menu"] then
-			meta_pn.PaintManual(main)
+			for _, v in ipairs(menu_drawing) do
+				if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
+					meta_pn.PaintManual(v)
+				end
+			end
 		end
 	end)
 end
@@ -3225,6 +3235,62 @@ for i = 1, #menu_tabs do
 				vars[v[2]] = cmb.GetOptionText(cmb, new)
 			end
 		
+			local cmbopen = false
+			local cmbd = vgui.Create("DMenu", main)
+			
+			cmbd.SetDeleteSelf(cmbd, false)
+			cmbd.Hide(cmbd)
+			
+			meta_pn.SetPaintedManually(cmbd, true)
+			
+			table.insert(menu_drawing, cmbd)
+			
+			for _, chid in ipairs(meta_pn.GetChildren(cmbd)) do
+				meta_pn.SetPaintedManually(chid, true)
+			
+				table.insert(menu_drawing, chid)
+				
+				chid.Paint = function(self)
+					local chw, chh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+			
+					surface.SetDrawColor(COLOR_MAIN_BACK_T_O)
+					surface.DrawRect(0, 0, chw, chh)
+					
+					surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+					surface.DrawOutlinedRect(0, 0, chw, chh)
+				end
+			end
+			
+			for cid, ch in ipairs(cmb.Choices) do
+				local coption = cmbd.AddOption(cmbd, ch, function()
+					cmb.ChooseOption(cmb, ch, cid)
+				end)
+				
+				if cmb.ChoiceIcons[cid] then
+					coption.SetIcon(coption, cmb.ChoiceIcons[cid])
+				end
+				
+				if cmb.Spacers[cid] then
+					cmbd.AddSpacer(cmbd)
+				end
+			end
+		
+			meta_pn.SetPos(cmbd, v[3], v[4])
+		
+			cmb.IsMenuOpen = function()
+				return cmbopen
+			end
+		
+			cmb.OpenMenu = function()
+				cmbd.Open(cmbd)
+				meta_pn.SetVisible(cmbd, true)
+			end
+		
+			cmb.CloseMenu = function()
+				cmbd.Hide(cmbd)
+				meta_pn.SetVisible(cmbd, false)
+			end
+
 			cmb.Paint = function(self)
 				local cw, ch = meta_pn.GetWide(self), 20
 			
@@ -3246,6 +3312,12 @@ for i = 1, #menu_tabs do
 					surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 					surface.DrawOutlinedRect(cw - 20, 0, 20, ch)
 					surface.DrawLine(cw - 15, ch / 2, cw - 6, ch / 2)
+				end
+				
+				if meta_pn.IsVisible(cmbd) then
+					cmbopen = true
+				else
+					cmbopen = false
 				end
 			end
 		end
