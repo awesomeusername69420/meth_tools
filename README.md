@@ -113,3 +113,18 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | r_cs_ahop | Toggles auto bhop | `boolean` | `false` |
  | r_cs_astrafe | Toggles auto strafer | `boolean` | `false` |
 </details>
+
+---
+
+<h3>Glow Chams Commands</h3>
+
+---
+
+<details>
+ <summary>Commands</summary>
+ 
+ Command | Description | Argument(s) | Default |
+ | --- | --- | --- | --- |
+ | glowchams_color | Changes the color of the glow chams | `string` | `255 0 0` |
+ | glowchams_enabled | Toggles the glow chams | `boolean` | `true` |
+</details>
