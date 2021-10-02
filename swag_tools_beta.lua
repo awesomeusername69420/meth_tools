@@ -129,7 +129,6 @@ local MOVETYPE_NOCLIP = 8
 local MOVETYPE_OBSERVER = 10
 local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
 
-
 -- Colors
 
 local COLOR_BLACK = Color(0, 0, 0, 255)
@@ -516,27 +515,31 @@ local menu = {
 		{"cb", "beamtracers", 50, 75, "Draw Beams"},
 		{"cb", "tracers_local", 50, 100, "Local Player"},
 		{"cb", "tracers_other", 50, 125, "Other Players"},
-		{"cb", "catpng", 25, 150, "Cat PNG FOV"},
-		{"cb", "devtexture", 25, 175, "Devtextures"},
-		{"cb", "devtexture_o", 50, 200, "Orange"},
-		{"cb", "fog", 25, 225, "Draw Fog"},
 		
-		{"num", "cfov", 25, 245, 200, 25, 2, 179, 0, "FOV"},
+		{"num", "tracerlife", 50, 145, 300, 25, 1, 180, 0, "Tracer Lifetime"},
+		{"num", "maxtracers", 50, 165, 300, 25, 1, 1000, 0, "Maximum Tracers"},
 		
-		{"cb", "fov_force", 50, 275, "Force FOV"},
-		{"cb", "fullbright", 25, 300, "Fullbright"},
-		{"cb", "nightmode", 25, 325, "Nightmode"},
+		{"cb", "catpng", 25, 200, "Cat PNG FOV"},
+		{"cb", "devtexture", 25, 225, "Devtextures"},
+		{"cb", "devtexture_o", 50, 250, "Orange"},
+		{"cb", "fog", 25, 275, "Draw Fog"},
 		
-		{"num", "nightmode_intensity", 50, 345, 200, 25, 0, 1, 2, "Intensity"},
+		{"num", "cfov", 25, 295, 200, 25, 2, 179, 0, "FOV"},
 		
-		{"cb", "hitboxonhit", 25, 375, "Show hitboxes on damage"},
-		{"cb", "reddeath", 25, 400, "Render red deathscreen"},
-		{"cb", "rgb", 25, 425, "Rainbow Player & Weapon"},
-		{"cb", "silentviz", 25, 450, "Vizualize Silent Aim"},
-		{"cb", "snaplines", 25, 475, "Snaplines"},
-		{"cb", "thirdpersonfix", 25, 500, "Fix Thirdperson"},
-		{"cb", "glowchams", 25, 525, "Glow Chams"},
-		{"cb", "glowchams_weapon", 50, 550, "Weapons"},
+		{"cb", "fov_force", 50, 325, "Force FOV"},
+		{"cb", "fullbright", 25, 350, "Fullbright"},
+		{"cb", "nightmode", 25, 375, "Nightmode"},
+		
+		{"num", "nightmode_intensity", 50, 495, 200, 25, 0, 1, 2, "Intensity"},
+		
+		{"cb", "hitboxonhit", 25, 425, "Show hitboxes on damage"},
+		{"cb", "reddeath", 25, 450, "Render red deathscreen"},
+		{"cb", "rgb", 25, 475, "Rainbow Player & Weapon"},
+		{"cb", "silentviz", 25, 500, "Vizualize Silent Aim"},
+		{"cb", "snaplines", 25, 525, "Snaplines"},
+		{"cb", "thirdpersonfix", 25, 550, "Fix Thirdperson"},
+		{"cb", "glowchams", 25, 575, "Glow Chams"},
+		{"cb", "glowchams_weapon", 50, 600, "Weapons"},
 	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
@@ -2903,7 +2906,7 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 		end
 	end
 
-	if table.Count(bullets) > vars["maxtracers"] then
+	if table.Count(bullets) >= vars["maxtracers"] then
 		table.remove(bullets, 1)
 	end
 
