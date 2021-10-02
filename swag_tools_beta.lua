@@ -1973,14 +1973,6 @@ if ismeth and mcall then
 	mcall.Add("OnHUDPaint", vars["hookname"], function()
 		vars["renderpanic"] = false
 		
-		if vars["menu"] then
-			for _, v in ipairs(menu_drawing) do
-				if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
-					meta_pn.PaintManual(v)
-				end
-			end
-		end
-	
 		if canRender() then
 			if vars["glowchams"] then
 				local color = strColor(vars["glowchams_color"])
@@ -2187,6 +2179,14 @@ if ismeth and mcall then
 						
 						surface.DrawTexturedRect((ScrW() / 2) - (size / 2), (ScrH() / 2) - (size / 2), size + retardednumber, size + retardednumber)
 					end
+				end
+			end
+		end
+		
+		if vars["menu"] then
+			for _, v in ipairs(menu_drawing) do
+				if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
+					meta_pn.PaintManual(v)
 				end
 			end
 		end
