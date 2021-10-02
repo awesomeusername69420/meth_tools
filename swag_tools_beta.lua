@@ -213,6 +213,36 @@ end
 
 -- The rest
 
+math.randomseed(math.random(-123456, 123456))
+
+local glowmat = CreateMaterial(string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)), "VertexLitGeneric", {
+	["$basetexture"] = "vgui/white_additive",
+	["$bumpmap"] = "models/player/shared/shared_normal",
+	["$envmap"] = "skybox/sky_dustbowl_01",
+	["$envmapfresnel"] = 1,
+	["$phong"] = 1,
+	["$phongfresnelranges"] = "[0 0.05 0.1]",
+	["$selfillum"] = 1,
+	["$selfillumFresnel"] = 1,
+	["$selfillumFresnelMinMaxExp"] = "[0.4999 0.5 0]",
+	["$envmaptint"] = "[1 0 0]",
+	["$selfillumtint"] = "[0.05 0.05 0.05]"
+})
+
+local glowmat_weapon = CreateMaterial(string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)), "VertexLitGeneric", {
+	["$basetexture"] = "vgui/white_additive",
+	["$bumpmap"] = "models/player/shared/shared_normal",
+	["$envmap"] = "skybox/sky_dustbowl_01",
+	["$envmapfresnel"] = 1,
+	["$phong"] = 1,
+	["$phongfresnelranges"] = "[0 0.05 0.1]",
+	["$selfillum"] = 1,
+	["$selfillumFresnel"] = 1,
+	["$selfillumFresnelMinMaxExp"] = "[0.4999 0.5 0]",
+	["$envmaptint"] = "[1 0 0]",
+	["$selfillumtint"] = "[0.05 0.05 0.05]"
+})
+
 local beammat = Material("cable/redlaser")
 
 local devmat = Material("dev/dev_measuregeneric01b")
@@ -231,8 +261,6 @@ local catpng = Material("../data/catpng.png") or nil
 if catpng then
 	meta_im.SetInt(catpng, "$flags", bit.bor(meta_im.GetInt(catpng, "$flags"), 32768))
 end
-
-math.randomseed(math.random(-123456, 123456))
 
 -- Meth stuff
 
@@ -312,6 +340,10 @@ local vars = {
 	["fog"] = true,
 	["fov_force"] = false,
 	["fullbright"] = false,
+	["glowchams"] = false,
+	["glowchams_color"] = "255 0 0 255",
+	["glowchams_color_weapon"] = "255 0 0 255",
+	["glowchams_weapon"] = false,
 	["hitboxonhit"] = false,
 	["hitbox_color"] = "255 255 255 255",
 	["hitbox_color_ovr"] = "255 0 0 255",
@@ -390,6 +422,8 @@ local concommands = {
 		["st_render_catpng_color_set"] = "catpng_color",
 		["st_render_damageboxes_color_override_set"] = "hitbox_color_ovr",
 		["st_render_damageboxes_color_set"] = "hitbox_color",
+		["st_render_glowchams_color"] = "glowchams_color",
+		["st_render_glowchams_color_weapons"] = "glowchams_color_weapon",
 		["st_render_snaplines_color_set"] = "snaplines_color",
 
 		-- Tools
@@ -408,6 +442,8 @@ local concommands = {
 		["st_render_fog"] = "fog",
 		["st_render_fov_force"] = "fov_force",
 		["st_render_fullbright"] = "fullbright",
+		["st_render_glowchams"] = "glowchams",
+		["st_render_glowchams_weapons"] = "glowchams_weapon",
 		["st_render_nightmode"] = "nightmode",
 		["st_render_rgb"] = "rgb",
 		["st_render_snaplines"] = "snaplines",
@@ -499,6 +535,8 @@ local menu = {
 		{"cb", "silentviz", 25, 450, "Vizualize Silent Aim"},
 		{"cb", "snaplines", 25, 475, "Snaplines"},
 		{"cb", "thirdpersonfix", 25, 500, "Fix Thirdperson"},
+		{"cb", "glowchams", 25, 525, "Glow Chams"},
+		{"cb", "glowchams_weapon", 50, 550, "Weapons"},
 	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
@@ -507,6 +545,8 @@ local menu = {
 			{"clr", "hitbox_color", "Damagebox Hit"},
 			{"clr", "hitbox_color_ovr", "Damagebox Kill"},
 			{"clr", "snaplines", "Snaplines"},
+			{"clr", "glowchams_color", "Glow Chams"},
+			{"clr", "glowchams_color_weapon", "Glow Chams - Weapons"},
 		},
 	},
 	
@@ -1942,6 +1982,35 @@ if ismeth and mcall then
 		end
 	
 		if canRender() then
+			if vars["glowchams"] then
+				local color = strColor(vars["glowchams_color"])
+				local wcolor = strColor(vars["glowchams_color_weapon"])
+			
+				for _, v in ipairs(player.GetAll()) do
+					if v == LocalPlayer() or not vEnt(v) then
+						continue
+					end
+				
+					cam.Start3D()
+						render.MaterialOverride(glowmat)
+						render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
+						
+						meta_en.DrawModel(v)
+						
+						if vars["glowchams_weapon"] then
+							local wep = meta_pl.GetActiveWeapon(v)
+							
+							if meta_en.IsValid(wep) then
+								render.MaterialOverride(glowmat_weapon)
+								render.SetColorModulation(wcolor.r / 255, wcolor.g / 255, wcolor.b / 255)
+							
+								meta_en.DrawModel(wep)
+							end
+						end
+					cam.End3D()
+				end
+			end
+		
 			draw.NoTexture()
 			surface.SetFont("BudgetLabel")
 			
@@ -2123,6 +2192,37 @@ if ismeth and mcall then
 		end
 	end)
 elseif not ismeth then
+	hook.Add("RenderScreenspaceEffects", vars["hookname"], function()
+		if vars["glowchams"] then
+			local color = strColor(vars["glowchams_color"])
+			local wcolor = strColor(vars["glowchams_color_weapon"])
+		
+			for _, v in ipairs(player.GetAll()) do
+				if v == LocalPlayer() or not vEnt(v) then
+					continue
+				end
+			
+				cam.Start3D()
+					render.MaterialOverride(glowmat)
+					render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
+					
+					meta_en.DrawModel(v)
+					
+					if vars["glowchams_weapon"] then
+						local wep = meta_pl.GetActiveWeapon(v)
+						
+						if meta_en.IsValid(wep) then
+							render.MaterialOverride(glowmat_weapon)
+							render.SetColorModulation(wcolor.r / 255, wcolor.g / 255, wcolor.b / 255)
+						
+							meta_en.DrawModel(wep)
+						end
+					end
+				cam.End3D()
+			end
+		end
+	end)
+
 	hook.Add("DrawOverlay", vars["hookname"], function()
 		if vars["tdetector"] then
 			drawTraitorDetector()
@@ -3504,6 +3604,25 @@ end
 -- Timer
 
 timer.Create(vars["timer_slow"], 1, 0, function()
+	if vars["glowchams"] then
+		local ogvec = meta_im.GetVector(glowmat, "$envmaptint")
+		local ogwvec = meta_im.GetVector(glowmat_weapon, "$envmaptint")
+		
+		local pcolor = strColor(vars["glowchams_color"])
+		local wcolor = strColor(vars["glowchams_color_weapon"])
+		
+		local pvec = Vector(pcolor.r / 255, pcolor.g / 255, pcolor.b / 255)
+		local wvec = Vector(wcolor.r / 255, wcolor.g / 255, wcolor.b / 255)
+		
+		if ogvec ~= pvec then
+			meta_im.SetVector(glowmat, "$envmaptint", pvec)
+		end
+		
+		if ogwvec ~= wvec then
+			meta_im.SetVector(glowmat_weapon, "$envmaptint", wvec)
+		end
+	end
+
 	local td = vars["tdetector"]
 	local sd = vars["specdetector"]
 	local ps = vars["psays"]
