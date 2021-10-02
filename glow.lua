@@ -35,6 +35,7 @@ local function tCopy(n, t)
 	return c
 end
 
+local cam = tCopy(cam)
 local concommand = tCopy(concommand)
 local CreateMaterial = CreateMaterial
 local GetConVar = GetConVar
@@ -107,7 +108,7 @@ local function getcolor()
 end
 
 if mcall then
-	mcall.Add("OnHUDPaint", "fcu", function()
+	mcall.Add("OnHUDPaint", string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)), function()
 		if enabled then
 			if meta_cv.GetInt(bumpvar) == 0 or meta_cv.GetInt(specvar) == 0 then
 				mrend.PushAlert("mat_bumpmap / mat_specular = 0")
