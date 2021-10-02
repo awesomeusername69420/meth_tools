@@ -2192,37 +2192,6 @@ if ismeth and mcall then
 		end
 	end)
 elseif not ismeth then
-	hook.Add("RenderScreenspaceEffects", vars["hookname"], function()
-		if vars["glowchams"] then
-			local color = strColor(vars["glowchams_color"])
-			local wcolor = strColor(vars["glowchams_color_weapon"])
-		
-			for _, v in ipairs(player.GetAll()) do
-				if v == LocalPlayer() or not vEnt(v) then
-					continue
-				end
-			
-				cam.Start3D()
-					render.MaterialOverride(glowmat)
-					render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
-					
-					meta_en.DrawModel(v)
-					
-					if vars["glowchams_weapon"] then
-						local wep = meta_pl.GetActiveWeapon(v)
-						
-						if meta_en.IsValid(wep) then
-							render.MaterialOverride(glowmat_weapon)
-							render.SetColorModulation(wcolor.r / 255, wcolor.g / 255, wcolor.b / 255)
-						
-							meta_en.DrawModel(wep)
-						end
-					end
-				cam.End3D()
-			end
-		end
-	end)
-
 	hook.Add("DrawOverlay", vars["hookname"], function()
 		if vars["tdetector"] then
 			drawTraitorDetector()
@@ -2253,6 +2222,37 @@ hook.Add("HUDPaint", vars["hookname"], function()
 		hook.Remove("RenderScreenspaceEffects", "TFA_CSGO_FLASHBANG")
 		hook.Remove("RenderScreenspaceEffects", "TFA_CSO2_FLASHBANG")
 		hook.Remove("RenderScreenspaceEffects", "CW20_RenderScreenspaceEffects")
+	end
+	
+	if not ismeth then
+		if vars["glowchams"] then
+			local color = strColor(vars["glowchams_color"])
+			local wcolor = strColor(vars["glowchams_color_weapon"])
+		
+			for _, v in ipairs(player.GetAll()) do
+				if v == LocalPlayer() or not vEnt(v) then
+					continue
+				end
+			
+				cam.Start3D()
+					render.MaterialOverride(glowmat)
+					render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
+					
+					meta_en.DrawModel(v)
+					
+					if vars["glowchams_weapon"] then
+						local wep = meta_pl.GetActiveWeapon(v)
+						
+						if meta_en.IsValid(wep) then
+							render.MaterialOverride(glowmat_weapon)
+							render.SetColorModulation(wcolor.r / 255, wcolor.g / 255, wcolor.b / 255)
+						
+							meta_en.DrawModel(wep)
+						end
+					end
+				cam.End3D()
+			end
+		end
 	end
 end)
 
