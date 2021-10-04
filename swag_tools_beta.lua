@@ -3408,6 +3408,18 @@ for i = 1, #menu_tabs do
 				meta_pn.SetVisible(cmbd, false)
 			end
 
+			cmb.Think = function(self)
+				local sval, uselessshitvariable = self.GetSelected(self)
+				
+				if sval ~= vars[v[2]] then
+					for choiceid, choice in ipairs(self.Choices) do
+						if choice == vars[v[2]] then
+							self.ChooseOptionID(self, choiceid)
+						end
+					end
+				end
+			end
+
 			cmb.Paint = function(self)
 				local cw, ch = meta_pn.GetWide(self), 20
 			
