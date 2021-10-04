@@ -3233,6 +3233,12 @@ for i = 1, #menu_tabs do
 				vars[v[2]] = new
 			end
 			
+			tb.Think = function(self)
+				if self.GetValue(self) ~= vars[v[2]] then
+					self.SetValue(self, vars[v[2]])
+				end
+			end
+			
 			tb.Paint = function(self)
 				local tbho = meta_pn.GetTall(self)
 				local tbh = tbho - (tbho / 4)
