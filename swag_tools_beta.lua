@@ -530,7 +530,7 @@ local menu = {
 		{"cb", "fullbright", 25, 350, "Fullbright"},
 		{"cb", "nightmode", 25, 375, "Nightmode"},
 		
-		{"num", "nightmode_intensity", 50, 495, 200, 25, 0, 1, 2, "Intensity"},
+		{"num", "nightmode_intensity", 50, 395, 200, 25, 0, 1, 2, "Intensity"},
 		
 		{"cb", "hitboxonhit", 25, 425, "Show hitboxes on damage"},
 		{"cb", "reddeath", 25, 450, "Render red deathscreen"},
@@ -3192,6 +3192,12 @@ for i = 1, #menu_tabs do
 				end
 			
 				vars[v[2]] = new
+			end
+			
+			cb.Think = function(self)
+				if self.GetChecked(self) ~= vars[v[2]] then
+					self.SetChecked(self, vars[v[2]])
+				end
 			end
 			
 			cb.Paint = function(self)
