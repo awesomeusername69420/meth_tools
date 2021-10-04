@@ -24,6 +24,8 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | st_render_catpng_color_set | Sets color for catpng fov | `string` | `255 255 255 100` |
  | st_render_damageboxes_color_override_set | Sets color for damageboxes on death | `string` | `255 0 0 255` |
  | st_render_damageboxes_color_set | Sets color for damageboxes | `string` | `255 255 255 255` |
+ | st_render_glowchams_color_set | Sets color for glowchams | `string` | `255 0 0` |
+ | st_render_glowchams_color_weapon_set | Sets color for weapon glowchams | `string` | `255 0 0` |
  | st_render_snaplines_color_set | Sets color for snapline | `string` | `255 255 255 255` |
  | st_render_antiblind | Toggles anti ULX blind | `boolean` | `false` |
  | st_render_catpng | Toggles catpng fov rendering | `boolean` | `false` |
@@ -34,6 +36,8 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  | st_render_fog | Toggles fog rendering | `boolean` | `true` |
  | st_render_fov_force | Toggles FOV force | `boolean` | `false` |
  | st_render_fullbright | Toggles fullbright | `boolean` | `false` |
+ | st_render_glowchams | Toggles glowchams | `boolean` | `false` |
+ | st_render_glowchams_weapons | Toggles weapon glowchams | `boolean` | `false` |
  | st_render_nightmode | Toggles nightmode | `boolean` | `false` |
  | st_render_rgb | Toggles rgb for the LocalPlayer | `boolean` | `false` |
  | st_render_snaplines | Toggles snaplines | `boolean` | `false` |
