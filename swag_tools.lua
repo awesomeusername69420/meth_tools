@@ -415,8 +415,8 @@ local concommands = {
 		["st_render_catpng_color_set"] = "catpng_color",
 		["st_render_damageboxes_color_override_set"] = "hitbox_color_ovr",
 		["st_render_damageboxes_color_set"] = "hitbox_color",
-		["st_render_glowchams_color"] = "glowchams_color",
-		["st_render_glowchams_color_weapons"] = "glowchams_color_weapon",
+		["st_render_glowchams_color_set"] = "glowchams_color",
+		["st_render_glowchams_color_weapon_set"] = "glowchams_color_weapon",
 		["st_render_snaplines_color_set"] = "snaplines_color",
 
 		-- Tools
