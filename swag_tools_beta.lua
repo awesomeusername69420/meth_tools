@@ -2906,6 +2906,8 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 		end
 	end
 
+	print(type(vars["maxtracers"]))
+
 	if table.Count(bullets) >= vars["maxtracers"] then
 		table.remove(bullets, 1)
 	end
@@ -3269,6 +3271,12 @@ for i = 1, #menu_tabs do
 				vars[v[2]] = new
 			end
 			
+			ns.Think = function(self)
+				if self.GetValue(self) ~= vars[v[2]] then
+					self.SetValue(self, vars[v[2]])
+				end
+			end
+			
 			nst.Paint = function(self)
 				local thw = meta_pn.GetWide(self)
 				local tho = meta_pn.GetTall(self)
@@ -3565,7 +3573,7 @@ for j, l in pairs(concommands) do
 					new = 1
 				end
 				
-				if not type(new) == "number" then
+				if type(new) ~= "number" then
 					new = tonumber(new)
 				end
 
