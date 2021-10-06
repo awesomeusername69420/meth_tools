@@ -339,10 +339,6 @@ local vars = {
 	["fog"] = true,
 	["fov_force"] = false,
 	["fullbright"] = false,
-	["glowchams"] = false,
-	["glowchams_color"] = "255 0 0 255",
-	["glowchams_color_weapon"] = "255 0 0 255",
-	["glowchams_weapon"] = false,
 	["hitboxonhit"] = false,
 	["hitbox_color"] = "255 255 255 255",
 	["hitbox_color_ovr"] = "255 0 0 255",
@@ -394,6 +390,22 @@ local vars = {
 	["tdetector_list_y"] = 10,
 	["ttable"] = {},
 	
+	-- Merged
+	["glowchams"] = false,
+	["glowchams_color"] = "255 0 0 255",
+	["glowchams_color_weapon"] = "255 0 0 255",
+	["glowchams_weapon"] = false,
+	["circlestrafer"] = false,
+	["circlestrafer_size"] = 5,
+	["circlestrafer_is_strafe"] = true,
+	["circlestrafer_stat"] = 0,
+	["antiaim"] = false,
+	["antiaim_jitter_yaw"] = false,
+	["antiaim_jitter_lag"] = false,
+	["antiaim_snapback"] = false,
+	["antiaim_autodirection"] = false,
+	["antiaim_invert"] = false,
+	
 	-- Thing
 	["alerts"] = true,
 	["alerts_sound"] = true,
@@ -414,6 +426,9 @@ local concommands = {
 		["st_tools_spectatorlist_y_set"] = "specdetector_y",
 		["st_tools_tdetector_list_x_set"] = "tdetector_list_x",
 		["st_tools_tdetector_list_y_set"] = "tdetector_list_y",
+		
+		-- Merged
+		["st_merged_circlestrafer_size"] = "circlestrafer_size",
 	},
 
 	["string"] = {
@@ -421,13 +436,15 @@ local concommands = {
 		["st_render_catpng_color_set"] = "catpng_color",
 		["st_render_damageboxes_color_override_set"] = "hitbox_color_ovr",
 		["st_render_damageboxes_color_set"] = "hitbox_color",
-		["st_render_glowchams_color_set"] = "glowchams_color",
-		["st_render_glowchams_color_weapon_set"] = "glowchams_color_weapon",
 		["st_render_snaplines_color_set"] = "snaplines_color",
 
 		-- Tools
 		["st_tools_gesture_set"] = "gesture",
-		["st_tools_psay_spam_set"] = "psays_message"
+		["st_tools_psay_spam_set"] = "psays_message",
+		
+		-- Merged
+		["st_merged_glowchams_color_set"] = "glowchams_color",
+		["st_merged_glowchams_color_weapon_set"] = "glowchams_color_weapon",
 	},
 
 	["boolean"] = {
@@ -441,8 +458,6 @@ local concommands = {
 		["st_render_fog"] = "fog",
 		["st_render_fov_force"] = "fov_force",
 		["st_render_fullbright"] = "fullbright",
-		["st_render_glowchams"] = "glowchams",
-		["st_render_glowchams_weapons"] = "glowchams_weapon",
 		["st_render_nightmode"] = "nightmode",
 		["st_render_rgb"] = "rgb",
 		["st_render_snaplines"] = "snaplines",
@@ -466,6 +481,16 @@ local concommands = {
 		["st_tools_tdetector_drawicons"] = "tdetector_icons",
 		["st_tools_tdetector_drawlist"] = "tdetector_list",
 		
+		-- Merged
+		["st_merged_glowchams"] = "glowchams",
+		["st_merged_glowchams_weapons"] = "glowchams_weapon",
+		["st_merged_circlestrafer"] = "circlestrafer",
+		["st_merged_antiaim"] = "antiaim",
+		["st_merged_antiaim_jitter_yaw"] = "antiaim_jitter_yaw",
+		["st_merged_antiaim_jitter_lag"] = "antiaim_jitter_lag",
+		["st_merged_antiaim_snapback"] = "antiaim_snapback",
+		["st_merged_antiaim_invert"] = "antiaim_invert",
+		
 		-- Thing
 		["st_alerts"] = "alerts",
 		["st_alerts_sound"] = "alerts_sound",
@@ -474,7 +499,7 @@ local concommands = {
 
 local addedCommands = {"st_menu"}
 
-local menu_tabs = {"Tools", "Render", "Miscellaneous", "Hooks"}
+local menu_tabs = {"Tools", "Render", "Miscellaneous", "Merged", "Hooks"}
 
 local menu_drawing = {main}
 
@@ -538,8 +563,6 @@ local menu = {
 		{"cb", "silentviz", 25, 500, "Vizualize Silent Aim"},
 		{"cb", "snaplines", 25, 525, "Snaplines"},
 		{"cb", "thirdpersonfix", 25, 550, "Fix Thirdperson"},
-		{"cb", "glowchams", 25, 575, "Glow Chams"},
-		{"cb", "glowchams_weapon", 50, 600, "Weapons"},
 	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
@@ -558,6 +581,22 @@ local menu = {
 		
 		{"cb", "alerts", 25, 25, "Alerts"},
 		{"cb", "alerts_sound", 50, 50, "Alert Sounds"},
+	},
+	
+	["Merged"] = {
+		["icon"] = "icon16/connect.png",
+		
+		{"cb", "glowchams", 25, 25, "Glow Chams"},
+		{"cb", "glowchams_weapon", 50, 50, "Weapons"},
+		{"cb", "circlestrafer", 25, 75, "Circle Strafer"},
+		
+		{"num", "circlestrafer_size", 50, 95, 200, 25, 1, 10, 0, "Strafe Size"},
+		
+		{"cb", "antiaim", 25, 125, "Antiaim"},
+		{"cb", "antiaim_jitter_yaw", 50, 150, "Jitter Yaw"},
+		{"cb", "antiaim_jitter_lag", 50, 175, "Jitter Fake Lag"},
+		{"cb", "antiaim_snapback", 50, 200, "Snapback"},
+		{"cb", "antiaim_autodirection", 50, 225, "Auto Direction"},
 	},
 	
 	["Hooks"] = {
@@ -2364,6 +2403,114 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 				elseif mx < 0 then
 					meta_cd.SetSideMove(cmd, 0 - 10^4)
 				end
+			end
+		end
+		
+		if meta_en.WaterLevel(LocalPlayer()) == 0 and not meta_en.IsValid(meta_pl.GetVehicle(LocalPlayer())) then
+			if vars["circlestrafer"] then
+				local jumping = meta_cd.KeyDown(cmd, IN_JUMP) or input.IsKeyDown(KEY_SPACE)
+				local r = 1
+				
+				local left = meta_cd.KeyDown(cmd, IN_MOVELEFT)
+				local right = meta_cd.KeyDown(cmd, IN_MOVERIGHT)
+				
+				if left then
+					r = -1
+				end
+				
+				if right then
+					r = 1
+				end
+				
+				if (left or right) and jumping then
+					vars["circlestrafer_is_strafe"] = true
+					
+					local vel = meta_en.GetVelocity(LocalPlayer())
+					local speed = math.max(meta_vc.Length2D(vel), 300)
+					
+					local rt = 5.9 + (speed / 1500) * 5
+					local del = (275 / speed) * (2 / vars["circlestrafer_size"]) * (128 / (1.7 / engine.TickInterval())) * rt
+					
+					local delta = r * math.min(del, 15)
+					
+					vars["circlestrafer_stat"] = vars["circlestrafer_stat"] + delta
+				
+					local sincos = (vars["circlestrafer_stat"] + 90 * r) * (math.pi / 180)
+					
+					meta_cd.SetForwardMove(cmd, math.cos(sincos) * 450)
+					meta_cd.SetSideMove(cmd, math.sin(sincos) * 450)
+				else
+					if vars["circlestrafer_is_strafe"] then
+						vars["circlestrafer_stat"] = 0
+						vars["circlestrafer_is_strafe"] = false
+					end
+				end
+			end
+		end
+	end
+	
+	if mvar then
+		if vars["antiaim"] then		
+			if vars["antiaim_invert"] then
+				local yp = "General.Options.Yaw"
+				local yawset = mvar.GetVarInt(yp) or 0
+			
+				if yawset == 0 or yawset == 1 then
+					mvar.SetVarInt(yp, 4)
+				elseif yawset == 2 then
+					mvar.SetVarInt(yp, 3)
+				elseif yawset == 3 then
+					mvar.SetVarInt(yp, 2)
+				else
+					mvar.SetVarInt(yp, 1)
+				end
+				
+				vars["antiaim_invert"] = false
+			end
+		
+			local base = 0
+			local yawset = mvar.GetVarInt("General.Options.Yaw") or 0
+			
+			if yawset == 0 or yawset == 1 then
+				base = 0
+			elseif yawset == 2 then
+				base = 90
+			elseif yawset == 3 then
+				base = -90
+			elseif yawset == 4 then
+				base = 180
+			elseif yawset == 6 then
+				base = mvar.GetVarFloat("Custom.Config.Fake Jitter Angle 1")
+			end
+			
+			if vars["antiaim_autodirection"] then
+				local nbase = meta_vc.Angle(meta_en.GetPos(getClosest()) - meta_en.GetPos(LocalPlayer())) - meta_en.EyeAngles(LocalPlayer())
+				base = nbase.yaw
+			end
+			
+			local n = base + 180
+			
+			if vars["antiaim_jitter_yaw"] then
+				n = (base + 180) + math.random(-80, 80)
+			end
+			
+			if vars["antiaim_snapback"] then
+				if math.random(0, 100) > 90 then
+					local c = 1
+		
+					if math.random(0, 10) > 5 then
+						c = -1
+					end
+		
+					n = base + (math.random(30, 45) * c)
+				end
+			end
+			
+			mvar.SetVarFloat("Custom.Config.Jitter Angle 1", n)
+			mvar.SetVarFloat("Custom.Config.Jitter Angle 2", n)
+			
+			if vars["antiaim_jitter_lag"] then
+				mvar.SetVarInt("General.Options.Fake Lag", math.random(1, 8))
 			end
 		end
 	end
