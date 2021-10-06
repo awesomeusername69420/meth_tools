@@ -3052,8 +3052,6 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 		end
 	end
 
-	print(type(vars["maxtracers"]))
-
 	if table.Count(bullets) >= vars["maxtracers"] then
 		table.remove(bullets, 1)
 	end
