@@ -345,7 +345,7 @@ local vars = {
 	["hitbox_delay"] = 3,
 	["maxtracers"] = 1000,
 	["nightmode"] = false,
-	["nightmode_intensity"] = 0.8,
+	["nightmode_color"] = "8 8 8 255",
 	["nightmode_rs"] = false,
 	["reddeath"] = true,
 	["renderpanic"] = false,
@@ -416,7 +416,6 @@ local concommands = {
 		-- Render
 		["st_render_damageboxes_life_set"] = "hitbox_delay",
 		["st_render_fov_set"] = "cfov",
-		["st_render_nightmode_intensity_set"] = "nightmode_intensity",
 		["st_render_tracers_life_set"] = "tracerlife",
 		["st_render_tracers_max_set"] = "maxtracers",
 
@@ -434,6 +433,7 @@ local concommands = {
 	["string"] = {
 		-- Render
 		["st_render_catpng_color_set"] = "catpng_color",
+		["st_render_nightmode_color_set"] = "nightmode_color",
 		["st_render_damageboxes_color_override_set"] = "hitbox_color_ovr",
 		["st_render_damageboxes_color_set"] = "hitbox_color",
 		["st_render_snaplines_color_set"] = "snaplines_color",
@@ -554,15 +554,12 @@ local menu = {
 		{"cb", "fov_force", 50, 325, "Force FOV"},
 		{"cb", "fullbright", 25, 350, "Fullbright"},
 		{"cb", "nightmode", 25, 375, "Nightmode"},
-		
-		{"num", "nightmode_intensity", 50, 395, 200, 25, 0, 1, 2, "Intensity"},
-		
-		{"cb", "hitboxonhit", 25, 425, "Show hitboxes on damage"},
-		{"cb", "reddeath", 25, 450, "Render red deathscreen"},
-		{"cb", "rgb", 25, 475, "Rainbow Player & Weapon"},
-		{"cb", "silentviz", 25, 500, "Vizualize Silent Aim"},
-		{"cb", "snaplines", 25, 525, "Snaplines"},
-		{"cb", "thirdpersonfix", 25, 550, "Fix Thirdperson"},
+		{"cb", "hitboxonhit", 25, 400, "Show hitboxes on damage"},
+		{"cb", "reddeath", 25, 425, "Render red deathscreen"},
+		{"cb", "rgb", 25, 450, "Rainbow Player & Weapon"},
+		{"cb", "silentviz", 25, 475, "Vizualize Silent Aim"},
+		{"cb", "snaplines", 25, 500, "Snaplines"},
+		{"cb", "thirdpersonfix", 25, 525, "Fix Thirdperson"},
 	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
@@ -571,6 +568,7 @@ local menu = {
 			{"clr", "hitbox_color", "Damagebox Hit"},
 			{"clr", "hitbox_color_ovr", "Damagebox Kill"},
 			{"clr", "snaplines", "Snaplines"},
+			{"clr", "nightmode_color", "Nightmode Color"},
 			{"clr", "glowchams_color", "Glow Chams"},
 			{"clr", "glowchams_color_weapon", "Glow Chams - Weapons"},
 		},
@@ -2757,7 +2755,6 @@ hook.Add("RenderScene", vars["hookname"], function()
 	local nmrs = vars["nightmode_rs"]
 	
 	if dv or (nm and not fb) or (not nm and not vars["nightmode_rs"]) then
-		local int = math.abs(math.Clamp(vars["nightmode_intensity"], 0, 1) - 1)
 		local rsvec = Vector(1, 1, 1)
 	
 		for _, v in ipairs(meta_en.GetMaterials(game.GetWorld())) do
@@ -2776,7 +2773,9 @@ hook.Add("RenderScene", vars["hookname"], function()
 			end
 			
 			if nm and not fb then
-				meta_im.SetVector(wm, "$color", Vector(int, int, int))
+				local nightmodecol = strColor(vars["nightmode_color"])
+			
+				meta_im.SetVector(wm, "$color", Vector(nightmodecol.r / 255, nightmodecol.g / 255, nightmodecol.b / 255))
 			elseif not nmrs then
 				meta_im.SetVector(wm, "$color", rsvec)
 			end
