@@ -330,7 +330,7 @@ local vars = {
 	-- Render
 	["afov"] = 75,
 	["aimbient"] = false,
-	["aimbient_color"] = "8 8 8 255",
+	["aimbient_color"] = "12 12 12 255",
 	["aimbient_rs"] = false,
 	["antiblind"] = false,
 	["beamtracers"] = false,
