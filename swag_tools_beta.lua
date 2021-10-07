@@ -329,6 +329,9 @@ local vars = {
 
 	-- Render
 	["afov"] = 75,
+	["aimbient"] = false,
+	["aimbient_color"] = "8 8 8 255",
+	["aimbient_rs"] = false,
 	["antiblind"] = false,
 	["beamtracers"] = false,
 	["catpng"] = false,
@@ -336,6 +339,7 @@ local vars = {
 	["cfov"] = meta_cv.GetInt(GetConVar("fov_desired")),
 	["devtexture"] = false,
 	["devtexture_o"] = false,
+	["drawzoom"] = true,
 	["fog"] = true,
 	["fov_force"] = false,
 	["fullbright"] = false,
@@ -344,9 +348,6 @@ local vars = {
 	["hitbox_color_ovr"] = "255 0 0 255",
 	["hitbox_delay"] = 3,
 	["maxtracers"] = 1000,
-	["aimbient"] = false,
-	["aimbient_color"] = "8 8 8 255",
-	["aimbient_rs"] = false,
 	["reddeath"] = true,
 	["renderpanic"] = false,
 	["rgb"] = false,
@@ -391,20 +392,20 @@ local vars = {
 	["ttable"] = {},
 	
 	-- Merged
+	["antiaim"] = false,
+	["antiaim_autodirection"] = false,
+	["antiaim_invert"] = false,
+	["antiaim_jitter_lag"] = false,
+	["antiaim_jitter_yaw"] = false,
+	["antiaim_snapback"] = false,
+	["circlestrafer"] = false,
+	["circlestrafer_is_strafe"] = true,
+	["circlestrafer_size"] = 5,
+	["circlestrafer_stat"] = 0,
 	["glowchams"] = false,
 	["glowchams_color"] = "255 0 0 255",
 	["glowchams_color_weapon"] = "255 0 0 255",
 	["glowchams_weapon"] = false,
-	["circlestrafer"] = false,
-	["circlestrafer_size"] = 5,
-	["circlestrafer_is_strafe"] = true,
-	["circlestrafer_stat"] = 0,
-	["antiaim"] = false,
-	["antiaim_jitter_yaw"] = false,
-	["antiaim_jitter_lag"] = false,
-	["antiaim_snapback"] = false,
-	["antiaim_autodirection"] = false,
-	["antiaim_invert"] = false,
 	
 	-- Thing
 	["alerts"] = true,
@@ -556,10 +557,11 @@ local menu = {
 		{"cb", "aimbient", 25, 375, "Ambient Lighting"},
 		{"cb", "hitboxonhit", 25, 400, "Show hitboxes on damage"},
 		{"cb", "reddeath", 25, 425, "Render red deathscreen"},
-		{"cb", "rgb", 25, 450, "Rainbow Player & Weapon"},
-		{"cb", "silentviz", 25, 475, "Vizualize Silent Aim"},
-		{"cb", "snaplines", 25, 500, "Snaplines"},
-		{"cb", "thirdpersonfix", 25, 525, "Fix Thirdperson"},
+		{"cb", "drawzoom", 25, 450, "Render zoom overlay"},
+		{"cb", "rgb", 25, 475, "Rainbow Player & Weapon"},
+		{"cb", "silentviz", 25, 500, "Vizualize Silent Aim"},
+		{"cb", "snaplines", 25, 525, "Snaplines"},
+		{"cb", "thirdpersonfix", 25, 550, "Fix Thirdperson"},
 	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
@@ -2298,7 +2300,11 @@ end)
 
 hook.Add("HUDShouldDraw", vars["hookname"], function(n)
 	if n == "CHudDamageIndicator" then
-		return false
+		return vars["reddeath"]
+	end
+	
+	if n == "CHudZoom" then
+		return vars["drawzoom"]
 	end
 end)
 
