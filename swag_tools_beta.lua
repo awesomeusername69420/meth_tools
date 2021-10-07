@@ -344,9 +344,9 @@ local vars = {
 	["hitbox_color_ovr"] = "255 0 0 255",
 	["hitbox_delay"] = 3,
 	["maxtracers"] = 1000,
-	["nightmode"] = false,
-	["nightmode_color"] = "8 8 8 255",
-	["nightmode_rs"] = false,
+	["aimbient"] = false,
+	["aimbient_color"] = "8 8 8 255",
+	["aimbient_rs"] = false,
 	["reddeath"] = true,
 	["renderpanic"] = false,
 	["rgb"] = false,
@@ -433,7 +433,7 @@ local concommands = {
 	["string"] = {
 		-- Render
 		["st_render_catpng_color_set"] = "catpng_color",
-		["st_render_nightmode_color_set"] = "nightmode_color",
+		["st_render_aimbientlighting_color_set"] = "aimbient_color",
 		["st_render_damageboxes_color_override_set"] = "hitbox_color_ovr",
 		["st_render_damageboxes_color_set"] = "hitbox_color",
 		["st_render_snaplines_color_set"] = "snaplines_color",
@@ -458,7 +458,7 @@ local concommands = {
 		["st_render_fog"] = "fog",
 		["st_render_fov_force"] = "fov_force",
 		["st_render_fullbright"] = "fullbright",
-		["st_render_nightmode"] = "nightmode",
+		["st_render_aimbientlighting"] = "aimbient",
 		["st_render_rgb"] = "rgb",
 		["st_render_snaplines"] = "snaplines",
 		["st_render_tracers"] = "tracers",
@@ -553,7 +553,7 @@ local menu = {
 		
 		{"cb", "fov_force", 50, 325, "Force FOV"},
 		{"cb", "fullbright", 25, 350, "Fullbright"},
-		{"cb", "nightmode", 25, 375, "Nightmode"},
+		{"cb", "aimbient", 25, 375, "Ambient Lighting"},
 		{"cb", "hitboxonhit", 25, 400, "Show hitboxes on damage"},
 		{"cb", "reddeath", 25, 425, "Render red deathscreen"},
 		{"cb", "rgb", 25, 450, "Rainbow Player & Weapon"},
@@ -568,7 +568,7 @@ local menu = {
 			{"clr", "hitbox_color", "Damagebox Hit"},
 			{"clr", "hitbox_color_ovr", "Damagebox Kill"},
 			{"clr", "snaplines", "Snaplines"},
-			{"clr", "nightmode_color", "Nightmode Color"},
+			{"clr", "aimbient_color", "Ambient Color"},
 			{"clr", "glowchams_color", "Glow Chams"},
 			{"clr", "glowchams_color_weapon", "Glow Chams - Weapons"},
 		},
@@ -2751,10 +2751,10 @@ hook.Add("RenderScene", vars["hookname"], function()
 	local dv = vars["devtexture"]
 	local dvo = vars["devtexture_o"]
 	local fb = vars["fullbright"]
-	local nm = vars["nightmode"]
-	local nmrs = vars["nightmode_rs"]
+	local nm = vars["aimbient"]
+	local nmrs = vars["aimbient_rs"]
 	
-	if dv or (nm and not fb) or (not nm and not vars["nightmode_rs"]) then
+	if dv or (nm and not fb) or (not nm and not vars["aimbient_rs"]) then
 		local rsvec = Vector(1, 1, 1)
 	
 		for _, v in ipairs(meta_en.GetMaterials(game.GetWorld())) do
@@ -2773,9 +2773,9 @@ hook.Add("RenderScene", vars["hookname"], function()
 			end
 			
 			if nm and not fb then
-				local nightmodecol = strColor(vars["nightmode_color"])
+				local aimbientcol = strColor(vars["aimbient_color"])
 			
-				meta_im.SetVector(wm, "$color", Vector(nightmodecol.r / 255, nightmodecol.g / 255, nightmodecol.b / 255))
+				meta_im.SetVector(wm, "$color", Vector(aimbientcol.r / 255, aimbientcol.g / 255, aimbientcol.b / 255))
 			elseif not nmrs then
 				meta_im.SetVector(wm, "$color", rsvec)
 			end
@@ -2783,9 +2783,9 @@ hook.Add("RenderScene", vars["hookname"], function()
 	end
 	
 	if nm and not fb then
-		vars["nightmode_rs"] = false
+		vars["aimbient_rs"] = false
 	else
-		vars["nightmode_rs"] = true
+		vars["aimbient_rs"] = true
 	end
 	
 	if dv then
