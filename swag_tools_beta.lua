@@ -718,6 +718,14 @@ local hlist = vgui.Create("DListLayout", hookpanel)
 meta_pn.SetSize(hlist, 300, meta_pn.GetTall(main) - 150)
 meta_pn.SetPos(hlist, 0, 0)
 
+local hookinfolabel = vgui.Create("DLabel", hooksidepanel)
+
+meta_pn.SetSize(hookinfolabel, 999, 75)
+hookinfolabel.SetFont(hookinfolabel, "BudgetLabel")
+hookinfolabel.SetTextColor(hookinfolabel, COLOR_WHITE)
+hookinfolabel.SetText(hookinfolabel, "Current Hook Information:\n    Type: NONE SELECTED\n    Name: N/A\n    ST Hook: N/A")
+meta_pn.SetPos(hookinfolabel, 25, 175)
+
 -- nonozone
 
 local badCommands = {
@@ -1608,46 +1616,52 @@ local function refreshHookBrowser()
 				continue
 			end
 			
-			local name = "UNKNOWN_HOOK"
-			
 			for bn, _ in pairs(b) do
+				local name = "UNKNOWN_HOOK"
+			
 				name = bn
-			end
 			
-			local btn = vgui.Create("DButton")
-
-			btn.SetFont(btn, "BudgetLabel")
-			btn.SetTextColor(btn, COLOR_LIGHT_RED)
-			meta_pn.SetText(btn, tostring(name))
-			meta_pn.Dock(btn, FILL)
+				local btn = vgui.Create("DButton")
+	
+				btn.SetFont(btn, "BudgetLabel")
+				btn.SetTextColor(btn, COLOR_LIGHT_RED)
+				meta_pn.SetText(btn, tostring(name))
+				meta_pn.Dock(btn, FILL)
+				
+				btn.Paint = function(self)
+					local bw, bh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+				
+					local c = 55
+					local cm = math.Round(55 / bh)
+					local cs = math.ceil(c / cm)
 			
-			btn.Paint = function(self)
-				local bw, bh = meta_pn.GetWide(self), meta_pn.GetTall(self)
-			
-				local c = 55
-				local cm = math.Round(55 / bh)
-				local cs = math.ceil(c / cm)
-		
-				for i = 1, cs do
-					surface.SetDrawColor(Color(c, c, c, 255))
-					surface.DrawLine(0, i, bw, i)
-					
-					c = c - cm
+					for i = 1, cs do
+						surface.SetDrawColor(Color(c, c, c, 255))
+						surface.DrawLine(0, i, bw, i)
+						
+						c = c - cm
+					end
+				
+					surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+					surface.DrawOutlinedRect(0, 0, bw, bh)
 				end
-			
-				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-				surface.DrawOutlinedRect(0, 0, bw, bh)
+				
+				btn.DoClick = function()
+					vars["selected_hook"] = {
+						["type"] = a,
+						["name"] = name,
+						["func"] = "REMOVED"
+					}
+					
+					local newstatus = tostring(name == vars["hookname"])
+					newstatus = string.gsub(newstatus, newstatus[1], string.upper(newstatus[1]))
+					
+					hookinfolabel.SetTextColor(hookinfolabel, Color(255, 100, 100, 255))
+					hookinfolabel.SetText(hookinfolabel, "Current Hook Information:\n    Type: " .. a .. "\n    Name: " .. name .. "\n    ST Hook: " .. newstatus)
+				end
+				
+				ipnl_l.Add(ipnl_l, btn)
 			end
-			
-			btn.DoClick = function()
-				vars["selected_hook"] = {
-					["type"] = a,
-					["name"] = name,
-					["func"] = "REMOVED"
-				}
-			end
-			
-			ipnl_l.Add(ipnl_l, btn)
 		end
 		
 		for n, f in pairs(v) do
@@ -1682,6 +1696,12 @@ local function refreshHookBrowser()
 					["name"] = n,
 					["func"] = f
 				}
+				
+				local newstatus = tostring(n == vars["hookname"])
+				newstatus = string.gsub(newstatus, newstatus[1], string.upper(newstatus[1]))
+				
+				hookinfolabel.SetTextColor(hookinfolabel, COLOR_WHITE)
+				hookinfolabel.SetText(hookinfolabel, "Current Hook Information:\n    Type: " .. k .. "\n    Name: " .. n .. "\n    ST Hook: " .. newstatus)
 			end
 			
 			ipnl_l.Add(ipnl_l, btn)
@@ -1694,6 +1714,9 @@ local function refreshHookBrowser()
 		cat.SetAnimTime(cat, 0)
 		cat.DoExpansion(cat, true)
 		cat.DoExpansion(cat, false)
+		
+		hookinfolabel.SetTextColor(hookinfolabel, COLOR_WHITE)
+		hookinfolabel.SetText(hookinfolabel, "Current Hook Information:\n    Type: NONE SELECTED\n    Name: N/A\n    ST Hook: N/A")
 	end
 end
 
@@ -2955,7 +2978,7 @@ hook.Add("player_hurt", vars["hookname"], function(data)
 			
 			local pos, ang = meta_vm.GetTranslation(bm), meta_vm.GetAngles(bm)
 			
-			if not pos then
+			if not pos or not ang then
 				continue
 			end
 			
@@ -3018,7 +3041,7 @@ hook.Add("entity_killed", vars["hookname"], function(data)
 			
 			local pos, ang = meta_vm.GetTranslation(bm), meta_vm.GetAngles(bm)
 			
-			if not pos then
+			if not pos or not ang then
 				continue
 			end
 			
