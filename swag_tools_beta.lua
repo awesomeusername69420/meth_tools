@@ -339,6 +339,7 @@ local vars = {
 	["cfov"] = meta_cv.GetInt(GetConVar("fov_desired")),
 	["devtexture"] = false,
 	["devtexture_o"] = false,
+	["drawgmod"] = true,
 	["drawzoom"] = true,
 	["fog"] = true,
 	["fov_force"] = false,
@@ -450,6 +451,7 @@ local concommands = {
 
 	["boolean"] = {
 		-- Render
+		["st_render_aimbientlighting"] = "aimbient",
 		["st_render_antiblind"] = "antiblind",
 		["st_render_catpng"] = "catpng",
 		["st_render_damageboxes"] = "hitboxonhit",
@@ -459,7 +461,8 @@ local concommands = {
 		["st_render_fog"] = "fog",
 		["st_render_fov_force"] = "fov_force",
 		["st_render_fullbright"] = "fullbright",
-		["st_render_aimbientlighting"] = "aimbient",
+		["st_render_gmodoverlay"] = "drawgmod",
+		["st_render_reddeathscreen"] = "reddeath",
 		["st_render_rgb"] = "rgb",
 		["st_render_snaplines"] = "snaplines",
 		["st_render_tracers"] = "tracers",
@@ -467,6 +470,7 @@ local concommands = {
 		["st_render_tracers_local"] = "tracers_local",
 		["st_render_tracers_other"] = "tracers_other",
 		["st_render_visualize_silent"] = "silentviz",
+		["st_render_zoomoverlay"] = "drawzoom",
 
 		-- Tools
 		["st_tools_allow_guiopenurl"] = "gopen",
@@ -558,10 +562,11 @@ local menu = {
 		{"cb", "hitboxonhit", 25, 400, "Show hitboxes on damage"},
 		{"cb", "reddeath", 25, 425, "Render red deathscreen"},
 		{"cb", "drawzoom", 25, 450, "Render zoom overlay"},
-		{"cb", "rgb", 25, 475, "Rainbow Player & Weapon"},
-		{"cb", "silentviz", 25, 500, "Vizualize Silent Aim"},
-		{"cb", "snaplines", 25, 525, "Snaplines"},
-		{"cb", "thirdpersonfix", 25, 550, "Fix Thirdperson"},
+		{"cb", "drawgmod", 25, 475, "Render GMod HUD elements"},
+		{"cb", "rgb", 25, 500, "Rainbow Player & Weapon"},
+		{"cb", "silentviz", 25, 525, "Vizualize Silent Aim"},
+		{"cb", "snaplines", 25, 550, "Snaplines"},
+		{"cb", "thirdpersonfix", 25, 575, "Fix Thirdperson"},
 	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
@@ -2305,6 +2310,10 @@ hook.Add("HUDShouldDraw", vars["hookname"], function(n)
 	
 	if n == "CHudZoom" then
 		return vars["drawzoom"]
+	end
+	
+	if n == "CHudGMod" then
+		return vars["drawgmod"]
 	end
 end)
 
