@@ -1433,8 +1433,6 @@ _G.file.Write = function(fname, cont)
 	return safefuncs.fwrite(fname, cont)
 end
 
-_G.file
-
 --[[
 	Fuccncs
 ]]
