@@ -114,6 +114,7 @@ local ACT_GMOD_TAUNT_LAUGH = 1618
 local ACT_GMOD_TAUNT_MUSCLE = 1617
 local ACT_GMOD_TAUNT_PERSISTENCE = 1616
 local FILL = 1
+local FSASYNC_ERR_FAILURE = -5
 local IN_BACK = 16
 local IN_FORWARD = 8
 local IN_JUMP = 2
@@ -922,6 +923,16 @@ local safefuncs = {
 	cvs_number = cvars.Number,
 	cvs_rcb = cvars.RemoveChangeCallack,
 	cvs_string = cvars.String,
+	fasyncread = file.AsyncRead,
+	fdelete = file.Delete,
+	fexists = file.Exists,
+	ffind = file.Find,
+	fopen = file.Open,
+	fread = file.Read,
+	frename = file.Rename,
+	fsize = file.Size,
+	ftime = file.Time,
+	fwrite = file.Write,
 	gcv = GetConVar,
 	gcvn = GetConVarNumber,
 	gcvs = GetConVarString,
@@ -1341,6 +1352,88 @@ meta_pl_g.ConCommand = function(cmd)
 
 	return meta_pl.ConCommand(cmd)
 end
+
+_G.file.Read = function(fname, fpath)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return nil
+	end
+	
+	return safefuncs.fread(fname, fpath)
+end
+
+_G.file.Open = function(fname, ...)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return nil
+	end
+	
+	return safefuncs.fopen(fname, ...)
+end
+
+_G.file.Find = function(fname, ...)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return nil, nil
+	end
+	
+	return safefuncs.ffind(fname, ...)
+end
+
+_G.file.Exists = function(fname, fpath)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return false
+	end
+	
+	return safefuncs.fexists(fname, fpath)
+end
+
+_G.file.Delete = function(fname)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return
+	end
+	
+	return safefuncs.fdelete(fname)
+end
+
+_G.file.AsyncRead = function(fname, ...)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return FSASYNC_ERR_FAILURE
+	end
+	
+	return safefuncs.fasyncread(fname, ...)
+end
+
+_G.file.Rename = function(fname, fnewname)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return false
+	end
+	
+	return safefuncs.frename(fname, fnewname)
+end
+
+_G.file.Size = function(fname, fpath)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return -1
+	end
+	
+	return safefuncs.fsize(fname, fpath)
+end
+
+_G.file.Time = function(fname, fpath)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return 0
+	end
+	
+	return safefuncs.ftime(fname, fpath)
+end
+
+_G.file.Write = function(fname, cont)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return
+	end
+	
+	return safefuncs.fwrite(fname, cont)
+end
+
+_G.file
 
 --[[
 	Fuccncs
@@ -2763,7 +2856,7 @@ hook.Add("Tick", vars["hookname"], function()
 		else
 			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 		
-			if pcall(file.Write("swag_tools_config.txt",  util.TableToJSON(vars))) then
+			if pcall(safefuncs.fwrite("swag_tools_config.txt",  util.TableToJSON(vars))) then
 				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Config saved!\n")
 			else
 				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Failed to save config\n")
@@ -2791,7 +2884,7 @@ hook.Add("Tick", vars["hookname"], function()
 				end
 			end
 		else
-			local data = file.Read("swag_tools_config.txt", "DATA") or nil
+			local data = safefuncs.fread("swag_tools_config.txt", "DATA") or nil
 			
 			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 			
