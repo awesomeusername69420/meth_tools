@@ -70,6 +70,7 @@ local LocalPlayer = LocalPlayer
 local Material = Material
 local math = tCopy(math)
 local MsgC = MsgC
+local pcall = pcall
 local Player = Player
 local player = tCopy(player)
 local render = tCopy(render)
@@ -264,7 +265,7 @@ end
 -- Meth stuff
 
 local ismeth = false
-local mapi, mrend, mutil, mcall, mvar
+local mapi, mrend, mutil, mcall, mvar, mio
 
 if meth_lua_api then
 	mapi = meth_lua_api
@@ -282,8 +283,12 @@ if meth_lua_api then
 		mcall = mapi.callbacks
 	end
 	
-	if mutil.GetPermissions().CheatSettings and mapi.var then
+	if mutil and mutil.GetPermissions().CheatSettings and mapi.var then
 		mvar = mapi.var
+	end
+	
+	if mutil and mutil.GetPermissions().File and mapi.io then
+		mio = mapi.io
 	end
 end
 
@@ -411,6 +416,8 @@ local vars = {
 	-- Thing
 	["alerts"] = true,
 	["alerts_sound"] = true,
+	["config_createorsave"] = false,
+	["config_load"] = false,
 }
 
 local concommands = {
@@ -499,6 +506,8 @@ local concommands = {
 		-- Thing
 		["st_alerts"] = "alerts",
 		["st_alerts_sound"] = "alerts_sound",
+		["st_config_createorsave"] = "config_createorsave",
+		["st_config_load"] = "config_load",
 	}
 }
 
@@ -586,6 +595,14 @@ local menu = {
 		
 		{"cb", "alerts", 25, 25, "Alerts"},
 		{"cb", "alerts_sound", 50, 50, "Alert Sounds"},
+		
+		{"btn", 50, 200, 125, 25, "Save Config", function()
+			vars["config_createorsave"] = true
+		end},
+		
+		{"btn", 200, 200, 125, 25, "Load Config", function()
+			vars["config_load"] = true
+		end},
 	},
 	
 	["Merged"] = {
@@ -881,7 +898,7 @@ local function alert(event, data)
 		data = ""
 	end
 
-	if mrend then
+	if ismeth and mrend then
 		mrend.PushAlert("Blocked " .. tostring(event) .. "(" .. tostring(data) .. ")")
 	else
 		if vars["alerts_sound"] then
@@ -2733,6 +2750,68 @@ hook.Add("Tick", vars["hookname"], function()
 			meta_pl.SetPlayerColor(LocalPlayer(), Vector(1, 1, 1))
 		end
 	end
+	
+	if vars["config_createorsave"] then
+		if ismeth and mio then
+			local create = mio.Write("C:/MTHRW/LUA/data/swag_tools_config.txt", util.TableToJSON(vars))
+			
+			if create.status == true then
+				mrend.PushAlert("Config saved!")
+			else
+				mrend.PushAlert("Failed to save config")
+			end
+		else
+			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
+		
+			if pcall(file.Write("swag_tools_config.txt",  util.TableToJSON(vars))) then
+				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Config saved!\n")
+			else
+				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Failed to save config\n")
+			end
+		end
+		
+		vars["config_createorsave"] = false
+	end
+	
+	if vars["config_load"] then
+		if ismeth and mio then
+			local data = mio.Read("C:/MTHRW/LUA/data/swag_tools_config.txt")
+			
+			if data.content == nil or data.status == false then
+				mrend.PushAlert("Failed to load config")
+			else
+				local jsontotable = util.JSONToTable(data.content) or nil
+				
+				if jsontotable then
+					vars = tCopy(jsontotable)
+				
+					mrend.PushAlert("Config loaded!")
+				else
+					mrend.PushAlert("Failed to load config")
+				end
+			end
+		else
+			local data = file.Read("swag_tools_config.txt", "DATA") or nil
+			
+			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
+			
+			if data == nil then
+				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Failed to load config\n")
+			else
+				local jsontotable = util.JSONToTable(data) or nil
+				
+				if jsontotable then
+					vars = tCopy(jsontotable)
+				
+					MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Config loaded!\n")
+				else
+					MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Failed to load config\n")
+				end
+			end
+		end
+		
+		vars["config_load"] = false
+	end
 end)
 
 hook.Add("SetupSkyboxFog", vars["hookname"], function()
@@ -3637,6 +3716,8 @@ for i = 1, #menu_tabs do
 					cmbopen = false
 				end
 			end
+		elseif etype == "btn" then
+			dButton(v[2], v[3], v[4], v[5], panel, v[6], v[7])
 		end
 	end
 end
