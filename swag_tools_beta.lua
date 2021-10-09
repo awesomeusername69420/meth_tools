@@ -2170,6 +2170,7 @@ if ismeth and mcall then
 			
 				while datcount > vars["breadcrumbs_max"] do
 					table.remove(dat, 1)
+					datcount = #dat
 				end
 				
 				for i = 1, datcount do
