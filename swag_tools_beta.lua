@@ -3318,10 +3318,6 @@ hook.Add("EntityFireBullets", vars["hookname"], function(ent, data)
 		return
 	end
 	
-	if isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
-		return
-	end
-	
 	local len = vars["tracers_local"]
 	
 	if not len then
