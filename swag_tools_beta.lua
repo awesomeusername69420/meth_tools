@@ -1529,6 +1529,16 @@ local function vEnt(ent)
 	return meta_en.IsValid(ent)
 end
 
+local function isVisible(ent)
+	if not ent or not meta_en.IsValid(ent) then
+		return false
+	end
+	
+	local pos = meta_vc.ToScreen(meta_en.GetPos(ent))
+	
+	return pos.visible
+end
+
 local function getClosest(doFov)
 	local fov, retardednumber, rad, hw, hh = 0, 2.6, 0, ScrW() / 2, ScrH() / 2
 
@@ -2186,7 +2196,7 @@ if ismeth and mcall then
 				local wcolor = strColor(vars["glowchams_color_weapon"])
 			
 				for _, v in ipairs(player.GetAll()) do
-					if v == LocalPlayer() or not vEnt(v) then
+					if v == LocalPlayer() or not vEnt(v) or not isVisible(v) then
 						continue
 					end
 				
@@ -2454,7 +2464,7 @@ hook.Add("HUDPaint", vars["hookname"], function()
 			local wcolor = strColor(vars["glowchams_color_weapon"])
 		
 			for _, v in ipairs(player.GetAll()) do
-				if v == LocalPlayer() or not vEnt(v) then
+				if v == LocalPlayer() or not vEnt(v) or not isVisible(v) then
 					continue
 				end
 			
@@ -3318,7 +3328,7 @@ hook.Add("EntityFireBullets", vars["hookname"], function(ent, data)
 		return
 	end
 	
-	if table.Count(bullets) >= vars["maxtracers"] then
+	if #bullets >= vars["maxtracers"] then
 		table.remove(bullets, 1)
 	end
 	
@@ -3336,7 +3346,7 @@ hook.Add("EntityFireBullets", vars["hookname"], function(ent, data)
 		["col"] = Color(100, 255, 100, 255),
 	})
 
-	local ttr = bullets[table.Count(bullets)]
+	local ttr = bullets[#bullets]
 
 	timer.Simple(math.Round(vars["tracerlife"]), function()
 		table.RemoveByValue(bullets, ttr)
@@ -3354,7 +3364,7 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 		return
 	end
 
-	if table.Count(bullets) >= vars["maxtracers"] then
+	if #bullets >= vars["maxtracers"] then
 		table.remove(bullets, 1)
 	end
 
@@ -3383,7 +3393,7 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 		["col"] = Color(255, 100, 100, 255),
 	})
 
-	local ttr = bullets[table.Count(bullets)]
+	local ttr = bullets[#bullets]
 
 	timer.Simple(math.Round(vars["tracerlife"]), function()
 		table.RemoveByValue(bullets, ttr)
