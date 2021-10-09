@@ -299,6 +299,7 @@ end
 
 local hits = {}
 local bullets = {}
+local breadcrumbs = {}
 
 local vars = {
 	-- Stuffs
@@ -342,7 +343,6 @@ local vars = {
 	["beamtracers"] = false,
 	["breadcrumbs"] = false,
 	["breadcrumbs_color"] = "255 255 255 255",
-	["breadcrumbs_data"] = {},
 	["breadcrumbs_last"] = nil,
 	["breadcrumbs_max"] = 500,
 	["catpng"] = false,
@@ -2165,18 +2165,17 @@ if ismeth and mcall then
 		
 		if canRender() then
 			if vars["breadcrumbs"] then
-				local dat = vars["breadcrumbs_data"]
-				local datcount = #dat
+				local datcount = #breadcrumbs
 			
 				while datcount > vars["breadcrumbs_max"] do
-					table.remove(dat, 1)
-					datcount = #dat
+					table.remove(breadcrumbs, 1)
+					datcount = #breadcrumbs
 				end
 				
 				for i = 1, datcount do
 					if datcount > i + 1 then
 						cam.Start3D()
-							render.DrawLine(dat[i], dat[i + 1], strColor(vars["breadcrumbs_color"]), false)
+							render.DrawLine(breadcrumbs[i], breadcrumbs[i + 1], strColor(vars["breadcrumbs_color"]), false)
 						cam.End3D()
 					end
 				end
@@ -2434,17 +2433,17 @@ hook.Add("HUDPaint", vars["hookname"], function()
 	
 	if not ismeth then
 		if vars["breadcrumbs"] then
-			local dat = vars["breadcrumbs_data"]
-			local datcount = #dat
+			local datcount = #breadcrumbs
 		
 			while datcount > vars["breadcrumbs_max"] do
-				table.remove(dat, 1)
+				table.remove(breadcrumbs, 1)
+				datcount = #breadcrumbs
 			end
 			
 			for i = 1, datcount do
 				if datcount > i + 1 then
 					cam.Start3D()
-						render.DrawLine(dat[i], dat[i + 1], strColor(vars["breadcrumbs_color"]), false)
+						render.DrawLine(breadcrumbs[i], breadcrumbs[i + 1], strColor(vars["breadcrumbs_color"]), false)
 					cam.End3D()
 				end
 			end
@@ -2502,7 +2501,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 
 	if vars["breadcrumbs"] then
 		if meta_en.GetPos(LocalPlayer()) ~= vars["breadcrumbs_last"] then
-			table.insert(vars["breadcrumbs_data"], meta_en.GetPos(LocalPlayer()))
+			table.insert(breadcrumbs, meta_en.GetPos(LocalPlayer()))
 		end
 		
 		vars["breadcrumbs_last"] = meta_en.GetPos(LocalPlayer())
