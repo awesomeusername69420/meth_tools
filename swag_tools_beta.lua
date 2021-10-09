@@ -2477,6 +2477,10 @@ hook.Add("HUDPaint", vars["hookname"], function()
 				cam.End3D()
 			end
 		end
+	else
+		cam.Start3D()
+			render.PushCustomClipPlane(Vector(0, 0, 0), 0)
+		cam.End3D()
 	end
 end)
 
@@ -4241,5 +4245,9 @@ else
 
 	MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Loaded Successfully!\n")
 end
+
+-- Autoload config
+
+vars["config_load"] = true
 
 jit.flush()
