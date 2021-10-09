@@ -8,6 +8,27 @@
 	Locales
 ]]
 
+-- Meth stuff
+
+local ismeth = false
+local mrend, mutil, mcall, mvar, mio
+
+if meth_lua_api then
+	ismeth = true
+
+	mrend, mutil, mcall = meth_lua_api.render, meth_lua_api.util, meth_lua_api.callbacks
+	
+	if mutil and mutil.GetPermissions().CheatSettings then
+		mvar = meth_lua_api.var
+	end
+	
+	if mutil and mutil.GetPermissions().File then
+		mio = meth_lua_api.io
+	end
+end
+
+-- Main stuff
+
 local table = table.Copy(table)
 
 local debug = table.Copy(debug)
@@ -261,36 +282,6 @@ local catpng = Material("../data/catpng.png") or nil
 
 if catpng then
 	meta_im.SetInt(catpng, "$flags", bit.bor(meta_im.GetInt(catpng, "$flags"), 32768))
-end
-
--- Meth stuff
-
-local ismeth = false
-local mapi, mrend, mutil, mcall, mvar, mio
-
-if meth_lua_api then
-	mapi = meth_lua_api
-	ismeth = true
-
-	if mapi.render then
-		mrend = mapi.render
-	end
-
-	if mapi.util then
-		mutil = mapi.util
-	end
-	
-	if mapi.callbacks then
-		mcall = mapi.callbacks
-	end
-	
-	if mutil and mutil.GetPermissions().CheatSettings and mapi.var then
-		mvar = mapi.var
-	end
-	
-	if mutil and mutil.GetPermissions().File and mapi.io then
-		mio = mapi.io
-	end
 end
 
 --[[
