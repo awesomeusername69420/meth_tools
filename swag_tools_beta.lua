@@ -2432,6 +2432,23 @@ hook.Add("HUDPaint", vars["hookname"], function()
 	end
 	
 	if not ismeth then
+		if vars["breadcrumbs"] then
+			local dat = vars["breadcrumbs_data"]
+			local datcount = #dat
+		
+			while datcount > vars["breadcrumbs_max"] do
+				table.remove(dat, 1)
+			end
+			
+			for i = 1, datcount do
+				if datcount > i + 1 then
+					cam.Start3D()
+						render.DrawLine(dat[i], dat[i + 1], strColor(vars["breadcrumbs_color"]), false)
+					cam.End3D()
+				end
+			end
+		end
+	
 		if vars["glowchams"] then
 			local color = strColor(vars["glowchams_color"])
 			local wcolor = strColor(vars["glowchams_color_weapon"])
