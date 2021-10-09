@@ -152,7 +152,7 @@ local COLOR_WHITE = Color(255, 255, 255, 255)
 local title = "Swag Tools Beta"
 local title_short = "STB"
 
-local menu_w, menu_h = ScrW() * (600 / 1920), ScrH() * (700 / 1080)
+local menu_w, menu_h = ScrW() * (900 / 1920), ScrH() * (800 / 1080)
 
 local main = vgui.Create("DFrame")
 
@@ -340,6 +340,11 @@ local vars = {
 	["aimbient_rs"] = false,
 	["antiblind"] = false,
 	["beamtracers"] = false,
+	["breadcrumbs"] = false,
+	["breadcrumbs_color"] = "255 255 255 255",
+	["breadcrumbs_data"] = {},
+	["breadcrumbs_last"] = nil,
+	["breadcrumbs_max"] = 500,
 	["catpng"] = false,
 	["catpng_color"] = "255 255 255 100",
 	["cfov"] = meta_cv.GetInt(GetConVar("fov_desired")),
@@ -424,6 +429,7 @@ local vars = {
 local concommands = {
 	["integer"] = {
 		-- Render
+		["st_render_breadcrumbs_max_set"] = "breadcrumbs_max",
 		["st_render_damageboxes_life_set"] = "hitbox_delay",
 		["st_render_fov_set"] = "cfov",
 		["st_render_tracers_life_set"] = "tracerlife",
@@ -442,8 +448,9 @@ local concommands = {
 
 	["string"] = {
 		-- Render
-		["st_render_catpng_color_set"] = "catpng_color",
 		["st_render_aimbientlighting_color_set"] = "aimbient_color",
+		["st_render_breadcrumbs_color_set"] = "breadcrumbs_color",
+		["st_render_catpng_color_set"] = "catpng_color",
 		["st_render_damageboxes_color_override_set"] = "hitbox_color_ovr",
 		["st_render_damageboxes_color_set"] = "hitbox_color",
 		["st_render_snaplines_color_set"] = "snaplines_color",
@@ -461,6 +468,7 @@ local concommands = {
 		-- Render
 		["st_render_aimbientlighting"] = "aimbient",
 		["st_render_antiblind"] = "antiblind",
+		["st_render_breadcrumbs"] = "breadcrumbs",
 		["st_render_catpng"] = "catpng",
 		["st_render_damageboxes"] = "hitboxonhit",
 		["st_render_devtexture"] = "devtexture",
@@ -577,6 +585,9 @@ local menu = {
 		{"cb", "silentviz", 25, 525, "Vizualize Silent Aim"},
 		{"cb", "snaplines", 25, 550, "Snaplines"},
 		{"cb", "thirdpersonfix", 25, 575, "Fix Thirdperson"},
+		{"cb", "breadcrumbs", 25, 600, "Breadcrumbs"},
+		
+		{"num", "breadcrumbs_max", 50, 620, 300, 25, 100, 3000, 0, "Distance"},
 	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
@@ -588,6 +599,7 @@ local menu = {
 			{"clr", "aimbient_color", "Ambient Color"},
 			{"clr", "glowchams_color", "Glow Chams"},
 			{"clr", "glowchams_color_weapon", "Glow Chams - Weapons"},
+			{"clr", "breadcrumbs_color", "Breadcrumbs Color"},
 		},
 	},
 	
@@ -2152,6 +2164,23 @@ if ismeth and mcall then
 		vars["renderpanic"] = false
 		
 		if canRender() then
+			if vars["breadcrumbs"] then
+				local dat = vars["breadcrumbs_data"]
+				local datcount = #dat
+			
+				while datcount > vars["breadcrumbs_max"] do
+					table.remove(dat, 1)
+				end
+				
+				for i = 1, datcount do
+					if datcount > i + 1 then
+						cam.Start3D()
+							render.DrawLine(dat[i], dat[i + 1], strColor(vars["breadcrumbs_color"]), false)
+						cam.End3D()
+					end
+				end
+			end
+		
 			if vars["glowchams"] then
 				local color = strColor(vars["glowchams_color"])
 				local wcolor = strColor(vars["glowchams_color_weapon"])
@@ -2451,6 +2480,14 @@ end)
 hook.Add("CreateMove", vars["hookname"], function(cmd)
 	if meta_cd.CommandNumber(cmd) == 0 then
 		return
+	end
+
+	if vars["breadcrumbs"] then
+		if meta_en.GetPos(LocalPlayer()) ~= vars["breadcrumbs_last"] then
+			table.insert(vars["breadcrumbs_data"], meta_en.GetPos(LocalPlayer()))
+		end
+		
+		vars["breadcrumbs_last"] = meta_en.GetPos(LocalPlayer())
 	end
 
 	local mvtyp =  meta_en.GetMoveType(LocalPlayer())
