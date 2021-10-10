@@ -2294,6 +2294,11 @@ if ismeth and mcall then
 					local fov = mvar.GetVarInt("Aimbot.Target.FoV")
 					
 					local retardednumber = 2.6
+					
+					if mvar.GetVarInt("Player.Third Person.Third Person") == 1 then
+						retardednumber = 3.49
+					end
+					
 					local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
 					
 					local method = mvar.GetVarInt("Aimbot.Target.Priority")
