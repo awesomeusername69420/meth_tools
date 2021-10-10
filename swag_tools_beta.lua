@@ -2825,7 +2825,7 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	
 	nfov = math.Clamp(nfov, 2, 179)
 	
-	if vars["thirdpersonfix"] then
+	if vars["thirdpersonfix"] and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1 then
 		if meta_pl.ShouldDrawLocalPlayer(ply) then
 			local tr = util.TraceLine({
 				start = pos,
