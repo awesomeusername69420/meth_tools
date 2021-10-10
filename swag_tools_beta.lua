@@ -2667,24 +2667,24 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 	end
 	
 	if mvar then
-		if vars["antiaim"] then		
-			if vars["antiaim_prev"] == nil then
+		if vars["antiaim_prev"] == nil then
+			vars["antiaim_prev"] = mvar.GetVarInt("General.Options.Enabled") % 256
+		end
+		
+		if meta_en.WaterLevel(LocalPlayer()) > 1 then
+			mvar.SetVarInt("General.Options.Enabled", 0)
+			vars["antiaim_swap"] = false
+		else
+			if vars["antiaim_swap"] then
 				vars["antiaim_prev"] = mvar.GetVarInt("General.Options.Enabled") % 256
 			end
 			
-			if meta_en.WaterLevel(LocalPlayer()) > 1 then
-				mvar.SetVarInt("General.Options.Enabled", 0)
-				vars["antiaim_swap"] = false
-			else
-				if vars["antiaim_swap"] then
-					vars["antiaim_prev"] = mvar.GetVarInt("General.Options.Enabled") % 256
-				end
-				
-				mvar.SetVarInt("General.Options.Enabled", vars["antiaim_prev"])
-				
-				vars["antiaim_swap"] = true
-			end
-		
+			mvar.SetVarInt("General.Options.Enabled", vars["antiaim_prev"])
+			
+			vars["antiaim_swap"] = true
+		end
+	
+		if vars["antiaim"] then		
 			if vars["antiaim_invert"] then
 				local yp = "General.Options.Yaw"
 				local yawset = mvar.GetVarInt(yp) or 0
