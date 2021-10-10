@@ -8,6 +8,11 @@
 	Locales
 ]]
 
+-- Menu stuff
+
+local title = "Swag Tools Beta"
+local title_short = "STB"
+
 -- Meth stuff
 
 local ismeth = false
@@ -168,71 +173,6 @@ local COLOR_ORANGE = Color(255, 150, 0, 255)
 local COLOR_PANEL = Color(234, 234, 234, 255)
 local COLOR_WHITE = Color(255, 255, 255, 255)
 
--- Menu
-
-local title = "Swag Tools Beta"
-local title_short = "STB"
-
-local menu_w, menu_h = ScrW() * (900 / 1920), ScrH() * (800 / 1080)
-
-local main = vgui.Create("DFrame")
-
-meta_pn.SetSize(main, menu_w, menu_h)
-meta_pn.Center(main)
-main.SetDeleteOnClose(main, false)
-main.SetTitle(main, "")
-meta_pn.SetVisible(main, false)
-main.ShowCloseButton(main, true)
-meta_pn.SetPaintedManually(main, true)
-meta_pn.DockPadding(main, 12, 24, 12, 12)
-
-main.Paint = function(self)
-	surface.SetDrawColor(COLOR_BLACK)
-	surface.DrawRect(0, 0, menu_w, menu_h)
-
-	local c = 55
-	local cs = c
-	
-	for i = 1, cs do
-		surface.SetDrawColor(Color(c, c, c, 255))
-		surface.DrawLine(0, i, menu_w, i)
-		
-		c = c - 1
-	end
-
-	surface.SetDrawColor(COLOR_MAIN_BACK_M)
-	surface.DrawRect(12, 40, menu_w - 24, menu_h - 52)
-	
-	surface.SetFont("BudgetLabel")
-	
-	local tw, th = surface.GetTextSize(title)
-	
-	surface.SetTextColor(COLOR_WHITE)
-	surface.SetTextPos((menu_w / 2) - (tw / 2), 5)
-	surface.DrawText(title)
-	
-	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-	surface.DrawOutlinedRect(0, 0, menu_w, menu_h)
-end
-
-local sheet = vgui.Create("DPropertySheet", main)
-
-meta_pn.Dock(sheet, FILL)
-meta_pn.SetVisible(sheet, false)
-sheet.SetFadeTime(sheet, 0)
-meta_pn.SetFontInternal(sheet, "BudgetLabel")
-
-sheet.Paint = function(self)
-	local w, h =  meta_pn.GetWide(self), meta_pn.GetTall(self)
-
-	surface.SetDrawColor(COLOR_MAIN_BACK)
-	surface.DrawRect(0, 0, w, 20)
-	
-	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-	surface.DrawLine(0, 19, w, 19)
-	surface.DrawOutlinedRect(0, 0, w, h)
-end
-
 -- The rest
 
 math.randomseed(math.random(-123456, 123456))
@@ -306,6 +246,8 @@ local vars = {
 	["td_drag_y"] = 0,
 	["menu_open"] = false,
 	["menu_delay"] = false,
+	["menu_width"] = ScrW() * (900 / 1920),
+	["menu_height"] = ScrH() * (800 / 1080),
 	["darkrp_gestures"] = {
 		["dance"] = ACT_GMOD_TAUNT_DANCE,
 		["muscle"] = ACT_GMOD_TAUNT_MUSCLE,
@@ -420,6 +362,75 @@ local vars = {
 	["config_createorsave"] = false,
 	["config_load"] = false,
 }
+
+-- Menu
+
+local main = vgui.Create("DFrame")
+
+meta_pn.SetSize(main, vars["menu_width"], vars["menu_height"])
+main.SetSizable(main, true)
+main.SetMinimumSize(main, ScrW() * (500 / 1920), ScrH() * (600 / 1080))
+meta_pn.Center(main)
+main.SetDeleteOnClose(main, false)
+main.SetTitle(main, "")
+meta_pn.SetVisible(main, false)
+main.ShowCloseButton(main, true)
+meta_pn.SetPaintedManually(main, true)
+meta_pn.DockPadding(main, 12, 24, 12, 12)
+
+main.OnSizeChanged = function(self, neww, newh)
+	vars["menu_width"] = neww
+	vars["menu_height"] = newh
+end
+
+main.Paint = function(self)
+	local mw, mh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+
+	surface.SetDrawColor(COLOR_BLACK)
+	surface.DrawRect(0, 0, mw, mh)
+
+	local c = 55
+	local cs = c
+	
+	for i = 1, cs do
+		surface.SetDrawColor(Color(c, c, c, 255))
+		surface.DrawLine(0, i, mw, i)
+		
+		c = c - 1
+	end
+
+	surface.SetDrawColor(COLOR_MAIN_BACK_M)
+	surface.DrawRect(12, 40, mw - 24, mh - 52)
+	
+	surface.SetFont("BudgetLabel")
+	
+	local tw, th = surface.GetTextSize(title)
+	
+	surface.SetTextColor(COLOR_WHITE)
+	surface.SetTextPos((mw / 2) - (tw / 2), 5)
+	surface.DrawText(title)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(0, 0, mw, mh)
+end
+
+local sheet = vgui.Create("DPropertySheet", main)
+
+meta_pn.Dock(sheet, FILL)
+meta_pn.SetVisible(sheet, false)
+sheet.SetFadeTime(sheet, 0)
+meta_pn.SetFontInternal(sheet, "BudgetLabel")
+
+sheet.Paint = function(self)
+	local w, h =  meta_pn.GetWide(self), meta_pn.GetTall(self)
+
+	surface.SetDrawColor(COLOR_MAIN_BACK)
+	surface.DrawRect(0, 0, w, 20)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawLine(0, 19, w, 19)
+	surface.DrawOutlinedRect(0, 0, w, h)
+end
 
 local concommands = {
 	["integer"] = {
@@ -729,7 +740,7 @@ hdiv.SetRight(hdiv, hooksidepanel)
 hdiv.SetDividerWidth(hdiv, 4)
 hdiv.SetLeftMin(hdiv, 10)
 hdiv.SetRightMin(hdiv, 10)
-hdiv.SetLeftWidth(hdiv, (menu_w / 2) + 10)
+hdiv.SetLeftWidth(hdiv, (vars["menu_width"] / 2) + 10)
 
 hdiv.Paint = function(self)
 	local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
@@ -3061,6 +3072,13 @@ hook.Add("Tick", vars["hookname"], function()
 		end
 		
 		vars["menu_open"] = ogmenuopen
+		
+		meta_pn.SetSize(main, vars["menu_width"], vars["menu_height"])
+		
+		if not ogmenuopen then
+			meta_pn.Center(main)
+		end
+		
 		vars["config_load"] = false
 	end
 end)
@@ -3573,7 +3591,7 @@ for i = 1, #menu_tabs do
 		div.SetDividerWidth(div, 4)
 		div.SetLeftMin(div, 10)
 		div.SetRightMin(div, 10)
-		div.SetLeftWidth(div, (menu_w / 2) + 10)
+		div.SetLeftWidth(div, (vars["menu_width"] / 2) + 10)
 		
 		div.Paint = function(self)
 			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
