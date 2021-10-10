@@ -75,22 +75,48 @@ local settings = {
 }
 
 local bindcodes = {
-	[106] = 48,
-	[109] = 49,
-	[111] = 47,
-	[12] = nil,
-	[1] = 107,
-	[20] = 68,
-	[2] = 108,
-	[33] = 76,
-	[34] = 77,
-	[35] = 75,
-	[36] = 74,
-	[37] = 89,
-	[38] = 88,
-	[4] = 109,
-	[5] = 110,
-	[6] = 111,
+	[37] = 89, -- KP left
+	[38] = 88, -- KP up
+	[106] = 48, -- KP mult
+	[109] = 49, -- KP minus
+	[111] = 47, -- KP div
+	[39] = 91, -- kp right
+	[40] = 90, -- kp down
+	[107] = 50, -- kp plus
+	[13] = 64, -- enter
+	[46] = 73, -- delete
+	
+	[96] = 37, -- numpad 0
+	[97] = 38, -- numpad 1
+	[98] = 39, -- numpad 2
+	[99] = 40, -- numpad 3
+	[100] = 41, -- numpad 4
+	[101] = 42, -- numpad 5
+	[102] = 43, -- numpad 6
+	[103] = 44, -- numpad 7
+	[104] = 45, -- numpad 8
+	[105] = 46, -- numpad 9
+	
+	[12] = nil, -- keypad clear (???)
+	
+	[20] = 68, -- Capslock
+	
+	[33] = 76, -- Page up
+	[34] = 77, -- Page down
+	[35] = 75, -- End
+	[36] = 74, -- Home
+	
+	[1] = 107, -- Mouse 1
+	[2] = 108, -- Mouse 2
+	[4] = 109, -- Mouse 3
+	[5] = 110, -- Mouse 4
+	[6] = 111, -- Mouse 5
+	
+	[91] = 85, -- Left Win
+	[16] = 79, -- Shift
+	[18] = 81, -- Alt
+	[17] = 83, -- control
+	[93] = 87, -- Apps
 }
 
 local encheck = {
@@ -192,13 +218,11 @@ local function getKey(status)
 		return nil
 	end
 	
-	if status > 64 then
+	if status > 47 and status < 91 then
 		return input.GetKeyCode(string.char(status))
 	end
 	
-	if status < 64 then
-		return bindcodes[status] or 0
-	end
+	return bindcodes[status] or 0
 end
 
 local function getKeyStatus(option, istoggle, togglevar)
@@ -218,7 +242,7 @@ local function getKeyStatus(option, istoggle, togglevar)
 	local keystat = false
 	
 	if not istoggle then
-		if key > 1 and (input.IsKeyDown(key) or input.IsMouseDown(key)) then
+		if key > 0 and (input.IsKeyDown(key) or input.IsMouseDown(key)) then
 			keystat = true
 		end
 	else
@@ -295,7 +319,7 @@ mcall.Add("OnHUDPaint", "", function()
 		
 		local binds = getBinds()
 		
-		local x, y, w, h = 10, ScrH() / 2, 200, 35 + (15 * #binds)
+		local x, y, w, h = 10, ScrH() / 2, 225, 35 + (15 * #binds)
 		
 		render.SetScissorRect(x, y, x + w, y + h, true)
 		
