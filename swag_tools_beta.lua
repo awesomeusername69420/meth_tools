@@ -350,6 +350,7 @@ local vars = {
 	["hitbox_color"] = "255 255 255 255",
 	["hitbox_color_ovr"] = "255 0 0 255",
 	["hitbox_delay"] = 3,
+	["lenientdrawing"] = false,
 	["maxtracers"] = 1000,
 	["reddeath"] = true,
 	["renderpanic"] = false,
@@ -469,6 +470,7 @@ local concommands = {
 		["st_render_fov_force"] = "fov_force",
 		["st_render_fullbright"] = "fullbright",
 		["st_render_gmodoverlay"] = "drawgmod",
+		["st_render_lenientdrawing"] = "lenientdrawing",
 		["st_render_reddeathscreen"] = "reddeath",
 		["st_render_rgb"] = "rgb",
 		["st_render_snaplines"] = "snaplines",
@@ -576,9 +578,10 @@ local menu = {
 		{"cb", "silentviz", 25, 525, "Vizualize Silent Aim"},
 		{"cb", "snaplines", 25, 550, "Snaplines"},
 		{"cb", "thirdpersonfix", 25, 575, "Fix Thirdperson"},
-		{"cb", "breadcrumbs", 25, 600, "Breadcrumbs"},
+		{"cb", "lenientdrawing", 25, 600, "Lenient Drawing"},
+		{"cb", "breadcrumbs", 25, 625, "Breadcrumbs"},
 		
-		{"num", "breadcrumbs_max", 50, 620, 300, 25, 100, 3000, 0, "Distance"},
+		{"num", "breadcrumbs_max", 50, 645, 300, 25, 100, 3000, 0, "Distance"},
 	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
@@ -1576,7 +1579,11 @@ local function canRender()
 	local mesp = true
 	
 	if ismeth and mvar then
-		mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
+		if not vars["lenientdrawing"] then
+			if not vars["menu"] then
+				mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
+			end
+		end
 	end
 
 	if vars["menu"] then
@@ -2377,6 +2384,11 @@ if ismeth and mcall then
 				
 					if fov > 0 and fov <= 60 then
 						local retardednumber = 2.6
+						
+						if mvar.GetVarInt("Player.Third Person.Third Person") == 1 then
+							retardednumber = 3.49
+						end
+						
 						local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
 						local size = rad * 1.955
 						
