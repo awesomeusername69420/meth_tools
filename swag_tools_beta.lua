@@ -3389,7 +3389,7 @@ hook.Add("EntityFireBullets", vars["hookname"], function(ent, data)
 		return
 	end
 	
-	if data.TracerName ~= "Tracer" then
+	if string.find(string.lower(tostring(data.TracerName)), "ricochet") then
 		return
 	end
 	
