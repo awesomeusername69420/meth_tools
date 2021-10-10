@@ -2607,7 +2607,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 
 	if mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER then
 		if vars["faststop"] then
-			if meta_en.IsOnGround(LocalPlayer()) then
+			if meta_en.IsOnGround(LocalPlayer()) and not meta_en.IsValid(meta_pl.GetVehicle(LocalPlayer())) then
 				if not meta_cd.KeyDown(cmd, IN_MOVELEFT) and not meta_cd.KeyDown(cmd, IN_MOVERIGHT) and not meta_cd.KeyDown(cmd, IN_FORWARD) and not meta_cd.KeyDown(cmd, IN_BACK) and not meta_cd.KeyDown(cmd, IN_JUMP) then
 					local vel = meta_en.GetVelocity(LocalPlayer())
 					local movedir = meta_vc.Angle(vel)
