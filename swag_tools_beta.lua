@@ -1525,8 +1525,26 @@ local function vEnt(ent)
 	return meta_en.IsValid(ent)
 end
 
+local function getHeadPos(ent)
+	if not vEnt(ent) then
+		return Vector(0, 0, 0)
+	end
+	
+	local headpos = meta_en.EyePos(ent)
+
+	for i = 0, meta_en.GetBoneCount(ent) - 1 do
+		if string.find(string.lower(meta_en.GetBoneName(ent, i)), "head") then
+			headpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ent, i))
+	
+			break
+		end
+	end
+	
+	return headpos
+end
+
 local function isVisible(ent)
-	if not ent or not meta_en.IsValid(ent) then
+	if not vEnt(ent) then
 		return false
 	end
 	
@@ -2297,9 +2315,17 @@ if ismeth and mcall then
 						retardednumber = 3.49
 					end
 					
+					local bodyaim = mvar.GetVarInt("Aimbot.Accuracy.Hitbox") % 256
+					
+					if bodyaim == 0 or bodyaim == 1 then
+						bodyaim = 0
+					else
+						bodyaim = 1
+					end
+					
 					local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
 					
-					local method = mvar.GetVarInt("Aimbot.Target.Priority")
+					local method = mvar.GetVarInt("Aimbot.Target.Priority") % 256
 					
 					local hw, hh = ScrW() / 2, ScrH() / 2
 					local snaptarg = nil
@@ -2322,8 +2348,15 @@ if ismeth and mcall then
 							end
 							
 							if fov > 0 and fov < 180 then
-								local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
-								local dist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
+								local compos
+									
+								if bodyaim == 1 then
+									compos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
+								else
+									compos = meta_vc.ToScreen(getHeadPos(v))
+								end
+								
+								local dist = math.abs(math.Dist(compos.x, compos.y, hw, hh))
 								
 								if dist > math.ceil(rad) and fov > 0 and fov < 180 then
 									continue
@@ -2357,8 +2390,15 @@ if ismeth and mcall then
 								continue
 							end
 							
-							local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
-							local dist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
+							local compos
+							
+							if bodyaim == 1 then
+								compos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
+							else
+								compos = meta_vc.ToScreen(getHeadPos(v))
+							end
+								
+							local dist = math.abs(math.Dist(compos.x, compos.y, hw, hh))
 							
 							if dist > math.ceil(rad) and fov > 0 and fov < 180 then
 								continue
@@ -2376,11 +2416,18 @@ if ismeth and mcall then
 					end
 					
 					if vEnt(snaptarg) then
-						local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(snaptarg, meta_en.OBBCenter(snaptarg)))
+						local compos
+						
+						if bodyaim == 1 then
+							compos = meta_vc.ToScreen(meta_en.LocalToWorld(snaptarg, meta_en.OBBCenter(snaptarg)))
+						else
+							compos = meta_vc.ToScreen(getHeadPos(snaptarg))
+						end
+						
 						local color = strColor(vars["snaplines_color"])
 					
 						surface.SetDrawColor(color)
-						surface.DrawLine(hw, hh, obbpos.x, obbpos.y)
+						surface.DrawLine(hw, hh, compos.x, compos.y)
 					end
 				end
 				
@@ -3397,16 +3444,8 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 		table.remove(bullets, 1)
 	end
 
-	local startpos = meta_pl.GetShootPos(ply)
+	local startpos = getHeadPos(ply)
 	local dir = meta_an.Forward(meta_en.EyeAngles(ply))
-
-	for i = 0, meta_en.GetBoneCount(ply) - 1 do
-		if string.find(string.lower(meta_en.GetBoneName(ply, i)), "head") then
-			startpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ply, i)) + (dir * 2)
-	
-			break
-		end
-	end
 
 	local tr = util.TraceLine({
 		start = startpos,
