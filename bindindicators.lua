@@ -320,7 +320,9 @@ mcall.Add("OnHUDPaint", "", function()
 		
 		local binds = getBinds()
 		
-		local x, y, h = 10, ScrH() / 2, 40 + (15 * #binds)
+		local x, h = 10, 40 + (15 * #binds)
+		
+		local y = (ScrH() / 2) - (h / 2)
 		
 		local w = 225
 		
