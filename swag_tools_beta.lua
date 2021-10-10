@@ -148,6 +148,7 @@ local IN_MOVELEFT = 512
 local IN_MOVERIGHT = 1024
 local IN_RELOAD = 8192
 local IN_SPEED = 131072
+local IN_WALK = 262144
 local KEY_SPACE = input.GetKeyCode("SPACE")
 local MASK_SHOT = 1174421507
 local MATERIAL_FOG_NONE = 0
@@ -315,6 +316,7 @@ local vars = {
 	["delayaf_a"] = 0.05,
 	["delayaf_dp"] = false,
 	["detourcmd"] = true,
+	["faststop"] = false,
 	["followang"] = Angle(0, 0, 0),
 	["followbot"] = false,
 	["following"] = false,
@@ -500,6 +502,7 @@ local concommands = {
 		["st_tools_antigag"] = "antigag",
 		["st_tools_delay_autofire"] = "delayaf",
 		["st_tools_detour_commands"] = "detourcmd",
+		["st_tools_faststop"] = "faststop",
 		["st_tools_followbot"] = "followbot",
 		["st_tools_gesture_loop"] = "gesture_loop",
 		["st_tools_psay_spam"] = "psays",
@@ -550,16 +553,17 @@ local menu = {
 		{"cb", "tdetector", 25, 225, "Traitor Detector"},
 		{"cb", "tdetector_icons", 50, 250, "Draw Icons"},
 		{"cb", "tdetector_list", 50, 275, "Draw List"},
-		{"cb", "gesture_loop", 25, 300, "Gesture Loop"},
+		{"cb", "faststop", 25, 300, "Fast Stop"},
+		{"cb", "gesture_loop", 25, 325, "Gesture Loop"},
 		
-		{"com", "gesture", 50, 320, 100, 25, {"dance", "muscle", "wave", "robot", "bow", "cheer", "laugh", "zombie", "agree", "disagree", "forward", "becon", "salute", "pose", "halt", "group"}, "Gesture"},
+		{"com", "gesture", 50, 345, 100, 25, {"dance", "muscle", "wave", "robot", "bow", "cheer", "laugh", "zombie", "agree", "disagree", "forward", "becon", "salute", "pose", "halt", "group"}, "Gesture"},
 		
-		{"cb", "psays", 25, 350, "ULX PSay Spammer"},
+		{"cb", "psays", 25, 375, "ULX PSay Spammer"},
 		
-		{"str", "psays_message", 50, 370, 250, 25, "Spam Message"},
+		{"str", "psays_message", 50, 395, 250, 25, "Spam Message"},
 		
-		{"cb", "autohop", 25, 395, "Auto BHop"},
-		{"cb", "autostrafe", 25, 420, "Auto Strafe"},
+		{"cb", "autohop", 25, 425, "Auto BHop"},
+		{"cb", "autostrafe", 25, 450, "Auto Strafe"},
 	},
 	
 	["Render"] = {
@@ -2602,6 +2606,21 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 	local mvtyp =  meta_en.GetMoveType(LocalPlayer())
 
 	if mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER then
+		if vars["faststop"] then
+			if meta_en.IsOnGround(LocalPlayer()) then
+				if not meta_cd.KeyDown(cmd, IN_MOVELEFT) and not meta_cd.KeyDown(cmd, IN_MOVERIGHT) and not meta_cd.KeyDown(cmd, IN_FORWARD) and not meta_cd.KeyDown(cmd, IN_BACK) and not meta_cd.KeyDown(cmd, IN_JUMP) then
+					local vel = meta_en.GetVelocity(LocalPlayer())
+					local movedir = meta_vc.Angle(vel)
+					movedir.yaw = meta_cd.GetViewAngles(cmd).yaw - movedir.yaw
+					
+					local newmove = meta_an.Forward(movedir) * meta_vc.Length2D(vel)
+					
+					meta_cd.SetSideMove(cmd, 0 - newmove.y)
+					meta_cd.SetForwardMove(cmd, 0 - newmove.x)
+				end
+			end
+		end
+	
 		if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) then
 			local tply = vars["followtarg"]
 			
