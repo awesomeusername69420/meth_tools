@@ -2963,6 +2963,8 @@ hook.Add("Tick", vars["hookname"], function()
 	end
 	
 	if vars["config_load"] then
+		local ogmenuopen = vars["menu_open"]
+	
 		if ismeth and mio then
 			local data = mio.Read("C:/MTHRW/LUA/data/swag_tools_config.txt")
 			
@@ -2999,6 +3001,7 @@ hook.Add("Tick", vars["hookname"], function()
 			end
 		end
 		
+		vars["menu_open"] = ogmenuopen
 		vars["config_load"] = false
 	end
 end)
