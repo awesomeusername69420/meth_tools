@@ -120,7 +120,7 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
 
 ---
 
-<h3>Glow Chams Commands</h3>
+<h3>Bind Indicator Commands</h3>
 
 ---
 
@@ -129,6 +129,6 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  
  Command | Description | Argument(s) | Default |
  | --- | --- | --- | --- |
- | glowchams_color | Changes the color of the glow chams | `string` | `255 0 0` |
- | glowchams_enabled | Toggles the glow chams | `boolean` | `true` |
+ | bindindicators_accent_color_set | Changes the accent color of the indicators | `string` | `255 100 100 255` |
+ | bindindicators_display_always | Toggles displaying binds set to "Always" | `boolean` | `true` |
 </details>
