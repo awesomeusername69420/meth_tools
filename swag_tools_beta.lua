@@ -1581,14 +1581,12 @@ local function canRender()
 	local mesp = true
 	
 	if ismeth and mvar then
-		if not vars["lenientdrawing"] then
-			if not vars["menu"] then
-				mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
-			end
+		if not vars["lenientdrawing"] and not vars["menu_open"] then
+			mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
 		end
 	end
 
-	if vars["menu"] then
+	if vars["menu_open"] then
 		return mesp and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer())
 	end
 
@@ -1867,13 +1865,13 @@ local function drawTraitorDetector()
 		if vars["tdetector_list"] then
 			local mx, my = gui.MouseX(), gui.MouseY()
 		
-			if vars["menu"] and isClickable(x, y, x + w, y + h) then
+			if vars["menu_open"] and isClickable(x, y, x + w, y + h) then
 				vars["td_drag_x"] = mx - x
 				vars["td_drag_y"] = my - y
 				
 				vars["td_dragging"] = true
 			else
-				if not vars["menu"] or not input.IsMouseDown(MOUSE_LEFT) then
+				if not vars["menu_open"] or not input.IsMouseDown(MOUSE_LEFT) then
 					vars["td_dragging"] = false
 				end
 			end
@@ -2004,13 +2002,13 @@ local function drawSpectators()
 	local x, y, w, h = vars["specdetector_x"], vars["specdetector_y"], ScrW() * (500 / 1920), 20
 	local mx, my = gui.MouseX(), gui.MouseY()
 	
-	if vars["menu"] and isClickable(x, y, x + w, y + h) then
+	if vars["menu_open"] and isClickable(x, y, x + w, y + h) then
 		vars["spec_drag_x"] = mx - x
 		vars["spec_drag_y"] = my - y
 		
 		vars["spec_dragging"] = true
 	else
-		if not vars["menu"] or not input.IsMouseDown(MOUSE_LEFT) then
+		if not vars["menu_open"] or not input.IsMouseDown(MOUSE_LEFT) then
 			vars["spec_dragging"] = false
 		end
 	end
@@ -2146,8 +2144,8 @@ local function drawSpectators()
 end
 
 local function toggleMenu()
-	local ms = not vars["menu"]
-	vars["menu"] = ms
+	local ms = not vars["menu_open"]
+	vars["menu_open"] = ms
 	
 	meta_pn.SetVisible(main, ms)
 	meta_pn.SetVisible(sheet, ms)
@@ -2410,7 +2408,7 @@ if ismeth and mcall then
 			end
 		end
 		
-		if vars["menu"] then
+		if vars["menu_open"] then
 			for _, v in ipairs(menu_drawing) do
 				if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
 					meta_pn.PaintManual(v)
@@ -2428,7 +2426,7 @@ elseif not ismeth then
 			drawSpectators()
 		end
 		
-		if vars["menu"] then
+		if vars["menu_open"] then
 			for _, v in ipairs(menu_drawing) do
 				if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
 					meta_pn.PaintManual(v)
@@ -2938,8 +2936,13 @@ hook.Add("Tick", vars["hookname"], function()
 	end
 	
 	if vars["config_createorsave"] then
+		local ogmenuopen = vars["menu_open"]
+		vars["menu_open"] = false
+		local tabletojson = util.TableToJSON(vars)
+		vars["menu_open"] = ogmenuopen
+	
 		if ismeth and mio then
-			local create = mio.Write("C:/MTHRW/LUA/data/swag_tools_config.txt", util.TableToJSON(vars))
+			local create = mio.Write("C:/MTHRW/LUA/data/swag_tools_config.txt", tabletojson)
 			
 			if create.status == true then
 				mrend.PushAlert("Config saved!")
@@ -2949,7 +2952,7 @@ hook.Add("Tick", vars["hookname"], function()
 		else
 			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
 		
-			if pcall(safefuncs.fwrite("swag_tools_config.txt",  util.TableToJSON(vars))) then
+			if pcall(safefuncs.fwrite("swag_tools_config.txt",  tabletojson)) then
 				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Config saved!\n")
 			else
 				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Failed to save config\n")
