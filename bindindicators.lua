@@ -315,11 +315,22 @@ end
 mcall.Add("OnHUDPaint", "", function()
 	if canRender() then
 		draw.NoTexture()
+		surface.SetFont("BudgetLabel")
 		surface.SetTextColor(255, 255, 255, 255)
 		
 		local binds = getBinds()
 		
-		local x, y, w, h = 10, ScrH() / 2, 225, 35 + (15 * #binds)
+		local x, y, h = 10, ScrH() / 2, 40 + (15 * #binds)
+		
+		local w = 225
+		
+		for _, v in ipairs(binds) do
+			local tw, th = surface.GetTextSize(v.key)
+			
+			if (x + 165) + tw > w then
+				w = (x + 165) + tw
+			end
+		end
 		
 		render.SetScissorRect(x, y, x + w, y + h, true)
 		
@@ -346,7 +357,7 @@ mcall.Add("OnHUDPaint", "", function()
 				surface.SetTextColor(150, 150, 150, 255)
 			end
 		
-			surface.SetTextPos(x + 60, ty)
+			surface.SetTextPos(x + 65, ty)
 			surface.DrawText(v.name)
 		
 			if v.status then
@@ -358,7 +369,7 @@ mcall.Add("OnHUDPaint", "", function()
 			surface.SetTextPos(x + 10, ty)
 			surface.DrawText(v.type)
 
-			surface.SetTextPos(x + 150, ty)
+			surface.SetTextPos(x + 165, ty)
 			surface.DrawText(v.key)
 			
 			offset = offset + 1
