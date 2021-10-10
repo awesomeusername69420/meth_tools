@@ -333,6 +333,7 @@ local vars = {
 	["antiblind"] = false,
 	["beamtracers"] = false,
 	["breadcrumbs"] = false,
+	["breadcrumbs_beam"] = false,
 	["breadcrumbs_color"] = "255 255 255 255",
 	["breadcrumbs_last"] = nil,
 	["breadcrumbs_max"] = 500,
@@ -582,8 +583,9 @@ local menu = {
 		{"cb", "thirdpersonfix", 25, 575, "Fix Thirdperson"},
 		{"cb", "lenientdrawing", 25, 600, "Lenient Drawing"},
 		{"cb", "breadcrumbs", 25, 625, "Breadcrumbs"},
+		{"cb", "breadcrumbs_beam", 50, 650, "Draw Beams"},
 		
-		{"num", "breadcrumbs_max", 50, 645, 300, 25, 100, 3000, 0, "Distance"},
+		{"num", "breadcrumbs_max", 50, 670, 300, 25, 100, 3000, 0, "Distance"},
 	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
@@ -2201,7 +2203,12 @@ if ismeth and mcall then
 				for i = 1, datcount do
 					if datcount > i + 1 then
 						cam.Start3D()
-							render.DrawLine(breadcrumbs[i], breadcrumbs[i + 1], strColor(vars["breadcrumbs_color"]), false)
+							if vars["breadcrumbs_beam"] then
+								render.SetMaterial(beammat)
+								render.DrawBeam(breadcrumbs[i], breadcrumbs[i + 1], 8, 1, 1, COLOR_WHITE)
+							else
+								render.DrawLine(breadcrumbs[i], breadcrumbs[i + 1], strColor(vars["breadcrumbs_color"]), false)
+							end
 						cam.End3D()
 					end
 				end
@@ -2485,7 +2492,7 @@ end
 
 hook.Add("HUDPaint", vars["hookname"], function()
 	vars["renderpanic"] = true
-
+	
 	if vars["antiblind"] then
 		hook.Remove("HUDPaint", "ulx_blind")
 		hook.Remove("HUDPaint", "Blind")
@@ -2508,7 +2515,12 @@ hook.Add("HUDPaint", vars["hookname"], function()
 			for i = 1, datcount do
 				if datcount > i + 1 then
 					cam.Start3D()
-						render.DrawLine(breadcrumbs[i], breadcrumbs[i + 1], strColor(vars["breadcrumbs_color"]), false)
+						if vars["breadcrumbs_beam"] then
+							render.SetMaterial(beammat)
+							render.DrawBeam(breadcrumbs[i], breadcrumbs[i + 1], 8, 1, 1, COLOR_WHITE)
+						else
+							render.DrawLine(breadcrumbs[i], breadcrumbs[i + 1], strColor(vars["breadcrumbs_color"]), false)
+						end
 					cam.End3D()
 				end
 			end
