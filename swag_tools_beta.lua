@@ -1580,16 +1580,15 @@ local function getClosest(doFov)
 	end
 
 	local d = math.huge
-	local cur = nil
+	local cur = LocalPlayer()
 
 	for _, v in ipairs(player.GetAll()) do
 		if v == LocalPlayer() or not vEnt(v) or meta_en.IsDormant(v) then
 			continue
 		end
-		
-		local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
 
 		if doFov and fov > 0 and fov < 180 then
+			local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
 			local mdist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
 			
 			if mdist > math.ceil(rad) then
@@ -1598,8 +1597,8 @@ local function getClosest(doFov)
 		end
 
 		local dist = meta_vc.Distance(meta_en.GetPos(v), meta_en.GetPos(LocalPlayer()))
-
-		if dist < d then
+		
+		if dist <= d then
 			d = dist
 			cur = v
 		end
@@ -2234,7 +2233,7 @@ if ismeth and mcall then
 				local wcolor = strColor(vars["glowchams_color_weapon"])
 			
 				for _, v in ipairs(player.GetAll()) do
-					if v == LocalPlayer() or not vEnt(v) or not isVisible(v) then
+					if v == LocalPlayer() or not vEnt(v) or not isVisible(v) or meta_en.IsDormant(v) then
 						continue
 					end
 				
@@ -2242,6 +2241,7 @@ if ismeth and mcall then
 						render.MaterialOverride(glowmat)
 						render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
 						
+						meta_en.SetupBones(v)
 						meta_en.DrawModel(v)
 						
 						if vars["glowchams_weapon"] then
@@ -2251,6 +2251,7 @@ if ismeth and mcall then
 								render.MaterialOverride(glowmat_weapon)
 								render.SetColorModulation(wcolor.r / 255, wcolor.g / 255, wcolor.b / 255)
 							
+								meta_en.SetupBones(wep)
 								meta_en.DrawModel(wep)
 							end
 						end
@@ -2546,7 +2547,7 @@ hook.Add("HUDPaint", vars["hookname"], function()
 			local wcolor = strColor(vars["glowchams_color_weapon"])
 		
 			for _, v in ipairs(player.GetAll()) do
-				if v == LocalPlayer() or not vEnt(v) or not isVisible(v) then
+				if v == LocalPlayer() or not vEnt(v) or not isVisible(v) or meta_en.IsDormant(v) then
 					continue
 				end
 			
@@ -2554,6 +2555,7 @@ hook.Add("HUDPaint", vars["hookname"], function()
 					render.MaterialOverride(glowmat)
 					render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
 					
+					meta_en.SetupBones(v)
 					meta_en.DrawModel(v)
 					
 					if vars["glowchams_weapon"] then
@@ -2563,6 +2565,7 @@ hook.Add("HUDPaint", vars["hookname"], function()
 							render.MaterialOverride(glowmat_weapon)
 							render.SetColorModulation(wcolor.r / 255, wcolor.g / 255, wcolor.b / 255)
 						
+							meta_en.SetupBones(wep)
 							meta_en.DrawModel(wep)
 						end
 					end
@@ -2810,7 +2813,7 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 			end
 			
 			if vars["antiaim_autodirection"] then
-				local nbase = meta_vc.Angle(meta_en.GetPos(getClosest()) - meta_en.GetPos(LocalPlayer())) - meta_en.EyeAngles(LocalPlayer())
+				local nbase = meta_vc.Angle(meta_en.GetPos(getClosest(false)) - meta_en.GetPos(LocalPlayer())) - meta_en.EyeAngles(LocalPlayer())
 				base = nbase.yaw
 			end
 			
@@ -3313,7 +3316,7 @@ hook.Add("player_hurt", vars["hookname"], function(data)
 	local at = Player(data.attacker)
 	local tg = Player(data.userid)
 	
-	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) or not meta_pl.Alive(tg) then
+	if not meta_en.IsValid(at) or at ~= LocalPlayer() or not meta_en.IsValid(tg) or not meta_pl.Alive(tg) then
 		return
 	end
 	
@@ -3380,7 +3383,7 @@ hook.Add("entity_killed", vars["hookname"], function(data)
 	local at = ents.GetByIndex(data.entindex_attacker)
 	local tg = ents.GetByIndex(data.entindex_killed)
 	
-	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) or tg == LocalPlayer() or meta_en.GetClass(tg) ~= "player" then
+	if not meta_en.IsValid(at) or at ~= LocalPlayer() or not meta_en.IsValid(tg) or tg == LocalPlayer() or meta_en.GetClass(tg) ~= "player" then
 		return
 	end
 	
