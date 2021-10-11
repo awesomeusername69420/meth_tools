@@ -404,6 +404,14 @@ main.Paint = function(self)
 	surface.SetDrawColor(COLOR_MAIN_BACK_M)
 	surface.DrawRect(12, 40, mw - 24, mh - 52)
 	
+	draw.NoTexture()
+	surface.SetDrawColor(COLOR_LIGHT_WHITE)
+	surface.DrawPoly({
+		{x = mw - 15, y = mh},
+		{x = mw, y = mh - 15},
+		{x = mw, y = mh}
+	})
+	
 	surface.SetFont("BudgetLabel")
 	
 	local tw, th = surface.GetTextSize(title)
