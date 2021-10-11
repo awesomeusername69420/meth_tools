@@ -320,8 +320,8 @@ mcall.Add("OnHUDPaint", "", function()
 		for _, v in ipairs(binds) do
 			local tw, th = surface.GetTextSize(v.key)
 			
-			if (x + 180) + tw > w then
-				w = (x + 180) + tw
+			if (x + 190) + tw > w then
+				w = (x + 190) + tw
 			end
 		end
 		
