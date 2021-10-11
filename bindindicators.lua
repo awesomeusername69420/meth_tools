@@ -314,8 +314,8 @@ mcall.Add("OnHUDPaint", "", function()
 		
 		local binds = getBinds()
 		
-		local x, h = 10, 45 + (15 * #binds)
-		local y, w = (ScrH() / 2) - (h / 2), 250
+		local x, h = 10, 47 + (15 * #binds)
+		local y, w = (ScrH() / 2) - (h / 2), 245
 		
 		for _, v in ipairs(binds) do
 			local tw, th = surface.GetTextSize(v.key)
@@ -367,7 +367,7 @@ mcall.Add("OnHUDPaint", "", function()
 				surface.SetTextColor(150, 150, 150, 255)
 			end
 			
-			surface.SetTextPos(x + 15, ty)
+			surface.SetTextPos(x + 20, ty)
 			surface.DrawText(v.type)
 
 			surface.SetTextPos(x + 180, ty)
