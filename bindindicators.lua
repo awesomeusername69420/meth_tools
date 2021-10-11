@@ -63,14 +63,8 @@ local vgui = tCopy(vgui)
 
 local meta_pl = tCopy(debug.getregistry()["Player"])
 
-surface.CreateFont("BudgetLabelBig", {
-	font = "BudgetLabel",
-	size = 15,
-	weight = 600,
-})
-
 local settings = {
-	["accent"] = "255 100 100 255",
+	["accent"] = "255 150 0 255",
 	["doalways"] = true,
 }
 
@@ -320,33 +314,38 @@ mcall.Add("OnHUDPaint", "", function()
 		
 		local binds = getBinds()
 		
-		local x, h = 10, 40 + (15 * #binds)
-		
-		local y = (ScrH() / 2) - (h / 2)
-		
-		local w = 225
+		local x, h = 10, 45 + (15 * #binds)
+		local y, w = (ScrH() / 2) - (h / 2), 250
 		
 		for _, v in ipairs(binds) do
 			local tw, th = surface.GetTextSize(v.key)
 			
-			if (x + 165) + tw > w then
-				w = (x + 165) + tw
+			if (x + 180) + tw > w then
+				w = (x + 180) + tw
 			end
 		end
 		
 		render.SetScissorRect(x, y, x + w, y + h, true)
 		
-		surface.SetDrawColor(40, 40, 40, 255)
+		surface.SetDrawColor(0, 0, 0, 255)
 		surface.DrawRect(x, y, w ,h)
 		
-		surface.SetFont("BudgetLabelBig")
-		surface.SetTextPos(x + 10, y + 8)
+		local c = 55
+		local cs = c
+		
+		for i = 1, cs do
+			surface.SetDrawColor(Color(c, c, c, 255))
+			surface.DrawLine(x, y + i, x + w, y + i)
+			
+			c = c - 1
+		end
+		
+		local tww, thh = surface.GetTextSize("Binds")
+		surface.SetTextPos((w / 2) - (tww / 4), y + 5)
 		surface.DrawText("Binds")
 		
-		surface.SetDrawColor(strColor(settings["accent"]))
-		surface.DrawLine(x + 10, y + 25, (x + w) - 10, y + 25)
-		
-		surface.SetFont("BudgetLabel")
+		surface.SetDrawColor(45, 45, 45, 255)
+		surface.DrawRect(x + 10, y + 25, w - 20, h - 35)
 		
 		local offset = 0
 		
@@ -359,7 +358,7 @@ mcall.Add("OnHUDPaint", "", function()
 				surface.SetTextColor(150, 150, 150, 255)
 			end
 		
-			surface.SetTextPos(x + 65, ty)
+			surface.SetTextPos(x + 75, ty)
 			surface.DrawText(v.name)
 		
 			if v.status then
@@ -368,17 +367,21 @@ mcall.Add("OnHUDPaint", "", function()
 				surface.SetTextColor(150, 150, 150, 255)
 			end
 			
-			surface.SetTextPos(x + 10, ty)
+			surface.SetTextPos(x + 15, ty)
 			surface.DrawText(v.type)
 
-			surface.SetTextPos(x + 165, ty)
+			surface.SetTextPos(x + 180, ty)
 			surface.DrawText(v.key)
 			
 			offset = offset + 1
 		end
 		
-		surface.SetDrawColor(0, 0, 0, 255)
+		surface.SetDrawColor(12, 12, 12, 255)
+		surface.DrawOutlinedRect(x + 10, y + 25, w - 20, h - 35)
 		surface.DrawOutlinedRect(x, y, w, h)
+		
+		surface.SetDrawColor(strColor(settings["accent"]))
+		surface.DrawLine(x + 10, y + 25, (x + w) - 10, y + 25)
 		
 		render.SetScissorRect(0, 0, 0, 0, false)
 	end
