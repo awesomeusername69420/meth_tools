@@ -349,6 +349,8 @@ local vars = {
 	["antiaim_jitter_lag"] = false,
 	["antiaim_jitter_yaw"] = false,
 	["antiaim_snapback"] = false,
+	["antiaim_sway"] = false,
+	["antiaim_sway_step"] = 0,
 	["circlestrafer"] = false,
 	["circlestrafer_is_strafe"] = true,
 	["circlestrafer_size"] = 5,
@@ -532,6 +534,7 @@ local concommands = {
 		["st_merged_antiaim_jitter_yaw"] = "antiaim_jitter_yaw",
 		["st_merged_antiaim_jitter_lag"] = "antiaim_jitter_lag",
 		["st_merged_antiaim_snapback"] = "antiaim_snapback",
+		["st_merged_antiaim_sway"] = "antiaim_sway",
 		["st_merged_antiaim_invert"] = "antiaim_invert",
 		["st_merged_bindindicators"] = "binds",
 		["st_merged_bindindicators_display_always"] = "binds_always",
@@ -660,9 +663,10 @@ local menu = {
 		{"cb", "antiaim_jitter_yaw", 50, 150, "Jitter Yaw"},
 		{"cb", "antiaim_jitter_lag", 50, 175, "Jitter Fake Lag"},
 		{"cb", "antiaim_snapback", 50, 200, "Snapback"},
-		{"cb", "antiaim_autodirection", 50, 225, "Auto Direction"},
-		{"cb", "binds", 25, 250, "Bind Indicators"},
-		{"cb", "binds_always", 50, 275, "Display \"ALWAYS\""},
+		{"cb", "antiaim_sway", 50, 225, "Sway"},
+		{"cb", "antiaim_autodirection", 50, 250, "Auto Direction"},
+		{"cb", "binds", 25, 275, "Bind Indicators"},
+		{"cb", "binds_always", 50, 300, "Display \"ALWAYS\""},
 	},
 	
 	["Hooks"] = {
@@ -3060,6 +3064,10 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 				n = (base + 180) + math.random(-80, 80)
 			end
 			
+			if vars["antiaim_sway"] then
+				n = base + (math.sin(vars["antiaim_sway_step"]) * 100)
+			end
+			
 			if vars["antiaim_snapback"] then
 				if math.random(0, 100) > 90 then
 					local c = 1
@@ -3192,6 +3200,10 @@ hook.Add("Tick", vars["hookname"], function()
 					vars["delayaf_dp"] = false
 				end
 			end
+		end
+		
+		if vars["antiaim_sway"] then
+			vars["antiaim_sway_step"] = math.Round((vars["antiaim_sway_step"] + 0.1) % 20, 1)
 		end
 	end
 	
