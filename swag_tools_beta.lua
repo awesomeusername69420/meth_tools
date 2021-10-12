@@ -170,7 +170,6 @@ local COLOR_MAIN_BACK_M = Color(45, 45, 45, 255)
 local COLOR_MAIN_BACK_T = Color(24, 24, 24, 150)
 local COLOR_MAIN_BACK_T_O = Color(24, 24, 24, 255)
 local COLOR_MAIN_OUTLINE = Color(12, 12, 12, 255)
-local COLOR_ORANGE = Color(255, 150, 0, 255)
 local COLOR_PANEL = Color(234, 234, 234, 255)
 local COLOR_WHITE = Color(255, 255, 255, 255)
 
@@ -249,6 +248,7 @@ local vars = {
 	["menu_delay"] = false,
 	["menu_width"] = ScrW() * (900 / 1920),
 	["menu_height"] = ScrH() * (800 / 1080),
+	["menu_accent"] = "255 150 0 255",
 	["darkrp_gestures"] = {
 		["dance"] = ACT_GMOD_TAUNT_DANCE,
 		["muscle"] = ACT_GMOD_TAUNT_MUSCLE,
@@ -357,6 +357,10 @@ local vars = {
 	["glowchams_color"] = "255 0 0 255",
 	["glowchams_color_weapon"] = "255 0 0 255",
 	["glowchams_weapon"] = false,
+	["binds"] = false,
+	["binds_x"] = 10,
+	["binds_y"] = ScrH() / 2,
+	["binds_always"] = true,
 	
 	-- Thing
 	["alerts"] = true,
@@ -529,6 +533,8 @@ local concommands = {
 		["st_merged_antiaim_jitter_lag"] = "antiaim_jitter_lag",
 		["st_merged_antiaim_snapback"] = "antiaim_snapback",
 		["st_merged_antiaim_invert"] = "antiaim_invert",
+		["st_merged_bindindicators"] = "binds",
+		["st_merged_bindindicators_display_always"] = "binds_always",
 		
 		-- Thing
 		["st_alerts"] = "alerts",
@@ -543,6 +549,7 @@ local addedCommands = {"st_menu"}
 local menu_tabs = {"Tools", "Render", "Miscellaneous", "Merged", "Hooks"}
 
 local menu_drawing = {main}
+local menu_drawing_always = {}
 
 local menu = {
 	["Tools"] = {
@@ -613,6 +620,7 @@ local menu = {
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
 		
+			{"clr", "menu_accent", "Menu Accent"},
 			{"clr", "catpng_color", "Cat PNG FOV"},
 			{"clr", "hitbox_color", "Damagebox Hit"},
 			{"clr", "hitbox_color_ovr", "Damagebox Kill"},
@@ -653,6 +661,8 @@ local menu = {
 		{"cb", "antiaim_jitter_lag", 50, 175, "Jitter Fake Lag"},
 		{"cb", "antiaim_snapback", 50, 200, "Snapback"},
 		{"cb", "antiaim_autodirection", 50, 225, "Auto Direction"},
+		{"cb", "binds", 25, 250, "Bind Indicators"},
+		{"cb", "binds_always", 50, 275, "Display \"ALWAYS\""},
 	},
 	
 	["Hooks"] = {
@@ -660,6 +670,106 @@ local menu = {
 	
 		["HOOKBROWSER"] = {},
 	},
+}
+
+local bindcodes = {
+	[106] = 48, -- KP mult
+	[107] = 50, -- kp plus
+	[109] = 49, -- KP minus
+	[111] = 47, -- KP div
+	[13] = 64, -- enter
+	[37] = 89, -- KP left
+	[38] = 88, -- KP up
+	[39] = 91, -- kp right
+	[40] = 90, -- kp down
+	[46] = 73, -- delete
+	
+	[100] = 41, -- numpad 4
+	[101] = 42, -- numpad 5
+	[102] = 43, -- numpad 6
+	[103] = 44, -- numpad 7
+	[104] = 45, -- numpad 8
+	[105] = 46, -- numpad 9
+	[96] = 37, -- numpad 0
+	[97] = 38, -- numpad 1
+	[98] = 39, -- numpad 2
+	[99] = 40, -- numpad 3
+	
+	[12] = nil, -- keypad clear (???)
+	
+	[33] = 76, -- Page up
+	[34] = 77, -- Page down
+	[35] = 75, -- End
+	[36] = 74, -- Home
+	
+	[1] = 107, -- Mouse 1
+	[2] = 108, -- Mouse 2
+	[4] = 109, -- Mouse 3
+	[5] = 110, -- Mouse 4
+	[6] = 111, -- Mouse 5
+	
+	[16] = 79, -- Shift
+	[17] = 83, -- control
+	[18] = 81, -- Alt
+	[20] = 68, -- Capslock
+	[91] = 85, -- Left Win
+	[93] = 87, -- Apps
+}
+
+local encheck = {
+	["Aimbot..Enabled"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["Aimbot.Options.Key"] = "Aimbot",
+		},
+	},
+	
+	["Triggerbot..Enabled"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["Triggerbot.Options.Key"] = "Triggerbot",
+		},
+	},
+	
+	["ESP..Enabled"] = {
+		["toggle"] = {
+			["ESP..Visuals Toggle Key"] = {"ESP..Enabled", "ESP"},
+			["Player.Third Person.Third Person Key"] = {"Player.Third Person.Third Person", "Thirdperson"},
+			["Player.Free Cam.Free Cam Key"] = {"Player.Free Cam.Free Cam", "Freecam"},
+		},
+		["hold"] = {},
+	},
+	
+	["General.Exploits.Fake Duck"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["General.Exploits.Fake Duck Key"] = "Fake Duck",
+		},
+	},
+	
+	["General.Exploits.Toos Freeze"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["General.Exploits.Freeze Key"] = "TOOS Freeze",
+		},
+	},
+	
+	["Misc.Server Lagger.Server Lagger"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["Misc.Server Lagger.Server Lagger Key"] = "Lagger",
+		},
+	},
+	
+	["*"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["Misc.Movement.Warp Charge Key"] = "Warp Charge",
+			["Misc.Movement.Warp Deplete Key"] = "Warp Deplete",
+			["Misc.Other.Magneto Toss Key"] = "Magneto Toss",
+			["Misc.Other.Click To Add"] = "Click to Add",
+		},
+	}
 }
 
 -- For the Hook Browser
@@ -1619,7 +1729,17 @@ local function shouldPanic()
 	return ismeth and vars["renderpanic"]
 end
 
-local function canRender()
+local function canRender(mod)
+	if not mod then
+		mod = false
+	else
+		if not vars["lenientdrawing"] then
+			return not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer())
+		else
+			return true
+		end
+	end
+
 	local mesp = true
 	
 	if ismeth and mvar then
@@ -1708,6 +1828,103 @@ local function isClickable(a, b, c, d)
 	end
 
 	return input.IsMouseDown(MOUSE_LEFT) and mouseIn(a, b, c, d) and not dragndrop.IsDragging() and not meta_pn.IsDragging(main) and not vars["spec_dragging"] and not vars["td_dragging"]
+end
+
+local function getKey(status)
+	if status < 1 then
+		return nil
+	end
+	
+	if status > 47 and status < 91 then
+		return input.GetKeyCode(string.char(status))
+	end
+	
+	return bindcodes[status] or 0
+end
+
+local function getKeyStatus(option, istoggle, togglevar)
+	if istoggle == nil then
+		istoggle = false
+	end
+
+	local status = mvar.GetVarInt(option)
+	
+	if status < 1 then
+		status = 0
+	end
+
+	status = status % 256
+	
+	local key = getKey(status) or 0
+	local keystat = false
+	
+	if not istoggle then
+		if key > 0 and (input.IsKeyDown(key) or input.IsMouseDown(key)) then
+			keystat = true
+		end
+	else
+		if togglevar and (mvar.GetVarInt(togglevar) % 256) == 1 then
+			keystat = true
+		end
+	end
+	
+	return key, keystat
+end
+
+local function getBinds()
+	local ret = {}
+	
+	for k, v in pairs(encheck) do
+		if k ~= "*" then
+			if (mvar.GetVarInt(k) % 256) ~= 1 then
+				continue
+			end
+		end
+		
+		for option, optiondata in pairs(v.toggle) do
+			local key, stat = getKeyStatus(option, true, optiondata[1])
+			
+			if key == 0 then
+				if not vars["binds_always"] then
+					continue
+				end
+			
+				stat = true
+			end
+			
+			local keyname = input.GetKeyName(key) or "ALWAYS"
+			
+			table.insert(ret, {
+				["name"] = optiondata[2],
+				["type"] = "Toggle",
+				["key"] = string.upper(keyname),
+				["status"] = stat
+			})
+		end
+		
+		for option, name in pairs(v.hold) do
+			local key, stat = getKeyStatus(option, false)
+			
+			if key == 0 then
+				if not vars["binds_always"] then
+					continue
+				end
+			
+				stat = true
+			end
+			
+			local keyname = input.GetKeyName(key) or "ALWAYS"
+			
+			table.insert(ret, {
+				["name"] = name,
+				["type"] = "Hold",
+				["key"] = string.upper(keyname),
+				["status"] = stat
+			})
+		end
+	end
+	
+	return ret
 end
 
 local function getHookTable()
@@ -2486,6 +2703,12 @@ if ismeth and mcall then
 			end
 		end
 		
+		for _, v in ipairs(menu_drawing_always) do
+			if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
+				meta_pn.PaintManual(v)
+			end
+		end
+		
 		if vars["menu_open"] then
 			for _, v in ipairs(menu_drawing) do
 				if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
@@ -2502,6 +2725,12 @@ elseif not ismeth then
 		
 		if vars["specdetector"] then
 			drawSpectators()
+		end
+		
+		for _, v in ipairs(menu_drawing_always) do
+			if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
+				meta_pn.PaintManual(v)
+			end
 		end
 		
 		if vars["menu_open"] then
@@ -3038,6 +3267,9 @@ hook.Add("Tick", vars["hookname"], function()
 	if vars["config_createorsave"] then
 		local ogmenuopen = vars["menu_open"]
 		vars["menu_open"] = false
+		
+		vars["config_createorsave"] = false
+		
 		local tabletojson = util.TableToJSON(vars)
 		vars["menu_open"] = ogmenuopen
 	
@@ -3058,8 +3290,6 @@ hook.Add("Tick", vars["hookname"], function()
 				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Failed to save config\n")
 			end
 		end
-		
-		vars["config_createorsave"] = false
 	end
 	
 	if vars["config_load"] then
@@ -3074,7 +3304,9 @@ hook.Add("Tick", vars["hookname"], function()
 				local jsontotable = util.JSONToTable(data.content) or nil
 				
 				if jsontotable then
-					vars = tCopy(jsontotable)
+					for k, _ in pairs(jsontotable) do
+						vars[k] = jsontotable[k]
+					end
 				
 					mrend.PushAlert("Config loaded!")
 				else
@@ -3092,7 +3324,9 @@ hook.Add("Tick", vars["hookname"], function()
 				local jsontotable = util.JSONToTable(data) or nil
 				
 				if jsontotable then
-					vars = tCopy(jsontotable)
+					for k, _ in pairs(jsontotable) do
+						vars[k] = jsontotable[k]
+					end
 				
 					MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Config loaded!\n")
 				else
@@ -3711,6 +3945,12 @@ for i = 1, #menu_tabs do
 					pck.SetWangs(pck, true)
 					pck.SetColor(pck, strColor(vars[su[2]]))
 					
+					pck.Think = function(self)
+						if self.GetColor(self) ~= strColor(vars[su[2]]) then
+							self.SetColor(self, strColor(vars[su[2]]))
+						end
+					end
+					
 					pck.ValueChanged = function(self, new)
 						if new == nil then
 							return
@@ -3766,8 +4006,8 @@ for i = 1, #menu_tabs do
 				surface.DrawRect(0, 0, w, h)
 				
 				if self.GetChecked(self) then
-					surface.SetDrawColor(COLOR_ORANGE)
-					surface.DrawRect(2, 2, w - 3, h - 3)
+					surface.SetDrawColor(strColor(vars["menu_accent"]))
+					surface.DrawRect(2, 2, w - 4, h - 4)
 				end
 				
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
@@ -4046,13 +4286,114 @@ for _, d in ipairs(sheet.GetItems(sheet)) do
 				surface.DrawLine(0, 0, 0, h - 8)
 				surface.DrawLine(w - 1, 0, w - 1, h - 8)
 			
-				surface.SetDrawColor(COLOR_ORANGE)
+				surface.SetDrawColor(strColor(vars["menu_accent"]))
 				surface.DrawLine(0, 0, w, 0)
 			else
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 				surface.DrawLine(0, 19, w, 19)
 			end
 		end
+	end
+end
+
+-- Bind Indicators
+
+local bindmenu = vgui.Create("DFrame")
+
+meta_pn.SetSize(bindmenu, 245, 245)
+meta_pn.SetPos(bindmenu, vars["binds_x"], vars["binds_y"])
+bindmenu.SetDeleteOnClose(bindmenu, false)
+bindmenu.SetTitle(bindmenu, "")
+meta_pn.SetVisible(bindmenu, true)
+bindmenu.ShowCloseButton(bindmenu, false)
+meta_pn.SetPaintedManually(bindmenu, true)
+
+table.insert(menu_drawing_always, bindmenu)
+
+bindmenu.Paint = function(self)
+	self.SetDraggable(self, vars["menu_open"] and vars["binds"])
+
+	if ismeth and mvar and vars["binds"] and canRender(true) then
+		if self.Dragging ~= nil then
+			vars["binds_x"], vars["binds_y"] = meta_pn.GetPos(self)
+		end
+	
+		meta_pn.SetPos(self, vars["binds_x"], vars["binds_y"])
+	
+		local binds = getBinds()
+		
+		local sh = 47 + (15 * #binds)
+		local bw, bh = meta_pn.GetWide(self), sh
+		
+		surface.SetFont("BudgetLabel")
+		surface.SetTextColor(COLOR_WHITE)
+		
+		for _, v in ipairs(binds) do
+			local tw, th = surface.GetTextSize(v.key)
+			
+			if 190 + tw > bw then
+				bw = 190 + tw
+			end
+		end
+		
+		meta_pn.SetSize(self, bw, bh)
+		
+		surface.SetDrawColor(COLOR_BLACK)
+		surface.DrawRect(0, 0, bw, bh)
+		
+		local c = 55
+		local cs = c
+		
+		for i = 1, cs do
+			surface.SetDrawColor(Color(c, c, c, 255))
+			surface.DrawLine(0, i, bw, i)
+			
+			c = c - 1
+		end
+		
+		local tww, thh = surface.GetTextSize("Binds")
+		
+		surface.SetTextPos((bw / 2) - (tww / 2), 5)
+		surface.DrawText("Binds")
+		
+		surface.SetDrawColor(COLOR_MAIN_BACK_M)
+		surface.DrawRect(10, 25, bw - 20, bh - 35)
+		
+		local offset = 0
+		
+		for _, v in ipairs(binds) do
+			local ty = 32 + (15 * offset)
+		
+			if v.status then
+				surface.SetTextColor(COLOR_WHITE)
+			else
+				surface.SetTextColor(150, 150, 150, 255)
+			end
+		
+			surface.SetTextPos(75, ty)
+			surface.DrawText(v.name)
+		
+			if v.status then
+				surface.SetTextColor(strColor(vars["menu_accent"]))
+			else
+				surface.SetTextColor(150, 150, 150, 255)
+			end
+			
+			surface.SetTextPos(20, ty)
+			surface.DrawText(v.type)
+
+			surface.SetTextPos(180, ty)
+			surface.DrawText(v.key)
+			
+			offset = offset + 1
+		end
+		
+		surface.SetDrawColor(12, 12, 12, 255)
+		surface.DrawOutlinedRect(10, 25, bw - 20, bh - 35)
+		surface.DrawOutlinedRect(0, 0, bw, bh)
+		
+		surface.SetDrawColor(strColor(vars["menu_accent"]))
+		surface.DrawLine(10, 25, bw - 10, 25)
 	end
 end
 
@@ -4396,5 +4737,7 @@ end
 -- Autoload config
 
 vars["config_load"] = true
+
+-- Clear this shit
 
 jit.flush()
