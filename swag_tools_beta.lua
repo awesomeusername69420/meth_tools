@@ -1734,16 +1734,6 @@ local function shouldPanic()
 end
 
 local function canRender(mod)
-	if not mod then
-		mod = false
-	else
-		if not vars["lenientdrawing"] then
-			return not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer())
-		else
-			return true
-		end
-	end
-
 	local mesp = true
 	
 	if ismeth and mvar then
@@ -4325,7 +4315,7 @@ table.insert(menu_drawing_always, bindmenu)
 bindmenu.Paint = function(self)
 	self.SetDraggable(self, vars["menu_open"] and vars["binds"])
 
-	if ismeth and mvar and vars["binds"] and canRender(true) then
+	if ismeth and mvar and vars["binds"] and canRender() then
 		if self.Dragging ~= nil then
 			vars["binds_x"], vars["binds_y"] = meta_pn.GetPos(self)
 		end
