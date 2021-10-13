@@ -205,6 +205,20 @@ local glowmat_weapon = CreateMaterial(string.char(math.random(97, 122)) .. tostr
 	["$selfillumtint"] = "[0.05 0.05 0.05]"
 })
 
+local glowmat_highlight = CreateMaterial(string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)), "VertexLitGeneric", {
+	["$basetexture"] = "vgui/white_additive",
+	["$bumpmap"] = "models/player/shared/shared_normal",
+	["$envmap"] = "skybox/sky_dustbowl_01",
+	["$envmapfresnel"] = 1,
+	["$phong"] = 1,
+	["$phongfresnelranges"] = "[0 0.05 0.1]",
+	["$selfillum"] = 1,
+	["$selfillumFresnel"] = 1,
+	["$selfillumFresnelMinMaxExp"] = "[0.4999 0.5 0]",
+	["$envmaptint"] = "[1 0 0]",
+	["$selfillumtint"] = "[0.05 0.05 0.05]"
+})
+
 local beammat = Material("cable/redlaser")
 
 local devmat = Material("dev/dev_measuregeneric01b")
@@ -356,6 +370,7 @@ local vars = {
 	["circlestrafer_size"] = 5,
 	["circlestrafer_stat"] = 0,
 	["glowchams"] = false,
+	["glowchams_highlight"] = false,
 	["glowchams_color"] = "255 0 0 255",
 	["glowchams_color_weapon"] = "255 0 0 255",
 	["glowchams_weapon"] = false,
@@ -528,6 +543,7 @@ local concommands = {
 		
 		-- Merged
 		["st_merged_glowchams"] = "glowchams",
+		["st_merged_glowchams_highlight"] = "glowchams_highlight",
 		["st_merged_glowchams_weapons"] = "glowchams_weapon",
 		["st_merged_circlestrafer"] = "circlestrafer",
 		["st_merged_antiaim"] = "antiaim",
@@ -655,18 +671,19 @@ local menu = {
 		
 		{"cb", "glowchams", 25, 25, "Glow Chams"},
 		{"cb", "glowchams_weapon", 50, 50, "Weapons"},
-		{"cb", "circlestrafer", 25, 75, "Circle Strafer"},
+		{"cb", "glowchams_highlight", 50, 75, "Highlight Friends"},
+		{"cb", "circlestrafer", 25, 100, "Circle Strafer"},
 		
-		{"num", "circlestrafer_size", 50, 95, 200, 25, 1, 10, 0, "Strafe Size"},
+		{"num", "circlestrafer_size", 50, 120, 200, 25, 1, 10, 0, "Strafe Size"},
 		
-		{"cb", "antiaim", 25, 125, "Antiaim"},
-		{"cb", "antiaim_jitter_yaw", 50, 150, "Jitter Yaw"},
-		{"cb", "antiaim_jitter_lag", 50, 175, "Jitter Fake Lag"},
-		{"cb", "antiaim_snapback", 50, 200, "Snapback"},
-		{"cb", "antiaim_sway", 50, 225, "Sway"},
-		{"cb", "antiaim_autodirection", 50, 250, "Auto Direction"},
-		{"cb", "binds", 25, 275, "Bind Indicators"},
-		{"cb", "binds_always", 50, 300, "Display \"ALWAYS\""},
+		{"cb", "antiaim", 25, 150, "Antiaim"},
+		{"cb", "antiaim_jitter_yaw", 50, 175, "Jitter Yaw"},
+		{"cb", "antiaim_jitter_lag", 50, 200, "Jitter Fake Lag"},
+		{"cb", "antiaim_snapback", 50, 225, "Snapback"},
+		{"cb", "antiaim_sway", 50, 250, "Sway"},
+		{"cb", "antiaim_autodirection", 50, 275, "Auto Direction"},
+		{"cb", "binds", 25, 300, "Bind Indicators"},
+		{"cb", "binds_always", 50, 325, "Display \"ALWAYS\""},
 	},
 	
 	["Hooks"] = {
@@ -1780,7 +1797,7 @@ local function shrtxt(text, maxw)
 	return text
 end
 
-local function strColor(str)
+local function strColor(str, div)
 	local ret = COLOR_WHITE
 	
 	if not str then
@@ -1803,6 +1820,10 @@ local function strColor(str)
 	
 	if not ret[4] then
 		ret[4] = 255
+	end
+	
+	if div then
+		return Color((tonumber(ret[1]) % 256) / 255, (tonumber(ret[2]) % 256) / 255, (tonumber(ret[3]) % 256) / 255, (tonumber(ret[4]) % 256) / 255)
 	end
 	
 	return Color(tonumber(ret[1]) % 256, tonumber(ret[2]) % 256, tonumber(ret[3]) % 256, tonumber(ret[4]) % 256)
@@ -2454,17 +2475,34 @@ if ismeth and mcall then
 			end
 		
 			if vars["glowchams"] then
-				local color = strColor(vars["glowchams_color"])
-				local wcolor = strColor(vars["glowchams_color_weapon"])
+				local color = strColor(vars["glowchams_color"], true)
+				local wcolor = strColor(vars["glowchams_color_weapon"], true)
+				local friendcolor = nil
+				
+				if vars["glowchams_highlight"] then
+					local hcolor = mvar.GetVarInt("Player.Friends.Friends_Color")
+					local r, g, b
+					
+					r = hcolor % 256
+					g = ((hcolor - r) / 256) % 256
+					b = ((hcolor - r) / math.pow(256, 2)) - (g / 256)
+					
+					friendcolor = Color((r % 256) / 255, (g % 256) / 255, (b % 256) / 255)
+				end
 			
 				cam.Start3D()
 					for _, v in ipairs(player.GetAll()) do
 						if v == LocalPlayer() or not vEnt(v) or not isVisible(v) or meta_en.IsDormant(v) then
 							continue
 						end
-					
-						render.MaterialOverride(glowmat)
-						render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
+						
+						if vars["glowchams_highlight"] and mutil and mutil.IsFriend(meta_en.EntIndex(v)) and friendcolor then
+							render.MaterialOverride(glowmat_highlight)
+							render.SetColorModulation(friendcolor.r, friendcolor.g, friendcolor.b)
+						else
+							render.MaterialOverride(glowmat)
+							render.SetColorModulation(color.r, color.g, color.b)
+						end
 						
 						meta_en.SetupBones(v)
 						meta_en.DrawModel(v)
@@ -2473,8 +2511,13 @@ if ismeth and mcall then
 							local wep = meta_pl.GetActiveWeapon(v)
 							
 							if meta_en.IsValid(wep) then
-								render.MaterialOverride(glowmat_weapon)
-								render.SetColorModulation(wcolor.r / 255, wcolor.g / 255, wcolor.b / 255)
+								if vars["glowchams_highlight"] and mutil and mutil.IsFriend(meta_en.EntIndex(v)) and friendcolor then
+									render.MaterialOverride(glowmat_highlight)
+									render.SetColorModulation(friendcolor.r, friendcolor.g, friendcolor.b)
+								else
+									render.MaterialOverride(glowmat_weapon)
+									render.SetColorModulation(wcolor.r, wcolor.g, wcolor.b)
+								end
 							
 								meta_en.SetupBones(wep)
 								meta_en.DrawModel(wep)
@@ -4564,6 +4607,23 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 		
 		if ogwvec ~= wvec then
 			meta_im.SetVector(glowmat_weapon, "$envmaptint", wvec)
+		end
+		
+		if vars["glowchams_highlight"] then
+			local hcolor = mvar.GetVarInt("Player.Friends.Friends_Color")
+			local r, g, b
+			
+			r = hcolor % 256
+			g = ((hcolor - r) / 256) % 256
+			b = ((hcolor - r) / math.pow(256, 2)) - (g / 256)
+			
+			local fvec = Vector((r % 256) / 255, (g % 256) / 255, (b % 256) / 255)
+			
+			local ogfvec = meta_im.GetVector(glowmat_highlight, "$envmaptint")
+			
+			if ogfvec ~= fvec then
+				meta_im.SetVector(glowmat_highlight, "$envmaptint", fvec)
+			end
 		end
 	end
 
