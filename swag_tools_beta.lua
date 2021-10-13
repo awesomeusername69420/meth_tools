@@ -2439,30 +2439,30 @@ if ismeth and mcall then
 					datcount = #breadcrumbs
 				end
 				
-				for i = 1, datcount do
-					if datcount > i + 1 then
-						cam.Start3D()
+				cam.Start3D()
+					for i = 1, datcount do
+						if datcount > i + 1 then
 							if vars["breadcrumbs_beam"] then
 								render.SetMaterial(beammat)
 								render.DrawBeam(breadcrumbs[i], breadcrumbs[i + 1], 8, 1, 1, COLOR_WHITE)
 							else
 								render.DrawLine(breadcrumbs[i], breadcrumbs[i + 1], strColor(vars["breadcrumbs_color"]), false)
 							end
-						cam.End3D()
+						end
 					end
-				end
+				cam.End3D()
 			end
 		
 			if vars["glowchams"] then
 				local color = strColor(vars["glowchams_color"])
 				local wcolor = strColor(vars["glowchams_color_weapon"])
 			
-				for _, v in ipairs(player.GetAll()) do
-					if v == LocalPlayer() or not vEnt(v) or not isVisible(v) or meta_en.IsDormant(v) then
-						continue
-					end
-				
-					cam.Start3D()
+				cam.Start3D()
+					for _, v in ipairs(player.GetAll()) do
+						if v == LocalPlayer() or not vEnt(v) or not isVisible(v) or meta_en.IsDormant(v) then
+							continue
+						end
+					
 						render.MaterialOverride(glowmat)
 						render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
 						
@@ -2480,8 +2480,8 @@ if ismeth and mcall then
 								meta_en.DrawModel(wep)
 							end
 						end
-					cam.End3D()
-				end
+					end
+				cam.End3D()
 			end
 		
 			draw.NoTexture()
@@ -2499,44 +2499,44 @@ if ismeth and mcall then
 				local color = strColor(vars["hitbox_color"])
 				local ovrcolor = strColor(vars["hitbox_color_ovr"])
 
-				for _, g in ipairs(hits) do
-					if not g or shouldPanic() then
-						continue
-					end
-					
-					if type(g) == "table" then
-						for _, v in ipairs(g) do
-							if not v or shouldPanic() then
-								continue
-							end
-			
-							cam.Start3D()
+				cam.Start3D()
+					for _, g in ipairs(hits) do
+						if not g or shouldPanic() then
+							continue
+						end
+						
+						if type(g) == "table" then
+							for _, v in ipairs(g) do
+								if not v or shouldPanic() then
+									continue
+								end
+				
 								if v.ovr then
 									render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, ovrcolor)
 								else
 									render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, color)
 								end
-							cam.End3D()
+							end
 						end
 					end
-				end
+				cam.End3D()
 			end
 
 			if vars["tracers_other"] or vars["tracers_local"] then
-				for _, v in ipairs(bullets) do
-					if not v or shouldPanic() then
-						continue
-					end
-			
-					cam.Start3D()
+				cam.Start3D()
+					for _, v in ipairs(bullets) do
+						if not v or shouldPanic() then
+							continue
+						end
+				
 						if vars["beamtracers"] then
 							render.SetMaterial(beammat)
 							render.DrawBeam(v.src, v.endpos, 8, 1, 1, COLOR_WHITE)
 						else
 							render.DrawLine(v.src, v.endpos, v.col, true)
 						end
-					cam.End3D()
-				end
+					end
+				cam.End3D()
 			end
 		
 			if vars["followbot"] then
@@ -2765,30 +2765,31 @@ hook.Add("HUDPaint", vars["hookname"], function()
 				datcount = #breadcrumbs
 			end
 			
-			for i = 1, datcount do
-				if datcount > i + 1 then
-					cam.Start3D()
+			cam.Start3D()
+				for i = 1, datcount do
+					if datcount > i + 1 then
+						
 						if vars["breadcrumbs_beam"] then
 							render.SetMaterial(beammat)
 							render.DrawBeam(breadcrumbs[i], breadcrumbs[i + 1], 8, 1, 1, COLOR_WHITE)
 						else
 							render.DrawLine(breadcrumbs[i], breadcrumbs[i + 1], strColor(vars["breadcrumbs_color"]), false)
 						end
-					cam.End3D()
+					end
 				end
-			end
+			cam.End3D()
 		end
 	
 		if vars["glowchams"] then
 			local color = strColor(vars["glowchams_color"])
 			local wcolor = strColor(vars["glowchams_color_weapon"])
 		
-			for _, v in ipairs(player.GetAll()) do
-				if v == LocalPlayer() or not vEnt(v) or not isVisible(v) or meta_en.IsDormant(v) then
-					continue
-				end
-			
-				cam.Start3D()
+			cam.Start3D()
+				for _, v in ipairs(player.GetAll()) do
+					if v == LocalPlayer() or not vEnt(v) or not isVisible(v) or meta_en.IsDormant(v) then
+						continue
+					end
+				
 					render.MaterialOverride(glowmat)
 					render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
 					
@@ -2806,8 +2807,8 @@ hook.Add("HUDPaint", vars["hookname"], function()
 							meta_en.DrawModel(wep)
 						end
 					end
-				cam.End3D()
-			end
+				end
+			cam.End3D()
 		end
 	else
 		cam.Start3D()
