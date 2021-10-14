@@ -91,7 +91,6 @@ local input = tCopy(input)
 local ipairs = ipairs
 local IsConCommandBlocked = IsConCommandBlocked
 local IsValid = IsValid
-local jit = tCopy(jit)
 local LocalPlayer = LocalPlayer
 local Material = Material
 local math = tCopy(math)
@@ -3155,19 +3154,29 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	
 	nfov = math.Clamp(nfov, 2, 179)
 	
-	if vars["thirdpersonfix"] and (mvar.GetVarInt("Player.Third Person.Third Person") % 256) ~= 1 then
-		if meta_pl.ShouldDrawLocalPlayer(ply) then
-			local tr = util.TraceLine({
-				start = pos,
-				endpos = pos - (meta_an.Forward(ang) * 150),
-				mask = MASK_SHOT,
-				filter = LocalPlayer(),
-				ignoreworld = false,
-				mins = Vector(-8, -8, -8),
-				maxs = Vector(8, 8, 8)
-			})
+	if vars["thirdpersonfix"] then
+		local dofix = true
+	
+		if ismeth then
+			if mvar and (mvar.GetVarInt("Player.Third Person.Third Person") % 256) == 1 then
+				dofix = false
+			end
+		end
 		
-			pos = tr.HitPos + tr.HitNormal
+		if dofix then
+			if meta_pl.ShouldDrawLocalPlayer(ply) then
+				local tr = util.TraceLine({
+					start = pos,
+					endpos = pos - (meta_an.Forward(ang) * 150),
+					mask = MASK_SHOT,
+					filter = LocalPlayer(),
+					ignoreworld = false,
+					mins = Vector(-8, -8, -8),
+					maxs = Vector(8, 8, 8)
+				})
+			
+				pos = tr.HitPos + tr.HitNormal
+			end
 		end
 	end
 
@@ -4609,7 +4618,7 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 			meta_im.SetVector(glowmat_weapon, "$envmaptint", wvec)
 		end
 		
-		if vars["glowchams_highlight"] then
+		if ismeth and vars["glowchams_highlight"] then
 			local hcolor = mvar.GetVarInt("Player.Friends.Friends_Color")
 			local r, g, b
 			
@@ -4806,7 +4815,3 @@ end
 -- Autoload config
 
 vars["config_load"] = true
-
--- Clear this shit
-
-jit.flush()
