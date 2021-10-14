@@ -2,6 +2,32 @@
 	Locales
 ]]
 
+-- Menu stuff
+
+local title = "Swag Tools"
+local title_short = "ST"
+
+-- Meth stuff
+
+local ismeth = false
+local mrend, mutil, mcall, mvar, mio
+
+if meth_lua_api then
+	ismeth = true
+
+	mrend, mutil, mcall = meth_lua_api.render, meth_lua_api.util, meth_lua_api.callbacks
+	
+	if mutil and mutil.GetPermissions().CheatSettings then
+		mvar = meth_lua_api.var
+	end
+	
+	if mutil and mutil.GetPermissions().File then
+		mio = meth_lua_api.io
+	end
+end
+
+-- Main stuff
+
 local table = table.Copy(table)
 
 local debug = table.Copy(debug)
@@ -59,11 +85,11 @@ local input = tCopy(input)
 local ipairs = ipairs
 local IsConCommandBlocked = IsConCommandBlocked
 local IsValid = IsValid
-local jit = tCopy(jit)
 local LocalPlayer = LocalPlayer
 local Material = Material
 local math = tCopy(math)
 local MsgC = MsgC
+local pcall = pcall
 local Player = Player
 local player = tCopy(player)
 local render = tCopy(render)
@@ -107,6 +133,7 @@ local ACT_GMOD_TAUNT_LAUGH = 1618
 local ACT_GMOD_TAUNT_MUSCLE = 1617
 local ACT_GMOD_TAUNT_PERSISTENCE = 1616
 local FILL = 1
+local FSASYNC_ERR_FAILURE = -5
 local IN_BACK = 16
 local IN_FORWARD = 8
 local IN_JUMP = 2
@@ -114,6 +141,7 @@ local IN_MOVELEFT = 512
 local IN_MOVERIGHT = 1024
 local IN_RELOAD = 8192
 local IN_SPEED = 131072
+local IN_WALK = 262144
 local KEY_SPACE = input.GetKeyCode("SPACE")
 local MASK_SHOT = 1174421507
 local MATERIAL_FOG_NONE = 0
@@ -135,74 +163,8 @@ local COLOR_MAIN_BACK_M = Color(45, 45, 45, 255)
 local COLOR_MAIN_BACK_T = Color(24, 24, 24, 150)
 local COLOR_MAIN_BACK_T_O = Color(24, 24, 24, 255)
 local COLOR_MAIN_OUTLINE = Color(12, 12, 12, 255)
-local COLOR_ORANGE = Color(255, 150, 0, 255)
 local COLOR_PANEL = Color(234, 234, 234, 255)
 local COLOR_WHITE = Color(255, 255, 255, 255)
-
--- Menu
-
-local title = "Swag Tools"
-local title_short = "ST"
-
-local menu_w, menu_h = ScrW() * (600 / 1920), ScrH() * (700 / 1080)
-
-local main = vgui.Create("DFrame")
-
-meta_pn.SetSize(main, menu_w, menu_h)
-meta_pn.Center(main)
-main.SetDeleteOnClose(main, false)
-main.SetTitle(main, "")
-meta_pn.SetVisible(main, false)
-main.ShowCloseButton(main, true)
-meta_pn.SetPaintedManually(main, true)
-meta_pn.DockPadding(main, 12, 24, 12, 12)
-
-main.Paint = function(self)
-	surface.SetDrawColor(COLOR_BLACK)
-	surface.DrawRect(0, 0, menu_w, menu_h)
-
-	local c = 55
-	local cs = c
-	
-	for i = 1, cs do
-		surface.SetDrawColor(Color(c, c, c, 255))
-		surface.DrawLine(0, i, menu_w, i)
-		
-		c = c - 1
-	end
-
-	surface.SetDrawColor(COLOR_MAIN_BACK_M)
-	surface.DrawRect(12, 40, menu_w - 24, menu_h - 52)
-	
-	surface.SetFont("BudgetLabel")
-	
-	local tw, th = surface.GetTextSize(title)
-	
-	surface.SetTextColor(COLOR_WHITE)
-	surface.SetTextPos((menu_w / 2) - (tw / 2), 5)
-	surface.DrawText(title)
-	
-	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-	surface.DrawOutlinedRect(0, 0, menu_w, menu_h)
-end
-
-local sheet = vgui.Create("DPropertySheet", main)
-
-meta_pn.Dock(sheet, FILL)
-meta_pn.SetVisible(sheet, false)
-sheet.SetFadeTime(sheet, 0)
-meta_pn.SetFontInternal(sheet, "BudgetLabel")
-
-sheet.Paint = function(self)
-	local w, h =  meta_pn.GetWide(self), meta_pn.GetTall(self)
-
-	surface.SetDrawColor(COLOR_MAIN_BACK)
-	surface.DrawRect(0, 0, w, 20)
-	
-	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-	surface.DrawLine(0, 19, w, 19)
-	surface.DrawOutlinedRect(0, 0, w, h)
-end
 
 -- The rest
 
@@ -236,6 +198,20 @@ local glowmat_weapon = CreateMaterial(string.char(math.random(97, 122)) .. tostr
 	["$selfillumtint"] = "[0.05 0.05 0.05]"
 })
 
+local glowmat_highlight = CreateMaterial(string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)), "VertexLitGeneric", {
+	["$basetexture"] = "vgui/white_additive",
+	["$bumpmap"] = "models/player/shared/shared_normal",
+	["$envmap"] = "skybox/sky_dustbowl_01",
+	["$envmapfresnel"] = 1,
+	["$phong"] = 1,
+	["$phongfresnelranges"] = "[0 0.05 0.1]",
+	["$selfillum"] = 1,
+	["$selfillumFresnel"] = 1,
+	["$selfillumFresnelMinMaxExp"] = "[0.4999 0.5 0]",
+	["$envmaptint"] = "[1 0 0]",
+	["$selfillumtint"] = "[0.05 0.05 0.05]"
+})
+
 local beammat = Material("cable/redlaser")
 
 local devmat = Material("dev/dev_measuregeneric01b")
@@ -255,38 +231,13 @@ if catpng then
 	meta_im.SetInt(catpng, "$flags", bit.bor(meta_im.GetInt(catpng, "$flags"), 32768))
 end
 
--- Meth stuff
-
-local ismeth = false
-local mapi, mrend, mutil, mcall, mvar
-
-if meth_lua_api then
-	mapi = meth_lua_api
-	ismeth = true
-
-	if mapi.render then
-		mrend = mapi.render
-	end
-
-	if mapi.util then
-		mutil = mapi.util
-	end
-	
-	if mapi.callbacks then
-		mcall = mapi.callbacks
-	end
-	
-	if mutil.GetPermissions().CheatSettings and mapi.var then
-		mvar = mapi.var
-	end
-end
-
 --[[
 	Varzzzzz
 ]]
 
 local hits = {}
 local bullets = {}
+local breadcrumbs = {}
 
 local vars = {
 	-- Stuffs
@@ -302,6 +253,9 @@ local vars = {
 	["td_drag_y"] = 0,
 	["menu_open"] = false,
 	["menu_delay"] = false,
+	["menu_width"] = ScrW() * (900 / 1920),
+	["menu_height"] = ScrH() * (800 / 1080),
+	["menu_accent"] = "255 150 0 255",
 	["darkrp_gestures"] = {
 		["dance"] = ACT_GMOD_TAUNT_DANCE,
 		["muscle"] = ACT_GMOD_TAUNT_MUSCLE,
@@ -323,28 +277,32 @@ local vars = {
 
 	-- Render
 	["afov"] = 75,
+	["aimbient"] = false,
+	["aimbient_color"] = "30 30 30 255",
+	["aimbient_rs"] = false,
 	["antiblind"] = false,
 	["beamtracers"] = false,
+	["breadcrumbs"] = false,
+	["breadcrumbs_beam"] = false,
+	["breadcrumbs_color"] = "255 255 255 255",
+	["breadcrumbs_last"] = nil,
+	["breadcrumbs_max"] = 500,
 	["catpng"] = false,
 	["catpng_color"] = "255 255 255 100",
 	["cfov"] = meta_cv.GetInt(GetConVar("fov_desired")),
 	["devtexture"] = false,
 	["devtexture_o"] = false,
+	["drawgmod"] = true,
+	["drawzoom"] = true,
 	["fog"] = true,
 	["fov_force"] = false,
 	["fullbright"] = false,
-	["glowchams"] = false,
-	["glowchams_color"] = "255 0 0 255",
-	["glowchams_color_weapon"] = "255 0 0 255",
-	["glowchams_weapon"] = false,
 	["hitboxonhit"] = false,
 	["hitbox_color"] = "255 255 255 255",
 	["hitbox_color_ovr"] = "255 0 0 255",
 	["hitbox_delay"] = 3,
+	["lenientdrawing"] = false,
 	["maxtracers"] = 1000,
-	["nightmode"] = false,
-	["nightmode_intensity"] = 0.8,
-	["nightmode_rs"] = false,
 	["reddeath"] = true,
 	["renderpanic"] = false,
 	["rgb"] = false,
@@ -365,6 +323,7 @@ local vars = {
 	["delayaf_a"] = 0.05,
 	["delayaf_dp"] = false,
 	["detourcmd"] = true,
+	["faststop"] = false,
 	["followang"] = Angle(0, 0, 0),
 	["followbot"] = false,
 	["following"] = false,
@@ -388,17 +347,121 @@ local vars = {
 	["tdetector_list_y"] = 10,
 	["ttable"] = {},
 	
+	-- Merged
+	["antiaim"] = false,
+	["antiaim_swap"] = false,
+	["antiaim_prev"] = nil,
+	["antiaim_autodirection"] = false,
+	["antiaim_invert"] = false,
+	["antiaim_jitter_lag"] = false,
+	["antiaim_jitter_yaw"] = false,
+	["antiaim_snapback"] = false,
+	["antiaim_sway"] = false,
+	["antiaim_sway_step"] = 0,
+	["circlestrafer"] = false,
+	["circlestrafer_is_strafe"] = true,
+	["circlestrafer_size"] = 5,
+	["circlestrafer_stat"] = 0,
+	["glowchams"] = false,
+	["glowchams_highlight"] = false,
+	["glowchams_color"] = "255 0 0 255",
+	["glowchams_color_weapon"] = "255 0 0 255",
+	["glowchams_weapon"] = false,
+	["binds"] = false,
+	["binds_x"] = 10,
+	["binds_y"] = ScrH() / 2,
+	["binds_always"] = true,
+	
 	-- Thing
 	["alerts"] = true,
 	["alerts_sound"] = true,
+	["config_createorsave"] = false,
+	["config_load"] = false,
 }
+
+-- Menu
+
+local main = vgui.Create("DFrame")
+
+meta_pn.SetSize(main, vars["menu_width"], vars["menu_height"])
+main.SetSizable(main, true)
+main.SetMinimumSize(main, ScrW() * (500 / 1920), ScrH() * (600 / 1080))
+meta_pn.Center(main)
+main.SetDeleteOnClose(main, false)
+main.SetTitle(main, "")
+meta_pn.SetVisible(main, false)
+main.ShowCloseButton(main, true)
+meta_pn.SetPaintedManually(main, true)
+meta_pn.DockPadding(main, 12, 24, 12, 12)
+
+main.OnSizeChanged = function(self, neww, newh)
+	vars["menu_width"] = neww
+	vars["menu_height"] = newh
+end
+
+main.Paint = function(self)
+	local mw, mh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+
+	surface.SetDrawColor(COLOR_BLACK)
+	surface.DrawRect(0, 0, mw, mh)
+
+	local c = 55
+	local cs = c
+	
+	for i = 1, cs do
+		surface.SetDrawColor(Color(c, c, c, 255))
+		surface.DrawLine(0, i, mw, i)
+		
+		c = c - 1
+	end
+
+	surface.SetDrawColor(COLOR_MAIN_BACK_M)
+	surface.DrawRect(12, 40, mw - 24, mh - 52)
+	
+	draw.NoTexture()
+	surface.SetDrawColor(COLOR_LIGHT_WHITE)
+	surface.DrawPoly({
+		{x = mw - 15, y = mh},
+		{x = mw, y = mh - 15},
+		{x = mw, y = mh}
+	})
+	
+	surface.SetFont("BudgetLabel")
+	
+	local tw, th = surface.GetTextSize(title)
+	
+	surface.SetTextColor(COLOR_WHITE)
+	surface.SetTextPos((mw / 2) - (tw / 2), 5)
+	surface.DrawText(title)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawOutlinedRect(0, 0, mw, mh)
+end
+
+local sheet = vgui.Create("DPropertySheet", main)
+
+meta_pn.Dock(sheet, FILL)
+meta_pn.SetVisible(sheet, false)
+sheet.SetFadeTime(sheet, 0)
+meta_pn.SetFontInternal(sheet, "BudgetLabel")
+
+sheet.Paint = function(self)
+	local w, h =  meta_pn.GetWide(self), meta_pn.GetTall(self)
+
+	surface.SetDrawColor(COLOR_MAIN_BACK)
+	surface.DrawRect(0, 0, w, 20)
+	
+	surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+	surface.DrawLine(0, 19, w, 19)
+	surface.DrawOutlinedRect(0, 0, w, h)
+end
 
 local concommands = {
 	["integer"] = {
 		-- Render
+		["st_render_breadcrumbs_max_set"] = "breadcrumbs_max",
 		["st_render_damageboxes_life_set"] = "hitbox_delay",
 		["st_render_fov_set"] = "cfov",
-		["st_render_nightmode_intensity_set"] = "nightmode_intensity",
 		["st_render_tracers_life_set"] = "tracerlife",
 		["st_render_tracers_max_set"] = "maxtracers",
 
@@ -408,25 +471,34 @@ local concommands = {
 		["st_tools_spectatorlist_y_set"] = "specdetector_y",
 		["st_tools_tdetector_list_x_set"] = "tdetector_list_x",
 		["st_tools_tdetector_list_y_set"] = "tdetector_list_y",
+		
+		-- Merged
+		["st_merged_circlestrafer_size"] = "circlestrafer_size",
 	},
 
 	["string"] = {
 		-- Render
+		["st_render_aimbientlighting_color_set"] = "aimbient_color",
+		["st_render_breadcrumbs_color_set"] = "breadcrumbs_color",
 		["st_render_catpng_color_set"] = "catpng_color",
 		["st_render_damageboxes_color_override_set"] = "hitbox_color_ovr",
 		["st_render_damageboxes_color_set"] = "hitbox_color",
-		["st_render_glowchams_color_set"] = "glowchams_color",
-		["st_render_glowchams_color_weapon_set"] = "glowchams_color_weapon",
 		["st_render_snaplines_color_set"] = "snaplines_color",
 
 		-- Tools
 		["st_tools_gesture_set"] = "gesture",
-		["st_tools_psay_spam_set"] = "psays_message"
+		["st_tools_psay_spam_set"] = "psays_message",
+		
+		-- Merged
+		["st_merged_glowchams_color_set"] = "glowchams_color",
+		["st_merged_glowchams_color_weapon_set"] = "glowchams_color_weapon",
 	},
 
 	["boolean"] = {
 		-- Render
+		["st_render_aimbientlighting"] = "aimbient",
 		["st_render_antiblind"] = "antiblind",
+		["st_render_breadcrumbs"] = "breadcrumbs",
 		["st_render_catpng"] = "catpng",
 		["st_render_damageboxes"] = "hitboxonhit",
 		["st_render_devtexture"] = "devtexture",
@@ -435,9 +507,9 @@ local concommands = {
 		["st_render_fog"] = "fog",
 		["st_render_fov_force"] = "fov_force",
 		["st_render_fullbright"] = "fullbright",
-		["st_render_glowchams"] = "glowchams",
-		["st_render_glowchams_weapons"] = "glowchams_weapon",
-		["st_render_nightmode"] = "nightmode",
+		["st_render_gmodoverlay"] = "drawgmod",
+		["st_render_lenientdrawing"] = "lenientdrawing",
+		["st_render_reddeathscreen"] = "reddeath",
 		["st_render_rgb"] = "rgb",
 		["st_render_snaplines"] = "snaplines",
 		["st_render_tracers"] = "tracers",
@@ -445,12 +517,14 @@ local concommands = {
 		["st_render_tracers_local"] = "tracers_local",
 		["st_render_tracers_other"] = "tracers_other",
 		["st_render_visualize_silent"] = "silentviz",
+		["st_render_zoomoverlay"] = "drawzoom",
 
 		-- Tools
 		["st_tools_allow_guiopenurl"] = "gopen",
 		["st_tools_antigag"] = "antigag",
 		["st_tools_delay_autofire"] = "delayaf",
 		["st_tools_detour_commands"] = "detourcmd",
+		["st_tools_faststop"] = "faststop",
 		["st_tools_followbot"] = "followbot",
 		["st_tools_gesture_loop"] = "gesture_loop",
 		["st_tools_psay_spam"] = "psays",
@@ -460,17 +534,34 @@ local concommands = {
 		["st_tools_tdetector_drawicons"] = "tdetector_icons",
 		["st_tools_tdetector_drawlist"] = "tdetector_list",
 		
+		-- Merged
+		["st_merged_glowchams"] = "glowchams",
+		["st_merged_glowchams_highlight"] = "glowchams_highlight",
+		["st_merged_glowchams_weapons"] = "glowchams_weapon",
+		["st_merged_circlestrafer"] = "circlestrafer",
+		["st_merged_antiaim"] = "antiaim",
+		["st_merged_antiaim_jitter_yaw"] = "antiaim_jitter_yaw",
+		["st_merged_antiaim_jitter_lag"] = "antiaim_jitter_lag",
+		["st_merged_antiaim_snapback"] = "antiaim_snapback",
+		["st_merged_antiaim_sway"] = "antiaim_sway",
+		["st_merged_antiaim_invert"] = "antiaim_invert",
+		["st_merged_bindindicators"] = "binds",
+		["st_merged_bindindicators_display_always"] = "binds_always",
+		
 		-- Thing
 		["st_alerts"] = "alerts",
 		["st_alerts_sound"] = "alerts_sound",
+		["st_config_createorsave"] = "config_createorsave",
+		["st_config_load"] = "config_load",
 	}
 }
 
 local addedCommands = {"st_menu"}
 
-local menu_tabs = {"Tools", "Render", "Miscellaneous", "Hooks"}
+local menu_tabs = {"Tools", "Render", "Miscellaneous", "Merged", "Hooks"}
 
 local menu_drawing = {main}
+local menu_drawing_always = {}
 
 local menu = {
 	["Tools"] = {
@@ -489,16 +580,17 @@ local menu = {
 		{"cb", "tdetector", 25, 225, "Traitor Detector"},
 		{"cb", "tdetector_icons", 50, 250, "Draw Icons"},
 		{"cb", "tdetector_list", 50, 275, "Draw List"},
-		{"cb", "gesture_loop", 25, 300, "Gesture Loop"},
+		{"cb", "faststop", 25, 300, "Fast Stop"},
+		{"cb", "gesture_loop", 25, 325, "Gesture Loop"},
 		
-		{"com", "gesture", 50, 320, 100, 25, {"dance", "muscle", "wave", "robot", "bow", "cheer", "laugh", "zombie", "agree", "disagree", "forward", "becon", "salute", "pose", "halt", "group"}, "Gesture"},
+		{"com", "gesture", 50, 345, 100, 25, {"dance", "muscle", "wave", "robot", "bow", "cheer", "laugh", "zombie", "agree", "disagree", "forward", "becon", "salute", "pose", "halt", "group"}, "Gesture"},
 		
-		{"cb", "psays", 25, 350, "ULX PSay Spammer"},
+		{"cb", "psays", 25, 375, "ULX PSay Spammer"},
 		
-		{"str", "psays_message", 50, 370, 250, 25, "Spam Message"},
+		{"str", "psays_message", 50, 395, 250, 25, "Spam Message"},
 		
-		{"cb", "autohop", 25, 395, "Auto BHop"},
-		{"cb", "autostrafe", 25, 420, "Auto Strafe"},
+		{"cb", "autohop", 25, 425, "Auto BHop"},
+		{"cb", "autostrafe", 25, 450, "Auto Strafe"},
 	},
 	
 	["Render"] = {
@@ -522,28 +614,33 @@ local menu = {
 		
 		{"cb", "fov_force", 50, 325, "Force FOV"},
 		{"cb", "fullbright", 25, 350, "Fullbright"},
-		{"cb", "nightmode", 25, 375, "Nightmode"},
+		{"cb", "aimbient", 25, 375, "Ambient Lighting"},
+		{"cb", "hitboxonhit", 25, 400, "Show hitboxes on damage"},
+		{"cb", "reddeath", 25, 425, "Render red deathscreen"},
+		{"cb", "drawzoom", 25, 450, "Render zoom overlay"},
+		{"cb", "drawgmod", 25, 475, "Render GMod HUD elements"},
+		{"cb", "rgb", 25, 500, "Rainbow Player & Weapon"},
+		{"cb", "silentviz", 25, 525, "Vizualize Silent Aim"},
+		{"cb", "snaplines", 25, 550, "Snaplines"},
+		{"cb", "thirdpersonfix", 25, 575, "Fix Thirdperson"},
+		{"cb", "lenientdrawing", 25, 600, "Lenient Drawing"},
+		{"cb", "breadcrumbs", 25, 625, "Breadcrumbs"},
+		{"cb", "breadcrumbs_beam", 50, 650, "Draw Beams"},
 		
-		{"num", "nightmode_intensity", 50, 395, 200, 25, 0, 1, 2, "Intensity"},
-		
-		{"cb", "hitboxonhit", 25, 425, "Show hitboxes on damage"},
-		{"cb", "reddeath", 25, 450, "Render red deathscreen"},
-		{"cb", "rgb", 25, 475, "Rainbow Player & Weapon"},
-		{"cb", "silentviz", 25, 500, "Vizualize Silent Aim"},
-		{"cb", "snaplines", 25, 525, "Snaplines"},
-		{"cb", "thirdpersonfix", 25, 550, "Fix Thirdperson"},
-		{"cb", "glowchams", 25, 575, "Glow Chams"},
-		{"cb", "glowchams_weapon", 50, 600, "Weapons"},
+		{"num", "breadcrumbs_max", 50, 670, 300, 25, 100, 3000, 0, "Distance"},
 	
 		["right"] = {
 			{"lbl", 50, 25, 1, "Colors"},
 		
+			{"clr", "menu_accent", "Menu Accent"},
 			{"clr", "catpng_color", "Cat PNG FOV"},
 			{"clr", "hitbox_color", "Damagebox Hit"},
 			{"clr", "hitbox_color_ovr", "Damagebox Kill"},
 			{"clr", "snaplines", "Snaplines"},
+			{"clr", "aimbient_color", "Ambient Color"},
 			{"clr", "glowchams_color", "Glow Chams"},
 			{"clr", "glowchams_color_weapon", "Glow Chams - Weapons"},
+			{"clr", "breadcrumbs_color", "Breadcrumbs Color"},
 		},
 	},
 	
@@ -552,6 +649,34 @@ local menu = {
 		
 		{"cb", "alerts", 25, 25, "Alerts"},
 		{"cb", "alerts_sound", 50, 50, "Alert Sounds"},
+		
+		{"btn", 50, 200, 125, 25, "Save Config", function()
+			vars["config_createorsave"] = true
+		end},
+		
+		{"btn", 200, 200, 125, 25, "Load Config", function()
+			vars["config_load"] = true
+		end},
+	},
+	
+	["Merged"] = {
+		["icon"] = "icon16/connect.png",
+		
+		{"cb", "glowchams", 25, 25, "Glow Chams"},
+		{"cb", "glowchams_weapon", 50, 50, "Weapons"},
+		{"cb", "glowchams_highlight", 50, 75, "Highlight Friends"},
+		{"cb", "circlestrafer", 25, 100, "Circle Strafer"},
+		
+		{"num", "circlestrafer_size", 50, 120, 200, 25, 1, 10, 0, "Strafe Size"},
+		
+		{"cb", "antiaim", 25, 150, "Antiaim"},
+		{"cb", "antiaim_jitter_yaw", 50, 175, "Jitter Yaw"},
+		{"cb", "antiaim_jitter_lag", 50, 200, "Jitter Fake Lag"},
+		{"cb", "antiaim_snapback", 50, 225, "Snapback"},
+		{"cb", "antiaim_sway", 50, 250, "Sway"},
+		{"cb", "antiaim_autodirection", 50, 275, "Auto Direction"},
+		{"cb", "binds", 25, 300, "Bind Indicators"},
+		{"cb", "binds_always", 50, 325, "Display \"ALWAYS\""},
 	},
 	
 	["Hooks"] = {
@@ -559,6 +684,106 @@ local menu = {
 	
 		["HOOKBROWSER"] = {},
 	},
+}
+
+local bindcodes = {
+	[106] = 48, -- KP mult
+	[107] = 50, -- kp plus
+	[109] = 49, -- KP minus
+	[111] = 47, -- KP div
+	[13] = 64, -- enter
+	[37] = 89, -- KP left
+	[38] = 88, -- KP up
+	[39] = 91, -- kp right
+	[40] = 90, -- kp down
+	[46] = 73, -- delete
+	
+	[100] = 41, -- numpad 4
+	[101] = 42, -- numpad 5
+	[102] = 43, -- numpad 6
+	[103] = 44, -- numpad 7
+	[104] = 45, -- numpad 8
+	[105] = 46, -- numpad 9
+	[96] = 37, -- numpad 0
+	[97] = 38, -- numpad 1
+	[98] = 39, -- numpad 2
+	[99] = 40, -- numpad 3
+	
+	[12] = nil, -- keypad clear (???)
+	
+	[33] = 76, -- Page up
+	[34] = 77, -- Page down
+	[35] = 75, -- End
+	[36] = 74, -- Home
+	
+	[1] = 107, -- Mouse 1
+	[2] = 108, -- Mouse 2
+	[4] = 109, -- Mouse 3
+	[5] = 110, -- Mouse 4
+	[6] = 111, -- Mouse 5
+	
+	[16] = 79, -- Shift
+	[17] = 83, -- control
+	[18] = 81, -- Alt
+	[20] = 68, -- Capslock
+	[91] = 85, -- Left Win
+	[93] = 87, -- Apps
+}
+
+local encheck = {
+	["Aimbot..Enabled"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["Aimbot.Options.Key"] = "Aimbot",
+		},
+	},
+	
+	["Triggerbot..Enabled"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["Triggerbot.Options.Key"] = "Triggerbot",
+		},
+	},
+	
+	["ESP..Enabled"] = {
+		["toggle"] = {
+			["ESP..Visuals Toggle Key"] = {"ESP..Enabled", "ESP"},
+			["Player.Third Person.Third Person Key"] = {"Player.Third Person.Third Person", "Thirdperson"},
+			["Player.Free Cam.Free Cam Key"] = {"Player.Free Cam.Free Cam", "Freecam"},
+		},
+		["hold"] = {},
+	},
+	
+	["General.Exploits.Fake Duck"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["General.Exploits.Fake Duck Key"] = "Fake Duck",
+		},
+	},
+	
+	["General.Exploits.Toos Freeze"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["General.Exploits.Freeze Key"] = "TOOS Freeze",
+		},
+	},
+	
+	["Misc.Server Lagger.Server Lagger"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["Misc.Server Lagger.Server Lagger Key"] = "Lagger",
+		},
+	},
+	
+	["*"] = {
+		["toggle"] = {},
+		["hold"] = {
+			["Misc.Movement.Warp Charge Key"] = "Warp Charge",
+			["Misc.Movement.Warp Deplete Key"] = "Warp Deplete",
+			["Misc.Other.Magneto Toss Key"] = "Magneto Toss",
+			["Misc.Other.Click To Add"] = "Click to Add",
+		},
+	}
 }
 
 -- For the Hook Browser
@@ -651,7 +876,7 @@ hdiv.SetRight(hdiv, hooksidepanel)
 hdiv.SetDividerWidth(hdiv, 4)
 hdiv.SetLeftMin(hdiv, 10)
 hdiv.SetRightMin(hdiv, 10)
-hdiv.SetLeftWidth(hdiv, (menu_w / 2) + 10)
+hdiv.SetLeftWidth(hdiv, (vars["menu_width"] / 2) + 10)
 
 hdiv.Paint = function(self)
 	local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
@@ -667,6 +892,14 @@ local hlist = vgui.Create("DListLayout", hookpanel)
 
 meta_pn.SetSize(hlist, 300, meta_pn.GetTall(main) - 150)
 meta_pn.SetPos(hlist, 0, 0)
+
+local hookinfolabel = vgui.Create("DLabel", hooksidepanel)
+
+meta_pn.SetSize(hookinfolabel, 999, 75)
+hookinfolabel.SetFont(hookinfolabel, "BudgetLabel")
+hookinfolabel.SetTextColor(hookinfolabel, COLOR_WHITE)
+hookinfolabel.SetText(hookinfolabel, "Current Hook Information:\n    Type: NONE SELECTED\n    Name: N/A\n    ST Hook: N/A")
+meta_pn.SetPos(hookinfolabel, 25, 175)
 
 -- nonozone
 
@@ -823,7 +1056,7 @@ local function alert(event, data)
 		data = ""
 	end
 
-	if mrend then
+	if ismeth and mrend then
 		mrend.PushAlert("Blocked " .. tostring(event) .. "(" .. tostring(data) .. ")")
 	else
 		if vars["alerts_sound"] then
@@ -847,6 +1080,16 @@ local safefuncs = {
 	cvs_number = cvars.Number,
 	cvs_rcb = cvars.RemoveChangeCallack,
 	cvs_string = cvars.String,
+	fasyncread = file.AsyncRead,
+	fdelete = file.Delete,
+	fexists = file.Exists,
+	ffind = file.Find,
+	fopen = file.Open,
+	fread = file.Read,
+	frename = file.Rename,
+	fsize = file.Size,
+	ftime = file.Time,
+	fwrite = file.Write,
 	gcv = GetConVar,
 	gcvn = GetConVarNumber,
 	gcvs = GetConVarString,
@@ -1267,6 +1510,86 @@ meta_pl_g.ConCommand = function(cmd)
 	return meta_pl.ConCommand(cmd)
 end
 
+_G.file.Read = function(fname, fpath)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return nil
+	end
+	
+	return safefuncs.fread(fname, fpath)
+end
+
+_G.file.Open = function(fname, ...)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return nil
+	end
+	
+	return safefuncs.fopen(fname, ...)
+end
+
+_G.file.Find = function(fname, ...)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return nil, nil
+	end
+	
+	return safefuncs.ffind(fname, ...)
+end
+
+_G.file.Exists = function(fname, fpath)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return false
+	end
+	
+	return safefuncs.fexists(fname, fpath)
+end
+
+_G.file.Delete = function(fname)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return
+	end
+	
+	return safefuncs.fdelete(fname)
+end
+
+_G.file.AsyncRead = function(fname, ...)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return FSASYNC_ERR_FAILURE
+	end
+	
+	return safefuncs.fasyncread(fname, ...)
+end
+
+_G.file.Rename = function(fname, fnewname)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return false
+	end
+	
+	return safefuncs.frename(fname, fnewname)
+end
+
+_G.file.Size = function(fname, fpath)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return -1
+	end
+	
+	return safefuncs.fsize(fname, fpath)
+end
+
+_G.file.Time = function(fname, fpath)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return 0
+	end
+	
+	return safefuncs.ftime(fname, fpath)
+end
+
+_G.file.Write = function(fname, cont)
+	if string.find(string.lower(fname), "swag_tools_config.txt") then
+		return
+	end
+	
+	return safefuncs.fwrite(fname, cont)
+end
+
 --[[
 	Fuccncs
 ]]
@@ -1351,6 +1674,34 @@ local function vEnt(ent)
 	return meta_en.IsValid(ent)
 end
 
+local function getHeadPos(ent)
+	if not vEnt(ent) then
+		return Vector(0, 0, 0)
+	end
+	
+	local headpos = meta_en.EyePos(ent)
+
+	for i = 0, meta_en.GetBoneCount(ent) - 1 do
+		if string.find(string.lower(meta_en.GetBoneName(ent, i)), "head") then
+			headpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ent, i))
+	
+			break
+		end
+	end
+	
+	return headpos
+end
+
+local function isVisible(ent)
+	if not vEnt(ent) then
+		return false
+	end
+	
+	local pos = meta_vc.ToScreen(meta_en.GetPos(ent))
+	
+	return pos.visible
+end
+
 local function getClosest(doFov)
 	local fov, retardednumber, rad, hw, hh = 0, 2.6, 0, ScrW() / 2, ScrH() / 2
 
@@ -1361,16 +1712,15 @@ local function getClosest(doFov)
 	end
 
 	local d = math.huge
-	local cur = nil
+	local cur = LocalPlayer()
 
 	for _, v in ipairs(player.GetAll()) do
 		if v == LocalPlayer() or not vEnt(v) or meta_en.IsDormant(v) then
 			continue
 		end
-		
-		local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
 
 		if doFov and fov > 0 and fov < 180 then
+			local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
 			local mdist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
 			
 			if mdist > math.ceil(rad) then
@@ -1379,8 +1729,8 @@ local function getClosest(doFov)
 		end
 
 		local dist = meta_vc.Distance(meta_en.GetPos(v), meta_en.GetPos(LocalPlayer()))
-
-		if dist < d then
+		
+		if dist <= d then
 			d = dist
 			cur = v
 		end
@@ -1393,14 +1743,22 @@ local function shouldPanic()
 	return ismeth and vars["renderpanic"]
 end
 
-local function canRender()
+local function canRender(mod)
+	if mod then
+		if vars["lenientdrawing"] then
+			return not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer())
+		end
+	end
+
 	local mesp = true
 	
 	if ismeth and mvar then
-		mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
+		if not vars["lenientdrawing"] and not vars["menu_open"] then
+			mesp = mvar.GetVarInt("ESP..Enabled") % 256 == 1 and mvar.GetVarInt("Player.Third Person.Third Person") ~= 1
+		end
 	end
 
-	if vars["menu"] then
+	if vars["menu_open"] then
 		return mesp and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer())
 	end
 
@@ -1432,7 +1790,7 @@ local function shrtxt(text, maxw)
 	return text
 end
 
-local function strColor(str)
+local function strColor(str, div)
 	local ret = COLOR_WHITE
 	
 	if not str then
@@ -1455,6 +1813,10 @@ local function strColor(str)
 	
 	if not ret[4] then
 		ret[4] = 255
+	end
+	
+	if div then
+		return Color((tonumber(ret[1]) % 256) / 255, (tonumber(ret[2]) % 256) / 255, (tonumber(ret[3]) % 256) / 255, (tonumber(ret[4]) % 256) / 255)
 	end
 	
 	return Color(tonumber(ret[1]) % 256, tonumber(ret[2]) % 256, tonumber(ret[3]) % 256, tonumber(ret[4]) % 256)
@@ -1480,6 +1842,103 @@ local function isClickable(a, b, c, d)
 	end
 
 	return input.IsMouseDown(MOUSE_LEFT) and mouseIn(a, b, c, d) and not dragndrop.IsDragging() and not meta_pn.IsDragging(main) and not vars["spec_dragging"] and not vars["td_dragging"]
+end
+
+local function getKey(status)
+	if status < 1 then
+		return nil
+	end
+	
+	if status > 47 and status < 91 then
+		return input.GetKeyCode(string.char(status))
+	end
+	
+	return bindcodes[status] or 0
+end
+
+local function getKeyStatus(option, istoggle, togglevar)
+	if istoggle == nil then
+		istoggle = false
+	end
+
+	local status = mvar.GetVarInt(option)
+	
+	if status < 1 then
+		status = 0
+	end
+
+	status = status % 256
+	
+	local key = getKey(status) or 0
+	local keystat = false
+	
+	if not istoggle then
+		if key > 0 and (input.IsKeyDown(key) or input.IsMouseDown(key)) then
+			keystat = true
+		end
+	else
+		if togglevar and (mvar.GetVarInt(togglevar) % 256) == 1 then
+			keystat = true
+		end
+	end
+	
+	return key, keystat
+end
+
+local function getBinds()
+	local ret = {}
+	
+	for k, v in pairs(encheck) do
+		if k ~= "*" then
+			if (mvar.GetVarInt(k) % 256) ~= 1 then
+				continue
+			end
+		end
+		
+		for option, optiondata in pairs(v.toggle) do
+			local key, stat = getKeyStatus(option, true, optiondata[1])
+			
+			if key == 0 then
+				if not vars["binds_always"] then
+					continue
+				end
+			
+				stat = true
+			end
+			
+			local keyname = input.GetKeyName(key) or "ALWAYS"
+			
+			table.insert(ret, {
+				["name"] = optiondata[2],
+				["type"] = "Toggle",
+				["key"] = string.upper(keyname),
+				["status"] = stat
+			})
+		end
+		
+		for option, name in pairs(v.hold) do
+			local key, stat = getKeyStatus(option, false)
+			
+			if key == 0 then
+				if not vars["binds_always"] then
+					continue
+				end
+			
+				stat = true
+			end
+			
+			local keyname = input.GetKeyName(key) or "ALWAYS"
+			
+			table.insert(ret, {
+				["name"] = name,
+				["type"] = "Hold",
+				["key"] = string.upper(keyname),
+				["status"] = stat
+			})
+		end
+	end
+	
+	return ret
 end
 
 local function getHookTable()
@@ -1558,46 +2017,52 @@ local function refreshHookBrowser()
 				continue
 			end
 			
-			local name = "UNKNOWN_HOOK"
-			
 			for bn, _ in pairs(b) do
+				local name = "UNKNOWN_HOOK"
+			
 				name = bn
-			end
 			
-			local btn = vgui.Create("DButton")
-
-			btn.SetFont(btn, "BudgetLabel")
-			btn.SetTextColor(btn, COLOR_LIGHT_RED)
-			meta_pn.SetText(btn, tostring(name))
-			meta_pn.Dock(btn, FILL)
+				local btn = vgui.Create("DButton")
+	
+				btn.SetFont(btn, "BudgetLabel")
+				btn.SetTextColor(btn, COLOR_LIGHT_RED)
+				meta_pn.SetText(btn, tostring(name))
+				meta_pn.Dock(btn, FILL)
+				
+				btn.Paint = function(self)
+					local bw, bh = meta_pn.GetWide(self), meta_pn.GetTall(self)
+				
+					local c = 55
+					local cm = math.Round(55 / bh)
+					local cs = math.ceil(c / cm)
 			
-			btn.Paint = function(self)
-				local bw, bh = meta_pn.GetWide(self), meta_pn.GetTall(self)
-			
-				local c = 55
-				local cm = math.Round(55 / bh)
-				local cs = math.ceil(c / cm)
-		
-				for i = 1, cs do
-					surface.SetDrawColor(Color(c, c, c, 255))
-					surface.DrawLine(0, i, bw, i)
-					
-					c = c - cm
+					for i = 1, cs do
+						surface.SetDrawColor(Color(c, c, c, 255))
+						surface.DrawLine(0, i, bw, i)
+						
+						c = c - cm
+					end
+				
+					surface.SetDrawColor(COLOR_MAIN_OUTLINE)
+					surface.DrawOutlinedRect(0, 0, bw, bh)
 				end
-			
-				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
-				surface.DrawOutlinedRect(0, 0, bw, bh)
+				
+				btn.DoClick = function()
+					vars["selected_hook"] = {
+						["type"] = a,
+						["name"] = name,
+						["func"] = "REMOVED"
+					}
+					
+					local newstatus = tostring(name == vars["hookname"])
+					newstatus = string.gsub(newstatus, newstatus[1], string.upper(newstatus[1]))
+					
+					hookinfolabel.SetTextColor(hookinfolabel, Color(255, 100, 100, 255))
+					hookinfolabel.SetText(hookinfolabel, "Current Hook Information:\n    Type: " .. a .. "\n    Name: " .. name .. "\n    ST Hook: " .. newstatus)
+				end
+				
+				ipnl_l.Add(ipnl_l, btn)
 			end
-			
-			btn.DoClick = function()
-				vars["selected_hook"] = {
-					["type"] = a,
-					["name"] = name,
-					["func"] = "REMOVED"
-				}
-			end
-			
-			ipnl_l.Add(ipnl_l, btn)
 		end
 		
 		for n, f in pairs(v) do
@@ -1632,6 +2097,12 @@ local function refreshHookBrowser()
 					["name"] = n,
 					["func"] = f
 				}
+				
+				local newstatus = tostring(n == vars["hookname"])
+				newstatus = string.gsub(newstatus, newstatus[1], string.upper(newstatus[1]))
+				
+				hookinfolabel.SetTextColor(hookinfolabel, COLOR_WHITE)
+				hookinfolabel.SetText(hookinfolabel, "Current Hook Information:\n    Type: " .. k .. "\n    Name: " .. n .. "\n    ST Hook: " .. newstatus)
 			end
 			
 			ipnl_l.Add(ipnl_l, btn)
@@ -1644,6 +2115,9 @@ local function refreshHookBrowser()
 		cat.SetAnimTime(cat, 0)
 		cat.DoExpansion(cat, true)
 		cat.DoExpansion(cat, false)
+		
+		hookinfolabel.SetTextColor(hookinfolabel, COLOR_WHITE)
+		hookinfolabel.SetText(hookinfolabel, "Current Hook Information:\n    Type: NONE SELECTED\n    Name: N/A\n    ST Hook: N/A")
 	end
 end
 
@@ -1664,13 +2138,13 @@ local function drawTraitorDetector()
 		if vars["tdetector_list"] then
 			local mx, my = gui.MouseX(), gui.MouseY()
 		
-			if vars["menu"] and isClickable(x, y, x + w, y + h) then
+			if vars["menu_open"] and isClickable(x, y, x + w, y + h) then
 				vars["td_drag_x"] = mx - x
 				vars["td_drag_y"] = my - y
 				
 				vars["td_dragging"] = true
 			else
-				if not vars["menu"] or not input.IsMouseDown(MOUSE_LEFT) then
+				if not vars["menu_open"] or not input.IsMouseDown(MOUSE_LEFT) then
 					vars["td_dragging"] = false
 				end
 			end
@@ -1801,13 +2275,13 @@ local function drawSpectators()
 	local x, y, w, h = vars["specdetector_x"], vars["specdetector_y"], ScrW() * (500 / 1920), 20
 	local mx, my = gui.MouseX(), gui.MouseY()
 	
-	if vars["menu"] and isClickable(x, y, x + w, y + h) then
+	if vars["menu_open"] and isClickable(x, y, x + w, y + h) then
 		vars["spec_drag_x"] = mx - x
 		vars["spec_drag_y"] = my - y
 		
 		vars["spec_dragging"] = true
 	else
-		if not vars["menu"] or not input.IsMouseDown(MOUSE_LEFT) then
+		if not vars["menu_open"] or not input.IsMouseDown(MOUSE_LEFT) then
 			vars["spec_dragging"] = false
 		end
 	end
@@ -1943,8 +2417,8 @@ local function drawSpectators()
 end
 
 local function toggleMenu()
-	local ms = not vars["menu"]
-	vars["menu"] = ms
+	local ms = not vars["menu_open"]
+	vars["menu_open"] = ms
 	
 	meta_pn.SetVisible(main, ms)
 	meta_pn.SetVisible(sheet, ms)
@@ -1971,33 +2445,79 @@ if ismeth and mcall then
 		vars["renderpanic"] = false
 		
 		if canRender() then
-			if vars["glowchams"] then
-				local color = strColor(vars["glowchams_color"])
-				local wcolor = strColor(vars["glowchams_color_weapon"])
+			if vars["breadcrumbs"] then
+				local datcount = #breadcrumbs
 			
-				for _, v in ipairs(player.GetAll()) do
-					if v == LocalPlayer() or not vEnt(v) then
-						continue
-					end
+				while datcount > vars["breadcrumbs_max"] do
+					table.remove(breadcrumbs, 1)
+					datcount = #breadcrumbs
+				end
 				
-					cam.Start3D()
-						render.MaterialOverride(glowmat)
-						render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
+				cam.Start3D()
+					for i = 1, datcount do
+						if datcount > i + 1 then
+							if vars["breadcrumbs_beam"] then
+								render.SetMaterial(beammat)
+								render.DrawBeam(breadcrumbs[i], breadcrumbs[i + 1], 8, 1, 1, COLOR_WHITE)
+							else
+								render.DrawLine(breadcrumbs[i], breadcrumbs[i + 1], strColor(vars["breadcrumbs_color"]), false)
+							end
+						end
+					end
+				cam.End3D()
+			end
+		
+			if vars["glowchams"] then
+				local color = strColor(vars["glowchams_color"], true)
+				local wcolor = strColor(vars["glowchams_color_weapon"], true)
+				local friendcolor = nil
+				
+				if vars["glowchams_highlight"] then
+					local hcolor = mvar.GetVarInt("Player.Friends.Friends_Color")
+					local r, g, b
+					
+					r = hcolor % 256
+					g = ((hcolor - r) / 256) % 256
+					b = ((hcolor - r) / math.pow(256, 2)) - (g / 256)
+					
+					friendcolor = Color((r % 256) / 255, (g % 256) / 255, (b % 256) / 255)
+				end
+			
+				cam.Start3D()
+					for _, v in ipairs(player.GetAll()) do
+						if v == LocalPlayer() or not vEnt(v) or not isVisible(v) or meta_en.IsDormant(v) then
+							continue
+						end
 						
+						if vars["glowchams_highlight"] and mutil and mutil.IsFriend(meta_en.EntIndex(v)) and friendcolor then
+							render.MaterialOverride(glowmat_highlight)
+							render.SetColorModulation(friendcolor.r, friendcolor.g, friendcolor.b)
+						else
+							render.MaterialOverride(glowmat)
+							render.SetColorModulation(color.r, color.g, color.b)
+						end
+						
+						meta_en.SetupBones(v)
 						meta_en.DrawModel(v)
 						
 						if vars["glowchams_weapon"] then
 							local wep = meta_pl.GetActiveWeapon(v)
 							
 							if meta_en.IsValid(wep) then
-								render.MaterialOverride(glowmat_weapon)
-								render.SetColorModulation(wcolor.r / 255, wcolor.g / 255, wcolor.b / 255)
+								if vars["glowchams_highlight"] and mutil and mutil.IsFriend(meta_en.EntIndex(v)) and friendcolor then
+									render.MaterialOverride(glowmat_highlight)
+									render.SetColorModulation(friendcolor.r, friendcolor.g, friendcolor.b)
+								else
+									render.MaterialOverride(glowmat_weapon)
+									render.SetColorModulation(wcolor.r, wcolor.g, wcolor.b)
+								end
 							
+								meta_en.SetupBones(wep)
 								meta_en.DrawModel(wep)
 							end
 						end
-					cam.End3D()
-				end
+					end
+				cam.End3D()
 			end
 		
 			draw.NoTexture()
@@ -2015,44 +2535,44 @@ if ismeth and mcall then
 				local color = strColor(vars["hitbox_color"])
 				local ovrcolor = strColor(vars["hitbox_color_ovr"])
 
-				for _, g in ipairs(hits) do
-					if not g or shouldPanic() then
-						continue
-					end
-					
-					if type(g) == "table" then
-						for _, v in ipairs(g) do
-							if not v or shouldPanic() then
-								continue
-							end
-			
-							cam.Start3D()
+				cam.Start3D()
+					for _, g in ipairs(hits) do
+						if not g or shouldPanic() then
+							continue
+						end
+						
+						if type(g) == "table" then
+							for _, v in ipairs(g) do
+								if not v or shouldPanic() then
+									continue
+								end
+				
 								if v.ovr then
 									render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, ovrcolor)
 								else
 									render.DrawWireframeBox(v.pos, v.ang, v.mins, v.maxs, color)
 								end
-							cam.End3D()
+							end
 						end
 					end
-				end
+				cam.End3D()
 			end
 
 			if vars["tracers_other"] or vars["tracers_local"] then
-				for _, v in ipairs(bullets) do
-					if not v or shouldPanic() then
-						continue
-					end
-			
-					cam.Start3D()
+				cam.Start3D()
+					for _, v in ipairs(bullets) do
+						if not v or shouldPanic() then
+							continue
+						end
+				
 						if vars["beamtracers"] then
 							render.SetMaterial(beammat)
 							render.DrawBeam(v.src, v.endpos, 8, 1, 1, COLOR_WHITE)
 						else
 							render.DrawLine(v.src, v.endpos, v.col, true)
 						end
-					cam.End3D()
-				end
+					end
+				cam.End3D()
 			end
 		
 			if vars["followbot"] then
@@ -2074,9 +2594,22 @@ if ismeth and mcall then
 					local fov = mvar.GetVarInt("Aimbot.Target.FoV")
 					
 					local retardednumber = 2.6
+					
+					if mvar.GetVarInt("Player.Third Person.Third Person") == 1 then
+						retardednumber = 3.49
+					end
+					
+					local bodyaim = mvar.GetVarInt("Aimbot.Accuracy.Hitbox") % 256
+					
+					if bodyaim == 0 or bodyaim == 1 then
+						bodyaim = 0
+					else
+						bodyaim = 1
+					end
+					
 					local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
 					
-					local method = mvar.GetVarInt("Aimbot.Target.Priority")
+					local method = mvar.GetVarInt("Aimbot.Target.Priority") % 256
 					
 					local hw, hh = ScrW() / 2, ScrH() / 2
 					local snaptarg = nil
@@ -2099,8 +2632,15 @@ if ismeth and mcall then
 							end
 							
 							if fov > 0 and fov < 180 then
-								local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
-								local dist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
+								local compos
+									
+								if bodyaim == 1 then
+									compos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
+								else
+									compos = meta_vc.ToScreen(getHeadPos(v))
+								end
+								
+								local dist = math.abs(math.Dist(compos.x, compos.y, hw, hh))
 								
 								if dist > math.ceil(rad) and fov > 0 and fov < 180 then
 									continue
@@ -2134,8 +2674,15 @@ if ismeth and mcall then
 								continue
 							end
 							
-							local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
-							local dist = math.abs(math.Dist(obbpos.x, obbpos.y, hw, hh))
+							local compos
+							
+							if bodyaim == 1 then
+								compos = meta_vc.ToScreen(meta_en.LocalToWorld(v, meta_en.OBBCenter(v)))
+							else
+								compos = meta_vc.ToScreen(getHeadPos(v))
+							end
+								
+							local dist = math.abs(math.Dist(compos.x, compos.y, hw, hh))
 							
 							if dist > math.ceil(rad) and fov > 0 and fov < 180 then
 								continue
@@ -2153,11 +2700,18 @@ if ismeth and mcall then
 					end
 					
 					if vEnt(snaptarg) then
-						local obbpos = meta_vc.ToScreen(meta_en.LocalToWorld(snaptarg, meta_en.OBBCenter(snaptarg)))
+						local compos
+						
+						if bodyaim == 1 then
+							compos = meta_vc.ToScreen(meta_en.LocalToWorld(snaptarg, meta_en.OBBCenter(snaptarg)))
+						else
+							compos = meta_vc.ToScreen(getHeadPos(snaptarg))
+						end
+						
 						local color = strColor(vars["snaplines_color"])
 					
 						surface.SetDrawColor(color)
-						surface.DrawLine(hw, hh, obbpos.x, obbpos.y)
+						surface.DrawLine(hw, hh, compos.x, compos.y)
 					end
 				end
 				
@@ -2166,6 +2720,11 @@ if ismeth and mcall then
 				
 					if fov > 0 and fov <= 60 then
 						local retardednumber = 2.6
+						
+						if mvar.GetVarInt("Player.Third Person.Third Person") == 1 then
+							retardednumber = 3.49
+						end
+						
 						local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(vars["afov"] / 2)) * ScrW()) / retardednumber
 						local size = rad * 1.955
 						
@@ -2180,7 +2739,13 @@ if ismeth and mcall then
 			end
 		end
 		
-		if vars["menu"] then
+		for _, v in ipairs(menu_drawing_always) do
+			if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
+				meta_pn.PaintManual(v)
+			end
+		end
+		
+		if vars["menu_open"] then
 			for _, v in ipairs(menu_drawing) do
 				if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
 					meta_pn.PaintManual(v)
@@ -2198,7 +2763,13 @@ elseif not ismeth then
 			drawSpectators()
 		end
 		
-		if vars["menu"] then
+		for _, v in ipairs(menu_drawing_always) do
+			if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
+				meta_pn.PaintManual(v)
+			end
+		end
+		
+		if vars["menu_open"] then
 			for _, v in ipairs(menu_drawing) do
 				if meta_pn.IsVisible(v) and meta_pn.IsVisible(meta_pn.GetParent(v)) then
 					meta_pn.PaintManual(v)
@@ -2210,7 +2781,7 @@ end
 
 hook.Add("HUDPaint", vars["hookname"], function()
 	vars["renderpanic"] = true
-
+	
 	if vars["antiblind"] then
 		hook.Remove("HUDPaint", "ulx_blind")
 		hook.Remove("HUDPaint", "Blind")
@@ -2222,19 +2793,43 @@ hook.Add("HUDPaint", vars["hookname"], function()
 	end
 	
 	if not ismeth then
+		if vars["breadcrumbs"] then
+			local datcount = #breadcrumbs
+		
+			while datcount > vars["breadcrumbs_max"] do
+				table.remove(breadcrumbs, 1)
+				datcount = #breadcrumbs
+			end
+			
+			cam.Start3D()
+				for i = 1, datcount do
+					if datcount > i + 1 then
+						
+						if vars["breadcrumbs_beam"] then
+							render.SetMaterial(beammat)
+							render.DrawBeam(breadcrumbs[i], breadcrumbs[i + 1], 8, 1, 1, COLOR_WHITE)
+						else
+							render.DrawLine(breadcrumbs[i], breadcrumbs[i + 1], strColor(vars["breadcrumbs_color"]), false)
+						end
+					end
+				end
+			cam.End3D()
+		end
+	
 		if vars["glowchams"] then
 			local color = strColor(vars["glowchams_color"])
 			local wcolor = strColor(vars["glowchams_color_weapon"])
 		
-			for _, v in ipairs(player.GetAll()) do
-				if v == LocalPlayer() or not vEnt(v) then
-					continue
-				end
-			
-				cam.Start3D()
+			cam.Start3D()
+				for _, v in ipairs(player.GetAll()) do
+					if v == LocalPlayer() or not vEnt(v) or not isVisible(v) or meta_en.IsDormant(v) then
+						continue
+					end
+				
 					render.MaterialOverride(glowmat)
 					render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
 					
+					meta_en.SetupBones(v)
 					meta_en.DrawModel(v)
 					
 					if vars["glowchams_weapon"] then
@@ -2244,18 +2839,31 @@ hook.Add("HUDPaint", vars["hookname"], function()
 							render.MaterialOverride(glowmat_weapon)
 							render.SetColorModulation(wcolor.r / 255, wcolor.g / 255, wcolor.b / 255)
 						
+							meta_en.SetupBones(wep)
 							meta_en.DrawModel(wep)
 						end
 					end
-				cam.End3D()
-			end
+				end
+			cam.End3D()
 		end
+	else
+		cam.Start3D()
+			render.PushCustomClipPlane(Vector(0, 0, 0), 0)
+		cam.End3D()
 	end
 end)
 
 hook.Add("HUDShouldDraw", vars["hookname"], function(n)
 	if n == "CHudDamageIndicator" then
-		return false
+		return vars["reddeath"]
+	end
+	
+	if n == "CHudZoom" then
+		return vars["drawzoom"]
+	end
+	
+	if n == "CHudGMod" then
+		return vars["drawgmod"]
 	end
 end)
 
@@ -2264,9 +2872,32 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 		return
 	end
 
+	if vars["breadcrumbs"] then
+		if meta_en.GetPos(LocalPlayer()) ~= vars["breadcrumbs_last"] then
+			table.insert(breadcrumbs, meta_en.GetPos(LocalPlayer()))
+		end
+		
+		vars["breadcrumbs_last"] = meta_en.GetPos(LocalPlayer())
+	end
+
 	local mvtyp =  meta_en.GetMoveType(LocalPlayer())
 
 	if mvtyp ~= MOVETYPE_LADDER and mvtyp ~= MOVETYPE_NOCLIP and mvtyp ~= MOVETYPE_OBSERVER then
+		if vars["faststop"] then
+			if meta_en.IsOnGround(LocalPlayer()) and not meta_en.IsValid(meta_pl.GetVehicle(LocalPlayer())) then
+				if not meta_cd.KeyDown(cmd, IN_MOVELEFT) and not meta_cd.KeyDown(cmd, IN_MOVERIGHT) and not meta_cd.KeyDown(cmd, IN_FORWARD) and not meta_cd.KeyDown(cmd, IN_BACK) and not meta_cd.KeyDown(cmd, IN_JUMP) then
+					local vel = meta_en.GetVelocity(LocalPlayer())
+					local movedir = meta_vc.Angle(vel)
+					movedir.yaw = meta_cd.GetViewAngles(cmd).yaw - movedir.yaw
+					
+					local newmove = meta_an.Forward(movedir) * meta_vc.Length2D(vel)
+					
+					meta_cd.SetSideMove(cmd, 0 - newmove.y)
+					meta_cd.SetForwardMove(cmd, 0 - newmove.x)
+				end
+			end
+		end
+	
 		if vars["followbot"] and meta_cd.KeyDown(cmd, IN_RELOAD) then
 			local tply = vars["followtarg"]
 			
@@ -2360,6 +2991,135 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 				end
 			end
 		end
+		
+		if meta_en.WaterLevel(LocalPlayer()) == 0 and not meta_en.IsValid(meta_pl.GetVehicle(LocalPlayer())) then
+			if vars["circlestrafer"] then
+				local jumping = meta_cd.KeyDown(cmd, IN_JUMP) or input.IsKeyDown(KEY_SPACE)
+				local r = 1
+				
+				local left = meta_cd.KeyDown(cmd, IN_MOVELEFT)
+				local right = meta_cd.KeyDown(cmd, IN_MOVERIGHT)
+				
+				if left then
+					r = -1
+				end
+				
+				if right then
+					r = 1
+				end
+				
+				if (left or right) and jumping then
+					vars["circlestrafer_is_strafe"] = true
+					
+					local vel = meta_en.GetVelocity(LocalPlayer())
+					local speed = math.max(meta_vc.Length2D(vel), 300)
+					
+					local rt = 5.9 + (speed / 1500) * 5
+					local del = (275 / speed) * (2 / vars["circlestrafer_size"]) * (128 / (1.7 / engine.TickInterval())) * rt
+					
+					local delta = r * math.min(del, 15)
+					
+					vars["circlestrafer_stat"] = vars["circlestrafer_stat"] + delta
+				
+					local sincos = (vars["circlestrafer_stat"] + 90 * r) * (math.pi / 180)
+					
+					meta_cd.SetForwardMove(cmd, math.cos(sincos) * 450)
+					meta_cd.SetSideMove(cmd, math.sin(sincos) * 450)
+				else
+					if vars["circlestrafer_is_strafe"] then
+						vars["circlestrafer_stat"] = 0
+						vars["circlestrafer_is_strafe"] = false
+					end
+				end
+			end
+		end
+	end
+	
+	if mvar then
+		if vars["antiaim_prev"] == nil then
+			vars["antiaim_prev"] = mvar.GetVarInt("General.Options.Enabled") % 256
+		end
+		
+		if meta_en.WaterLevel(LocalPlayer()) > 1 then
+			mvar.SetVarInt("General.Options.Enabled", 0)
+			vars["antiaim_swap"] = false
+		else
+			if vars["antiaim_swap"] then
+				vars["antiaim_prev"] = mvar.GetVarInt("General.Options.Enabled") % 256
+			end
+			
+			mvar.SetVarInt("General.Options.Enabled", vars["antiaim_prev"])
+			
+			vars["antiaim_swap"] = true
+		end
+	
+		if vars["antiaim"] then		
+			if vars["antiaim_invert"] then
+				local yp = "General.Options.Yaw"
+				local yawset = mvar.GetVarInt(yp) or 0
+			
+				if yawset == 0 or yawset == 1 then
+					mvar.SetVarInt(yp, 4)
+				elseif yawset == 2 then
+					mvar.SetVarInt(yp, 3)
+				elseif yawset == 3 then
+					mvar.SetVarInt(yp, 2)
+				else
+					mvar.SetVarInt(yp, 1)
+				end
+				
+				vars["antiaim_invert"] = false
+			end
+		
+			local base = 0
+			local yawset = mvar.GetVarInt("General.Options.Yaw") or 0
+			
+			if yawset == 0 or yawset == 1 then
+				base = 0
+			elseif yawset == 2 then
+				base = 90
+			elseif yawset == 3 then
+				base = -90
+			elseif yawset == 4 then
+				base = 180
+			elseif yawset == 6 then
+				base = mvar.GetVarFloat("Custom.Config.Fake Jitter Angle 1")
+			end
+			
+			if vars["antiaim_autodirection"] then
+				local nbase = meta_vc.Angle(meta_en.GetPos(getClosest(false)) - meta_en.GetPos(LocalPlayer())) - meta_en.EyeAngles(LocalPlayer())
+				base = nbase.yaw
+			end
+			
+			local n = base + 180
+			
+			if vars["antiaim_jitter_yaw"] then
+				n = (base + 180) + math.random(-80, 80)
+			end
+			
+			if vars["antiaim_sway"] then
+				n = base + (math.sin(vars["antiaim_sway_step"]) * 100)
+			end
+			
+			if vars["antiaim_snapback"] then
+				if math.random(0, 100) > 90 then
+					local c = 1
+		
+					if math.random(0, 10) > 5 then
+						c = -1
+					end
+		
+					n = base + (math.random(30, 45) * c)
+				end
+			end
+			
+			mvar.SetVarFloat("Custom.Config.Jitter Angle 1", n)
+			mvar.SetVarFloat("Custom.Config.Jitter Angle 2", n)
+			
+			if vars["antiaim_jitter_lag"] then
+				mvar.SetVarInt("General.Options.Fake Lag", math.random(1, 8))
+			end
+		end
 	end
 end)
 
@@ -2389,18 +3149,28 @@ hook.Add("CalcView", vars["hookname"], function(ply, pos, ang, fov, zn, zf)
 	nfov = math.Clamp(nfov, 2, 179)
 	
 	if vars["thirdpersonfix"] then
-		if meta_pl.ShouldDrawLocalPlayer(ply) then
-			local tr = util.TraceLine({
-				start = pos,
-				endpos = pos - (meta_an.Forward(ang) * 150),
-				mask = MASK_SHOT,
-				filter = LocalPlayer(),
-				ignoreworld = false,
-				mins = Vector(-8, -8, -8),
-				maxs = Vector(8, 8, 8)
-			})
+		local dofix = true
+	
+		if ismeth then
+			if mvar and (mvar.GetVarInt("Player.Third Person.Third Person") % 256) == 1 then
+				dofix = false
+			end
+		end
 		
-			pos = tr.HitPos + tr.HitNormal
+		if dofix then
+			if meta_pl.ShouldDrawLocalPlayer(ply) then
+				local tr = util.TraceLine({
+					start = pos,
+					endpos = pos - (meta_an.Forward(ang) * 150),
+					mask = MASK_SHOT,
+					filter = LocalPlayer(),
+					ignoreworld = false,
+					mins = Vector(-8, -8, -8),
+					maxs = Vector(8, 8, 8)
+				})
+			
+				pos = tr.HitPos + tr.HitNormal
+			end
 		end
 	end
 
@@ -2474,6 +3244,10 @@ hook.Add("Tick", vars["hookname"], function()
 				end
 			end
 		end
+		
+		if vars["antiaim_sway"] then
+			vars["antiaim_sway_step"] = math.Round((vars["antiaim_sway_step"] + 0.1) % 20, 1)
+		end
 	end
 	
 	if vars["gesture_loop"] then
@@ -2544,6 +3318,88 @@ hook.Add("Tick", vars["hookname"], function()
 			meta_pl.SetPlayerColor(LocalPlayer(), Vector(1, 1, 1))
 		end
 	end
+	
+	if vars["config_createorsave"] then
+		local ogmenuopen = vars["menu_open"]
+		vars["menu_open"] = false
+		
+		vars["config_createorsave"] = false
+		
+		local tabletojson = util.TableToJSON(vars)
+		vars["menu_open"] = ogmenuopen
+	
+		if ismeth and mio then
+			local create = mio.Write("C:/MTHRW/LUA/data/swag_tools_config.txt", tabletojson)
+			
+			if create.status == true then
+				mrend.PushAlert("Config saved!")
+			else
+				mrend.PushAlert("Failed to save config")
+			end
+		else
+			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
+		
+			if pcall(safefuncs.fwrite("swag_tools_config.txt",  tabletojson)) then
+				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Config saved!\n")
+			else
+				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Failed to save config\n")
+			end
+		end
+	end
+	
+	if vars["config_load"] then
+		local ogmenuopen = vars["menu_open"]
+	
+		if ismeth and mio then
+			local data = mio.Read("C:/MTHRW/LUA/data/swag_tools_config.txt")
+			
+			if data.content == nil or data.status == false then
+				mrend.PushAlert("Failed to load config")
+			else
+				local jsontotable = util.JSONToTable(data.content) or nil
+				
+				if jsontotable then
+					for k, _ in pairs(jsontotable) do
+						vars[k] = jsontotable[k]
+					end
+				
+					mrend.PushAlert("Config loaded!")
+				else
+					mrend.PushAlert("Failed to load config")
+				end
+			end
+		else
+			local data = safefuncs.fread("swag_tools_config.txt", "DATA") or nil
+			
+			surface.PlaySound("garrysmod/balloon_pop_cute.wav")
+			
+			if data == nil then
+				MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Failed to load config\n")
+			else
+				local jsontotable = util.JSONToTable(data) or nil
+				
+				if jsontotable then
+					for k, _ in pairs(jsontotable) do
+						vars[k] = jsontotable[k]
+					end
+				
+					MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Config loaded!\n")
+				else
+					MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Failed to load config\n")
+				end
+			end
+		end
+		
+		vars["menu_open"] = ogmenuopen
+		
+		meta_pn.SetSize(main, vars["menu_width"], vars["menu_height"])
+		
+		if not ogmenuopen then
+			meta_pn.Center(main)
+		end
+		
+		vars["config_load"] = false
+	end
 end)
 
 hook.Add("SetupSkyboxFog", vars["hookname"], function()
@@ -2600,11 +3456,10 @@ hook.Add("RenderScene", vars["hookname"], function()
 	local dv = vars["devtexture"]
 	local dvo = vars["devtexture_o"]
 	local fb = vars["fullbright"]
-	local nm = vars["nightmode"]
-	local nmrs = vars["nightmode_rs"]
+	local nm = vars["aimbient"]
+	local nmrs = vars["aimbient_rs"]
 	
-	if dv or (nm and not fb) or (not nm and not vars["nightmode_rs"]) then
-		local int = math.abs(math.Clamp(vars["nightmode_intensity"], 0, 1) - 1)
+	if dv or (nm and not fb) or (not nm and not vars["aimbient_rs"]) then
 		local rsvec = Vector(1, 1, 1)
 	
 		for _, v in ipairs(meta_en.GetMaterials(game.GetWorld())) do
@@ -2623,7 +3478,9 @@ hook.Add("RenderScene", vars["hookname"], function()
 			end
 			
 			if nm and not fb then
-				meta_im.SetVector(wm, "$color", Vector(int, int, int))
+				local aimbientcol = strColor(vars["aimbient_color"])
+			
+				meta_im.SetVector(wm, "$color", Vector(aimbientcol.r / 255, aimbientcol.g / 255, aimbientcol.b / 255))
 			elseif not nmrs then
 				meta_im.SetVector(wm, "$color", rsvec)
 			end
@@ -2631,9 +3488,9 @@ hook.Add("RenderScene", vars["hookname"], function()
 	end
 	
 	if nm and not fb then
-		vars["nightmode_rs"] = false
+		vars["aimbient_rs"] = false
 	else
-		vars["nightmode_rs"] = true
+		vars["aimbient_rs"] = true
 	end
 	
 	if dv then
@@ -2756,7 +3613,7 @@ hook.Add("player_hurt", vars["hookname"], function(data)
 	local at = Player(data.attacker)
 	local tg = Player(data.userid)
 	
-	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) or not meta_pl.Alive(tg) then
+	if not meta_en.IsValid(at) or at ~= LocalPlayer() or not meta_en.IsValid(tg) or not meta_pl.Alive(tg) then
 		return
 	end
 	
@@ -2788,7 +3645,7 @@ hook.Add("player_hurt", vars["hookname"], function(data)
 			
 			local pos, ang = meta_vm.GetTranslation(bm), meta_vm.GetAngles(bm)
 			
-			if not pos then
+			if not pos or not ang then
 				continue
 			end
 			
@@ -2823,7 +3680,7 @@ hook.Add("entity_killed", vars["hookname"], function(data)
 	local at = ents.GetByIndex(data.entindex_attacker)
 	local tg = ents.GetByIndex(data.entindex_killed)
 	
-	if not meta_en.IsValid(at) or not at == LocalPlayer() or not meta_en.IsValid(tg) or tg == LocalPlayer() or meta_en.GetClass(tg) ~= "player" then
+	if not meta_en.IsValid(at) or at ~= LocalPlayer() or not meta_en.IsValid(tg) or tg == LocalPlayer() or meta_en.GetClass(tg) ~= "player" then
 		return
 	end
 	
@@ -2851,7 +3708,7 @@ hook.Add("entity_killed", vars["hookname"], function(data)
 			
 			local pos, ang = meta_vm.GetTranslation(bm), meta_vm.GetAngles(bm)
 			
-			if not pos then
+			if not pos or not ang then
 				continue
 			end
 			
@@ -2876,71 +3733,68 @@ hook.Add("entity_killed", vars["hookname"], function(data)
 	end)
 end)
 
+hook.Add("EntityFireBullets", vars["hookname"], function(ent, data)
+	if not ent or not data or not meta_en.IsValid(ent) or not vars["tracers"] then
+		return
+	end
+	
+	if string.find(string.lower(tostring(data.TracerName)), "ricochet") then
+		return
+	end
+	
+	if ent ~= LocalPlayer() then
+		print("how the fuck did " .. tostring(ent) .. " shoot")
+		return
+	end
+	
+	local len = vars["tracers_local"]
+	
+	if not len then
+		return
+	end
+	
+	if #bullets >= vars["maxtracers"] then
+		table.remove(bullets, 1)
+	end
+	
+	local tr = util.TraceLine({
+		start = data.Src,
+		endpos = data.Src + (data.Dir * data.Distance),
+		filter = player.GetAll(),
+		ignoreworld = false,
+		mask = MASK_SHOT,
+	})
+
+	table.insert(bullets, {
+		["src"] = data.Src,
+		["endpos"] = tr.HitPos,
+		["col"] = Color(100, 255, 100, 255),
+	})
+
+	local ttr = bullets[#bullets]
+
+	timer.Simple(math.Round(vars["tracerlife"]), function()
+		table.RemoveByValue(bullets, ttr)
+	end)
+end)
+
 hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
-	if not (event == PLAYERANIMEVENT_ATTACK_PRIMARY and data == PLAYERANIMEVENT_ATTACK_PRIMARY) or not vars["tracers"] then
+	if not (event == PLAYERANIMEVENT_ATTACK_PRIMARY and data == PLAYERANIMEVENT_ATTACK_PRIMARY) or not vars["tracers"] or ply == LocalPlayer() then
 		return
 	end
 
 	local en = vars["tracers_other"]
-	local len = vars["tracers_local"]
 
-	if (not len and not en) or not meta_en.IsValid(ply) or isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
+	if not en or not meta_en.IsValid(ply) or isBadWeapon(meta_pl.GetActiveWeapon(ply)) then
 		return
 	end
-	
-	local isl = ply == LocalPlayer()
-	
-	if isl then
-		if not len then
-			return
-		end
-	else
-		if not en then
-			return
-		end
-	end
 
-	if table.Count(bullets) >= vars["maxtracers"] then
+	if #bullets >= vars["maxtracers"] then
 		table.remove(bullets, 1)
 	end
 
-	local usebones = true
-
-	local startpos = meta_pl.GetShootPos(ply)
+	local startpos = getHeadPos(ply)
 	local dir = meta_an.Forward(meta_en.EyeAngles(ply))
-	local col = Color(255, 100, 100, 255)
-
-	if isl then
-		col = Color(100, 255, 100, 255)
-	
-		if not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
-			usebones = false
-		end
-	end
-
-	if usebones then
-		for i = 0, meta_en.GetBoneCount(ply) - 1 do
-			if string.find(string.lower(meta_en.GetBoneName(ply, i)), "head") then
-				startpos = meta_vm.GetTranslation(meta_en.GetBoneMatrix(ply, i)) + (dir * 2)
-		
-				break
-			end
-		end
-	end
-	
-	if isl then
-		if ismeth and mutil then
-			local at = mutil.GetAimbotTarget()
-
-			if at ~= 0 then
-				local ent = ents.GetByIndex(at)
-				
-				if meta_en.IsValid(ent) then
-					dir = meta_en.LocalToWorld(ent, meta_en.OBBCenter(ent)) - startpos
-				end
-			end
-		end
-	end
 
 	local tr = util.TraceLine({
 		start = startpos,
@@ -2953,10 +3807,10 @@ hook.Add("DoAnimationEvent", vars["hookname"], function(ply, event, data)
 	table.insert(bullets, {
 		["src"] = startpos,
 		["endpos"] = tr.HitPos,
-		["col"] = col,
+		["col"] = Color(255, 100, 100, 255),
 	})
 
-	local ttr = bullets[table.Count(bullets)]
+	local ttr = bullets[#bullets]
 
 	timer.Simple(math.Round(vars["tracerlife"]), function()
 		table.RemoveByValue(bullets, ttr)
@@ -3056,7 +3910,7 @@ for i = 1, #menu_tabs do
 		div.SetDividerWidth(div, 4)
 		div.SetLeftMin(div, 10)
 		div.SetRightMin(div, 10)
-		div.SetLeftWidth(div, (menu_w / 2) + 10)
+		div.SetLeftWidth(div, (vars["menu_width"] / 2) + 10)
 		
 		div.Paint = function(self)
 			local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
@@ -3146,6 +4000,12 @@ for i = 1, #menu_tabs do
 					pck.SetWangs(pck, true)
 					pck.SetColor(pck, strColor(vars[su[2]]))
 					
+					pck.Think = function(self)
+						if self.GetColor(self) ~= strColor(vars[su[2]]) then
+							self.SetColor(self, strColor(vars[su[2]]))
+						end
+					end
+					
 					pck.ValueChanged = function(self, new)
 						if new == nil then
 							return
@@ -3188,6 +4048,12 @@ for i = 1, #menu_tabs do
 				vars[v[2]] = new
 			end
 			
+			cb.Think = function(self)
+				if self.GetChecked(self) ~= vars[v[2]] then
+					self.SetChecked(self, vars[v[2]])
+				end
+			end
+			
 			cb.Paint = function(self)
 				local w, h = meta_pn.GetWide(self), meta_pn.GetTall(self)
 			
@@ -3195,8 +4061,8 @@ for i = 1, #menu_tabs do
 				surface.DrawRect(0, 0, w, h)
 				
 				if self.GetChecked(self) then
-					surface.SetDrawColor(COLOR_ORANGE)
-					surface.DrawRect(2, 2, w - 3, h - 3)
+					surface.SetDrawColor(strColor(vars["menu_accent"]))
+					surface.DrawRect(2, 2, w - 4, h - 4)
 				end
 				
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
@@ -3217,6 +4083,12 @@ for i = 1, #menu_tabs do
 				end
 			
 				vars[v[2]] = new
+			end
+			
+			tb.Think = function(self)
+				if self.GetValue(self) ~= vars[v[2]] then
+					self.SetValue(self, vars[v[2]])
+				end
 			end
 			
 			tb.Paint = function(self)
@@ -3255,6 +4127,12 @@ for i = 1, #menu_tabs do
 				end
 			
 				vars[v[2]] = new
+			end
+			
+			ns.Think = function(self)
+				if self.GetValue(self) ~= vars[v[2]] then
+					self.SetValue(self, vars[v[2]])
+				end
 			end
 			
 			nst.Paint = function(self)
@@ -3388,6 +4266,18 @@ for i = 1, #menu_tabs do
 				meta_pn.SetVisible(cmbd, false)
 			end
 
+			cmb.Think = function(self)
+				local sval, uselessshitvariable = self.GetSelected(self)
+				
+				if sval ~= vars[v[2]] then
+					for choiceid, choice in ipairs(self.Choices) do
+						if choice == vars[v[2]] then
+							self.ChooseOptionID(self, choiceid)
+						end
+					end
+				end
+			end
+
 			cmb.Paint = function(self)
 				local cw, ch = meta_pn.GetWide(self), 20
 			
@@ -3417,6 +4307,8 @@ for i = 1, #menu_tabs do
 					cmbopen = false
 				end
 			end
+		elseif etype == "btn" then
+			dButton(v[2], v[3], v[4], v[5], panel, v[6], v[7])
 		end
 	end
 end
@@ -3449,13 +4341,114 @@ for _, d in ipairs(sheet.GetItems(sheet)) do
 				surface.DrawLine(0, 0, 0, h - 8)
 				surface.DrawLine(w - 1, 0, w - 1, h - 8)
 			
-				surface.SetDrawColor(COLOR_ORANGE)
+				surface.SetDrawColor(strColor(vars["menu_accent"]))
 				surface.DrawLine(0, 0, w, 0)
 			else
 				surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 				surface.DrawLine(0, 19, w, 19)
 			end
 		end
+	end
+end
+
+-- Bind Indicators
+
+local bindmenu = vgui.Create("DFrame")
+
+meta_pn.SetSize(bindmenu, 245, 245)
+meta_pn.SetPos(bindmenu, vars["binds_x"], vars["binds_y"])
+bindmenu.SetDeleteOnClose(bindmenu, false)
+bindmenu.SetTitle(bindmenu, "")
+meta_pn.SetVisible(bindmenu, true)
+bindmenu.ShowCloseButton(bindmenu, false)
+meta_pn.SetPaintedManually(bindmenu, true)
+
+table.insert(menu_drawing_always, bindmenu)
+
+bindmenu.Paint = function(self)
+	self.SetDraggable(self, vars["menu_open"] and vars["binds"])
+
+	if ismeth and mvar and vars["binds"] and canRender(true) then
+		if self.Dragging ~= nil then
+			vars["binds_x"], vars["binds_y"] = meta_pn.GetPos(self)
+		end
+	
+		meta_pn.SetPos(self, vars["binds_x"], vars["binds_y"])
+	
+		local binds = getBinds()
+		
+		local sh = 47 + (15 * #binds)
+		local bw, bh = meta_pn.GetWide(self), sh
+		
+		surface.SetFont("BudgetLabel")
+		surface.SetTextColor(COLOR_WHITE)
+		
+		for _, v in ipairs(binds) do
+			local tw, th = surface.GetTextSize(v.key)
+			
+			if 190 + tw > bw then
+				bw = 190 + tw
+			end
+		end
+		
+		meta_pn.SetSize(self, bw, bh)
+		
+		surface.SetDrawColor(COLOR_BLACK)
+		surface.DrawRect(0, 0, bw, bh)
+		
+		local c = 55
+		local cs = c
+		
+		for i = 1, cs do
+			surface.SetDrawColor(Color(c, c, c, 255))
+			surface.DrawLine(0, i, bw, i)
+			
+			c = c - 1
+		end
+		
+		local tww, thh = surface.GetTextSize("Binds")
+		
+		surface.SetTextPos((bw / 2) - (tww / 2), 5)
+		surface.DrawText("Binds")
+		
+		surface.SetDrawColor(COLOR_MAIN_BACK_M)
+		surface.DrawRect(10, 25, bw - 20, bh - 35)
+		
+		local offset = 0
+		
+		for _, v in ipairs(binds) do
+			local ty = 32 + (15 * offset)
+		
+			if v.status then
+				surface.SetTextColor(COLOR_WHITE)
+			else
+				surface.SetTextColor(150, 150, 150, 255)
+			end
+		
+			surface.SetTextPos(75, ty)
+			surface.DrawText(v.name)
+		
+			if v.status then
+				surface.SetTextColor(strColor(vars["menu_accent"]))
+			else
+				surface.SetTextColor(150, 150, 150, 255)
+			end
+			
+			surface.SetTextPos(20, ty)
+			surface.DrawText(v.type)
+
+			surface.SetTextPos(180, ty)
+			surface.DrawText(v.key)
+			
+			offset = offset + 1
+		end
+		
+		surface.SetDrawColor(12, 12, 12, 255)
+		surface.DrawOutlinedRect(10, 25, bw - 20, bh - 35)
+		surface.DrawOutlinedRect(0, 0, bw, bh)
+		
+		surface.SetDrawColor(strColor(vars["menu_accent"]))
+		surface.DrawLine(10, 25, bw - 10, 25)
 	end
 end
 
@@ -3553,7 +4546,7 @@ for j, l in pairs(concommands) do
 					new = 1
 				end
 				
-				if not type(new) == "number" then
+				if type(new) ~= "number" then
 					new = tonumber(new)
 				end
 
@@ -3617,6 +4610,23 @@ timer.Create(vars["timer_slow"], 1, 0, function()
 		
 		if ogwvec ~= wvec then
 			meta_im.SetVector(glowmat_weapon, "$envmaptint", wvec)
+		end
+		
+		if ismeth and vars["glowchams_highlight"] then
+			local hcolor = mvar.GetVarInt("Player.Friends.Friends_Color")
+			local r, g, b
+			
+			r = hcolor % 256
+			g = ((hcolor - r) / 256) % 256
+			b = ((hcolor - r) / math.pow(256, 2)) - (g / 256)
+			
+			local fvec = Vector((r % 256) / 255, (g % 256) / 255, (b % 256) / 255)
+			
+			local ogfvec = meta_im.GetVector(glowmat_highlight, "$envmaptint")
+			
+			if ogfvec ~= fvec then
+				meta_im.SetVector(glowmat_highlight, "$envmaptint", fvec)
+			end
 		end
 	end
 
@@ -3796,4 +4806,6 @@ else
 	MsgC(COLOR_LIGHT_RED, "[" .. title_short .. "] ", COLOR_LIGHT, "Loaded Successfully!\n")
 end
 
-jit.flush()
+-- Autoload config
+
+vars["config_load"] = true
