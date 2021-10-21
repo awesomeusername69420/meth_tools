@@ -1,6 +1,6 @@
 --[[
 
-	WARNING: THIS IS A BETA BUILD, EXPECT JANK
+	WARNING: THIS IS A BETA VERSION, EXPECT JANK
 
 ]]
 
@@ -2265,7 +2265,7 @@ local function drawTraitorDetector()
 		if vars["tdetector_list"] then
 			surface.SetDrawColor(COLOR_MAIN_OUTLINE)
 			surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * 20))
-			surface.DrawLine(x + (w - (w / 3)), y, x + (w - (w / 3)), y + h + ((ofs - 1) * 20))
+			surface.DrawLine(x + dw, y, x + dw, y + h + ((ofs - 1) * 20))
 		end
 	end
 end
@@ -2303,7 +2303,7 @@ local function drawSpectators()
 	local ofs = 1
 	
 	local fw = w - (w / 8)
-	local nw = w - (w / 2)
+	local nw = w / 2
 	
 	local dw = w - (w / 4)
 	
@@ -2879,11 +2879,15 @@ hook.Add("CreateMove", vars["hookname"], function(cmd)
 	end
 
 	if vars["breadcrumbs"] then
-		if meta_en.GetPos(LocalPlayer()) ~= vars["breadcrumbs_last"] then
-			table.insert(breadcrumbs, meta_en.GetPos(LocalPlayer()))
+		if vars["breadcrumbs_last"] ~= nil then
+			if meta_vc.Distance(meta_en.GetPos(LocalPlayer()), vars["breadcrumbs_last"]) > 20 then
+				table.insert(breadcrumbs, meta_en.GetPos(LocalPlayer()))
+				
+				vars["breadcrumbs_last"] = meta_en.GetPos(LocalPlayer())
+			end
+		else
+			vars["breadcrumbs_last"] = meta_en.GetPos(LocalPlayer())
 		end
-		
-		vars["breadcrumbs_last"] = meta_en.GetPos(LocalPlayer())
 	end
 
 	local mvtyp =  meta_en.GetMoveType(LocalPlayer())
@@ -3740,7 +3744,7 @@ hook.Add("entity_killed", vars["hookname"], function(data)
 end)
 
 hook.Add("EntityFireBullets", vars["hookname"], function(ent, data)
-	if not ent or not data or not meta_en.IsValid(ent) or not vars["tracers"] then
+	if not ent or not data or not meta_en.IsValid(ent) or not vars["tracers"] or not vars["tracers_local"] then
 		return
 	end
 	
@@ -3750,12 +3754,6 @@ hook.Add("EntityFireBullets", vars["hookname"], function(ent, data)
 	
 	if ent ~= LocalPlayer() then
 		print("how the fuck did " .. tostring(ent) .. " shoot")
-		return
-	end
-	
-	local len = vars["tracers_local"]
-	
-	if not len then
 		return
 	end
 	
