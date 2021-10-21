@@ -283,9 +283,9 @@ local vars = {
 
 	-- Render
 	["afov"] = 75,
-	["aimbient"] = false,
-	["aimbient_color"] = "30 30 30 255",
-	["aimbient_rs"] = false,
+	["ambient"] = false,
+	["ambient_color"] = "30 30 30 255",
+	["ambient_rs"] = false,
 	["antiblind"] = false,
 	["beamtracers"] = false,
 	["breadcrumbs"] = false,
@@ -484,7 +484,7 @@ local concommands = {
 
 	["string"] = {
 		-- Render
-		["st_render_aimbientlighting_color_set"] = "aimbient_color",
+		["st_render_ambientlighting_color_set"] = "ambient_color",
 		["st_render_breadcrumbs_color_set"] = "breadcrumbs_color",
 		["st_render_catpng_color_set"] = "catpng_color",
 		["st_render_damageboxes_color_override_set"] = "hitbox_color_ovr",
@@ -502,7 +502,7 @@ local concommands = {
 
 	["boolean"] = {
 		-- Render
-		["st_render_aimbientlighting"] = "aimbient",
+		["st_render_ambientlighting"] = "ambient",
 		["st_render_antiblind"] = "antiblind",
 		["st_render_breadcrumbs"] = "breadcrumbs",
 		["st_render_catpng"] = "catpng",
@@ -620,7 +620,7 @@ local menu = {
 		
 		{"cb", "fov_force", 50, 325, "Force FOV"},
 		{"cb", "fullbright", 25, 350, "Fullbright"},
-		{"cb", "aimbient", 25, 375, "Ambient Lighting"},
+		{"cb", "ambient", 25, 375, "Ambient Lighting"},
 		{"cb", "hitboxonhit", 25, 400, "Show hitboxes on damage"},
 		{"cb", "reddeath", 25, 425, "Render red deathscreen"},
 		{"cb", "drawzoom", 25, 450, "Render zoom overlay"},
@@ -643,7 +643,7 @@ local menu = {
 			{"clr", "hitbox_color", "Damagebox Hit"},
 			{"clr", "hitbox_color_ovr", "Damagebox Kill"},
 			{"clr", "snaplines", "Snaplines"},
-			{"clr", "aimbient_color", "Ambient Color"},
+			{"clr", "ambient_color", "Ambient Color"},
 			{"clr", "glowchams_color", "Glow Chams"},
 			{"clr", "glowchams_color_weapon", "Glow Chams - Weapons"},
 			{"clr", "breadcrumbs_color", "Breadcrumbs Color"},
@@ -3466,10 +3466,10 @@ hook.Add("RenderScene", vars["hookname"], function()
 	local dv = vars["devtexture"]
 	local dvo = vars["devtexture_o"]
 	local fb = vars["fullbright"]
-	local nm = vars["aimbient"]
-	local nmrs = vars["aimbient_rs"]
+	local nm = vars["ambient"]
+	local nmrs = vars["ambient_rs"]
 	
-	if dv or (nm and not fb) or (not nm and not vars["aimbient_rs"]) then
+	if dv or (nm and not fb) or (not nm and not vars["ambient_rs"]) then
 		local rsvec = Vector(1, 1, 1)
 	
 		for _, v in ipairs(meta_en.GetMaterials(game.GetWorld())) do
@@ -3488,9 +3488,9 @@ hook.Add("RenderScene", vars["hookname"], function()
 			end
 			
 			if nm and not fb then
-				local aimbientcol = strColor(vars["aimbient_color"])
+				local ambientcol = strColor(vars["ambient_color"])
 			
-				meta_im.SetVector(wm, "$color", Vector(aimbientcol.r / 255, aimbientcol.g / 255, aimbientcol.b / 255))
+				meta_im.SetVector(wm, "$color", Vector(ambientcol.r / 255, ambientcol.g / 255, ambientcol.b / 255))
 			elseif not nmrs then
 				meta_im.SetVector(wm, "$color", rsvec)
 			end
@@ -3498,9 +3498,9 @@ hook.Add("RenderScene", vars["hookname"], function()
 	end
 	
 	if nm and not fb then
-		vars["aimbient_rs"] = false
+		vars["ambient_rs"] = false
 	else
-		vars["aimbient_rs"] = true
+		vars["ambient_rs"] = true
 	end
 	
 	if dv then
