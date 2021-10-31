@@ -1,5 +1,6 @@
 # Meth Tools
 
+I know there are fps and stability issues. I'm working on it.
 Probably has typos, expect jank.
 
 Designed to work with https://methamphetamine.solutions/ but some/most things will work without it.\
