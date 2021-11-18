@@ -7,15 +7,19 @@ hook.Add("HUDPaint", "", function()
 	person = nil
 	local bdis = math.huge
 	local midx, midy = ScrW() / 2, ScrH() / 2
-
+	local lpos = LocalPlayer():GetPos()
+	local bpos = Vector(math.huge, math.huge, math.huge)
+	
 	for _, v in ipairs(player.GetAll()) do
 		if not v:IsValid() or not v:Alive() or v:GetObserverMode() ~= 0 or v:Team() == 1002 or v:GetColor().a == 0 or v == LocalPlayer() then continue end
 		
-		local spos = v:GetPos():ToScreen()
+		local vpos = v:LocalToWorld(v:OBBCenter())
+		local spos = vpos:ToScreen()
 		local cdis = math.Dist(spos.x, spos.y, midx, midy)
-		
-		if cdis < bdis then
+
+		if cdis < bdis and vpos:DistToSqr(lpos) < bpos:DistToSqr(lpos) then
 			bdis = cdis
+			bpos = vpos
 			person = v
 		end
 	end
@@ -23,15 +27,15 @@ hook.Add("HUDPaint", "", function()
 	if not person then return end
 	
 	if not person:Alive() or person:GetObserverMode() ~= 0 or person:Team() == 1002 or person:GetColor().a == 0 then return end
-
+	
 	local p = pos[person]
-
+	
 	if not p then
 		return
 	end
 	
 	local flv = meth_lua_api.var.GetVarInt("Aimbot.Position Adjustment.Fake Latency") / 1000
-
+	
 	cam.Start3D()
 		for k, v in ipairs(p) do
 			local ct = CurTime()
