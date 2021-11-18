@@ -32,7 +32,7 @@ end)
 
 hook.Add("Tick", "", function()
 	for _, v in ipairs(player.GetAll()) do
-		if v == LocalPlayer() then continue end
+		if not j:IsValid() or not j:Alive() or j:GetObserverMode() ~= 0 or j:Team() == 1002 or j:GetColor().a == 0 or v == LocalPlayer() then continue end
 		
 		if not pos[v] then
 			pos[v] = {}
