@@ -1,3 +1,5 @@
+-- Excuse the monkey code and lack of localization. Can't be bothered to do it
+
 local pos = {}
 local person = nil
 
