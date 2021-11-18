@@ -36,7 +36,7 @@ hook.Add("HUDPaint", "", function()
 		for k, v in ipairs(p) do
 			local ct = CurTime()
 		
-			if ct - v[2] < flv - 0.2 then
+			if ct - v[2] < flv - 0.25 then
 				continue
 			end
 		
