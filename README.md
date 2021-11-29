@@ -15,7 +15,7 @@ Designed to work with https://methamphetamine.solutions/ but some/most things wi
  <summary>There's only 1 command</summary>
  
  Command | Description | Argument(s) |
- | --- | --- | --- | --- |
+ | --- | --- | --- |
  | st_menu | Toggles the menu | `N/A` |
 </details>
 
