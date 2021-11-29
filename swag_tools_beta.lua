@@ -4982,7 +4982,13 @@ hook.Add("Tick", vars.hookname, function()
 	
 	if vars.tools_misc_tickshoot then
 		if cache.tools_misc_tickshoot_swap then
-			detours.RunConsoleCommand("lastinv")
+			local defwep = meta_cv.GetString(GetConVar("cl_defaultweapon"))
+		
+			if defwep then
+				input.SelectWeapon(meta_pl.GetWeapon(LocalPlayer(), defwep))
+			else
+				detours.RunConsoleCommand("lastinv")
+			end
 			
 			cache.tools_misc_tickshoot_swap = false
 		end
