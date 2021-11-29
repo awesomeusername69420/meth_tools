@@ -460,6 +460,7 @@ local vars = {
 	["tools_misc_antigag"] = false,
 	["tools_misc_flashlightspam"] = false,
 	["tools_misc_usespam"] = false,
+	["tools_misc_tickshoot"] = false,
 	
 	-- Detours
 	["detours_cvars"] = true,
@@ -627,7 +628,7 @@ local menu = {
 		{"cb", 60, 565, "Sway", "meth_tools_aa_sway"},
 		{"cb", 35, 590, "Disable Antiaim in Water", "meth_tools_aafix"},
 		
-		{"sect", 295, 325, 255, 190, "Miscellaneous"},
+		{"sect", 295, 325, 255, 215, "Miscellaneous"},
 		{"cb", 305, 340, "ULX PSay Spammer", "tools_misc_psay"},
 		{"txt", 330, 365, 150, 15, "Message:", "tools_misc_psay_message"},
 		{"cb", 305, 390, "Gesture Loop", "tools_misc_gestureloop"},
@@ -635,6 +636,7 @@ local menu = {
 		{"cb", 305, 440, "Anti ULX Gag", "tools_misc_antigag"},
 		{"cb", 305, 465, "Flashlight Spammer", "tools_misc_flashlightspam"},
 		{"cb", 305, 490, "Use Key Spammer", "tools_misc_usespam"},
+		{"cb", 305, 515, "Tick Shoot", "tools_misc_tickshoot"},
 	},
 	
 	["Detours"] = {
@@ -4921,6 +4923,16 @@ hook.Add("Tick", vars.hookname, function()
 	colors.rainbow = HSVToColor((UnPredictedCurTime() % 6) * 60, 1, 1) -- Exploit city moment
 	colors.rainbow.a = 255
 	
+	-- Tick shoot
+	
+	if vars.tools_misc_tickshoot then
+		if cache.tools_misc_tickshoot_swap then
+			detours.RunConsoleCommand("lastinv")
+			
+			cache.tools_misc_tickshoot_swap = false
+		end
+	end
+	
 	-- Antigag
 	
 	if vars.tools_misc_antigag then
@@ -5613,12 +5625,22 @@ hook.Add("PrePlayerDraw", vars.hookname, function(ply)
 end)
 
 hook.Add("EntityFireBullets", vars.hookname, function(ent, data)
-	if not validEntity(ent) or not data or not (vars.traces_btr and vars.traces_btr_local) then
+	if not validEntity(ent) or not data then
+		return
+	end
+	
+	if not (vars.traces_btr and vars.traces_btr_local) and not vars.tools_misc_tickshoot then
 		return
 	end
 	
 	if ent ~= LocalPlayer() then
 		return
+	end
+	
+	if vars.tools_misc_tickshoot then
+		if not cache.tools_misc_tickshoot_swap then
+			cache.tools_misc_tickshoot_swap = true
+		end
 	end
 	
 	if #bullets >= vars.traces_btr_max then
