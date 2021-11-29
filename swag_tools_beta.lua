@@ -5684,10 +5684,6 @@ hook.Add("EntityFireBullets", vars.hookname, function(ent, data)
 		return
 	end
 	
-	if not (vars.traces_btr and vars.traces_btr_local) and not vars.tools_misc_tickshoot then
-		return
-	end
-	
 	if ent ~= LocalPlayer() then
 		return
 	end
@@ -5698,23 +5694,25 @@ hook.Add("EntityFireBullets", vars.hookname, function(ent, data)
 		end
 	end
 	
-	if #bullets >= vars.traces_btr_max then
-		bullets[1] = nil
+	if vars.traces_btr and vars.traces_btr_local then
+		if #bullets >= vars.traces_btr_max then
+			table.remove(bullets, 1)
+		end
+		
+		local tr = util.TraceLine({
+			start = data.Src,
+			endpos = data.Src + (data.Dir * data.Distance),
+			filter = ent,
+			ignoreworld = false,
+			mask = MASK_SHOT,
+		})
+		
+		table.insert(bullets, {
+			["src"] = data.Src,
+			["endpos"] = tr.HitPos,
+			["timestamp"] = UnPredictedCurTime()
+		})
 	end
-	
-	local tr = util.TraceLine({
-		start = data.Src,
-		endpos = data.Src + (data.Dir * data.Distance),
-		filter = ent,
-		ignoreworld = false,
-		mask = MASK_SHOT,
-	})
-	
-	table.insert(bullets, {
-		["src"] = data.Src,
-		["endpos"] = tr.HitPos,
-		["timestamp"] = UnPredictedCurTime()
-	})
 end)
 
 hook.Add("DoAnimationEvent", vars.hookname, function(ply, event, data)
@@ -5727,7 +5725,7 @@ hook.Add("DoAnimationEvent", vars.hookname, function(ply, event, data)
 	end
 	
 	if #bullets >= vars.traces_btr_max then
-		bullets[1] = nil
+		table.remove(bullets, 1)
 	end
 	
 	local src = getHeadPos(ply)
