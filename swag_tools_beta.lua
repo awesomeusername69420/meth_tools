@@ -718,9 +718,9 @@ local menu = {
 		{"clr", 45, 55, 120, 25, "Player", "chams_color_player"},
 		{"clr", 45, 85, 120, 25, "Weapon", "chams_color_player_weapon"},
 		{"clr", 45, 115, 120, 25, "Viewmodel", "chams_color_viewmodel"},
-		{"drp", 175, 57, 100, "", {"normal", "glow", "wireframe", "wallhack"}, "chams_material_player"},
-		{"drp", 175, 87, 100, "", {"normal", "glow", "wireframe", "wallhack"}, "chams_material_player_weapon"},
-		{"drp", 175, 117, 100, "", {"normal", "glow", "wireframe", "wallhack"}, "chams_material_viewmodel"},
+		{"drp", 175, 60, 100, "", {"normal", "glow", "wireframe", "wallhack"}, "chams_material_player"},
+		{"drp", 175, 90, 100, "", {"normal", "glow", "wireframe", "wallhack"}, "chams_material_player_weapon"},
+		{"drp", 175, 120, 100, "", {"normal", "glow", "wireframe", "wallhack"}, "chams_material_viewmodel"},
 		
 		{"sect", 295, 40, 245, 110, "Traces"},
 		{"clr", 305, 55, 110, 25, "SR - Hit", "traces_shotrecord_hit"},
@@ -2870,7 +2870,7 @@ local swag = {
 	
 	["AddDropdown"] = function(x, y, w, label, options, var) -- Label is unused
 		x = (x + vars.menu_x) + 12
-		y = (y + vars.menu_y) + 40
+		y = (y + vars.menu_y) + 37 -- Dropdowns are a little off somehow
 		
 		surface.SetFont("BudgetLabel")
 		
