@@ -5054,47 +5054,60 @@ hook.Add("Tick", vars.hookname, function()
 	end
 	
 	if ismeth then
-		if vars.meth_tools_afdelay then
-			local cur = vars.meth_tools_afdelay_cur
-			
-			if validEntity(getMethAimbotTarget()) then
-				if cur >= vars.meth_tools_afdelay_amount then
-					mvar.SetVarInt("Aimbot.Options.Auto Fire", 1)
-					cache.meth_af_set = false
+		if mvar then
+			if vars.meth_tools_afdelay then
+				local cur = vars.meth_tools_afdelay_cur
+				
+				if validEntity(getMethAimbotTarget()) then
+					if cur >= vars.meth_tools_afdelay_amount then
+						mvar.SetVarInt("Aimbot.Options.Auto Fire", 1)
+						cache.meth_af_set = false
+					else
+						if not cache.meth_af_set then
+							mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
+							cache.meth_af_set = true
+						end
+						
+						cur = cur + 1
+					end
 				else
 					if not cache.meth_af_set then
 						mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
 						cache.meth_af_set = true
 					end
-					
-					cur = cur + 1
+				
+					cur = 0
 				end
+				
+				vars.meth_tools_afdelay_cur = cur
+				cache.meth_afdelay_reset = false
 			else
-				if not cache.meth_af_set then
-					mvar.SetVarInt("Aimbot.Options.Auto Fire", 0)
-					cache.meth_af_set = true
+				if not cache.meth_afdelay_reset then
+					if not cache.meth_afdelay_og then
+						cache.meth_afdelay_og = mvar_o.GetVarInt("Aimbot.Options.Auto Fire")
+					else
+						mvar.SetVarInt("Aimbot.Options.Auto Fire", cache.meth_afdelay_og)
+					end
+					
+					cache.meth_afdelay_reset = true
 				end
-			
-				cur = 0
 			end
-			
-			vars.meth_tools_afdelay_cur = cur
-		end
+		
+			if vars.meth_render_chams_highlight then -- Updates meth highlight colors
+				if vars.meth_render_chams_highlight_friends then
+					if mvar.GetVarInt("Player.Friends.Rainbow") == 1 then
+						colors.meth_highlight_friends = colors.rainbow
+					else
+						colors.meth_highlight_friends = mvar.GetVarColor("Player.Friends.Friends_Color")
+					end
+				end
 	
-		if vars.meth_render_chams_highlight then -- Updates meth highlight colors
-			if vars.meth_render_chams_highlight_friends then
-				if mvar.GetVarInt("Player.Friends.Rainbow") == 1 then
-					colors.meth_highlight_friends = colors.rainbow
-				else
-					colors.meth_highlight_friends = mvar.GetVarColor("Player.Friends.Friends_Color")
-				end
-			end
-
-			if vars.meth_render_chams_highlight_aimbot then
-				if mvar.GetVarInt("Player.Aimbot Target.Rainbow") == 1 then
-					colors.meth_highlight_aimbot = colors.rainbow
-				else
-					colors.meth_highlight_aimbot = mvar.GetVarColor("Player.Aimbot Target.Aimbot Target_Color")
+				if vars.meth_render_chams_highlight_aimbot then
+					if mvar.GetVarInt("Player.Aimbot Target.Rainbow") == 1 then
+						colors.meth_highlight_aimbot = colors.rainbow
+					else
+						colors.meth_highlight_aimbot = mvar.GetVarColor("Player.Aimbot Target.Aimbot Target_Color")
+					end
 				end
 			end
 		end
