@@ -37,48 +37,62 @@ local function getPlayers()
 	return players
 end
 
-meth_lua_api.callbacks.Add("OnHUDPaint", "", function()
-	cam.Start3D()
-		render.SetMaterial(hitboxmat)
+local function canRender()
+	local mesp = true
 	
-		for _, v in ipairs(getPlayers()) do
-			local tcol = team.GetColor(v:Team() or 0) or Color(255, 255, 255, 65)
-			local vpos = v:GetPos()
-			
-			for i = 0, v:GetHitboxSetCount() - 1 do
-				for ii = 0, v:GetHitBoxCount(i) - 1 do
-					local mins, maxs = v:GetHitBoxBounds(ii, i)
-			
-					if not mins or not maxs then
-						continue
-					end
-					
-					local bone = v:GetHitBoxBone(ii, i)
-					
-					if not bone then
-						continue
-					end	
-					
-					local pos, ang = v:GetBonePosition(bone)
-					
-					if pos == epos or (not pos or not ang) then
-						local bm = v:GetBoneMatrix(bone)
-						
-						if not bm then
+	if meth_lua_api.var then
+		mesp = meth_lua_api.var.GetVarInt("ESP..Enabled") % 256 == 1
+	end
+	
+	local guicheck = not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not LocalPlayer():IsTyping()
+	
+	return mesp and guicheck
+end
+
+meth_lua_api.callbacks.Add("OnHUDPaint", "", function()
+	if canRender() then
+		cam.Start3D()
+			render.SetMaterial(hitboxmat)
+		
+			for _, v in ipairs(getPlayers()) do
+				local tcol = team.GetColor(v:Team() or 0) or Color(255, 255, 255, 65)
+				local vpos = v:GetPos()
+				
+				for i = 0, v:GetHitboxSetCount() - 1 do
+					for ii = 0, v:GetHitBoxCount(i) - 1 do
+						local mins, maxs = v:GetHitBoxBounds(ii, i)
+				
+						if not mins or not maxs then
 							continue
 						end
 						
-						pos, ang = bm:GetTranslation(), bm:GetAngles()
+						local bone = v:GetHitBoxBone(ii, i)
 						
-						if not pos or not ang then
+						if not bone then
 							continue
+						end	
+						
+						local pos, ang = v:GetBonePosition(bone)
+						
+						if pos == epos or (not pos or not ang) then
+							local bm = v:GetBoneMatrix(bone)
+							
+							if not bm then
+								continue
+							end
+							
+							pos, ang = bm:GetTranslation(), bm:GetAngles()
+							
+							if not pos or not ang then
+								continue
+							end
 						end
+						
+						render.DrawWireframeBox(pos, ang, mins, maxs, tcol)
+						render.DrawBox(pos, ang, mins, maxs, tcol)
 					end
-					
-					render.DrawWireframeBox(pos, ang, mins, maxs, tcol)
-					render.DrawBox(pos, ang, mins, maxs, tcol)
 				end
 			end
-		end
-	cam.End3D()
+		cam.End3D()
+	end
 end)
