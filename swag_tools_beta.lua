@@ -451,6 +451,8 @@ local vars = {
 	["meth_tools_aa_sway_tick"] = false,
 	["meth_tools_aafix"] = false,
 	["meth_tools_aafix_last"] = nil,
+	["meth_tools_slowmotion"] = false,
+	["meth_tools_slowmotion_intensity"] = 200,
 	
 	["tools_misc_psay"] = false,
 	["tools_misc_psay_message"] = "message",
@@ -637,6 +639,10 @@ local menu = {
 		{"cb", 305, 465, "Flashlight Spammer", "tools_misc_flashlightspam"},
 		{"cb", 305, 490, "Use Key Spammer", "tools_misc_usespam"},
 		{"cb", 305, 515, "Tick Shoot", "tools_misc_tickshoot"},
+		
+		{"sect", 295, 550, 255, 65, "Meth - Continued"},
+		{"cb", 305, 565, "Slow Motion", "meth_tools_slowmotion"},
+		{"sldr", 330, 590, 1, 400, 80, 0, "Intensity", "meth_tools_slowmotion_intensity"},
 	},
 	
 	["Detours"] = {
@@ -4286,6 +4292,10 @@ if ismeth then
 					end
 					
 					if vars.meth_render_fovcircle then
+						if cache.meth_fovcircle_reset then
+							mvar.SetVarInt("Player.Misc Players.FOV Circle", 0)
+						end
+					
 						local fov = mvar.GetVarInt("Aimbot.Target.FoV")
 						
 						if fov > 0 and fov < 57 then
@@ -4318,6 +4328,18 @@ if ismeth then
 								surface.DrawCircle(x, y, rad - 1, 0, 0, 0, fovcol.a)
 								surface.DrawCircle(x, y, rad + 1, 0, 0, 0, fovcol.a)
 							end
+						end
+						
+						cache.meth_fovcircle_reset = false
+					else
+						if not cache.meth_fovcircle_reset then
+							if not cache.meth_fovcircle_og then
+								cache.meth_fovcircle_og = mvar_o.GetVarInt("Player.Misc Players.FOV Circle")
+							else
+								mvar.SetVarInt("Player.Misc Players.FOV Circle", cache.meth_fovcircle_og)
+							end
+							
+							cache.meth_fovcircle_reset = true
 						end
 					end
 				end
@@ -4730,6 +4752,39 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 	
 	if ismeth then
 		if mvar then
+			-- Slow motion
+	
+			if vars.meth_tools_slowmotion then
+				if cache.meth_slowmotion_reset then
+					mvar.SetVarInt("General.Exploits.Toos Freeze", 1)
+					mvar.SetVarInt("General.Exploits.Freeze Key", 0)
+				end
+			
+				if cache.meth_slowmotion_wait then
+					mvar.SetVarInt("General.Exploits.Freeze Power", 0)
+					cache.meth_slowmotion_wait = false
+				else
+					mvar.SetVarInt("General.Exploits.Freeze Power", vars.meth_tools_slowmotion_intensity)
+					cache.meth_slowmotion_wait = true
+				end
+				
+				cache.meth_slowmotion_reset = false
+			else
+				if not cache.meth_slowmotion_reset then
+					if not cache.meth_slowmotion_backupkey then
+						cache.meth_slowmotion_backup = mvar_o.GetVarInt("General.Exploits.Freeze Power")
+						cache.meth_slowmotion_backupkey = mvar_o.GetVarInt("General.Exploits.Freeze Key")
+					else
+						mvar.SetVarInt("General.Exploits.Freeze Power", cache.meth_slowmotion_backup)
+						mvar.SetVarInt("General.Exploits.Freeze Key", cache.meth_slowmotion_backupkey)
+					end
+					
+					mvar.SetVarInt("General.Exploits.Toos Freeze", 0)
+				
+					cache.meth_slowmotion_reset = true
+				end
+			end
+		
 			-- AA
 			
 			if vars.meth_tools_aa then
