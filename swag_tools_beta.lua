@@ -1,5 +1,8 @@
 --[[
 	https://github.com/awesomeusername69420/meth_tools
+	
+	Command(s):
+		st_menu  -  Toggles the menu
 ]]
 
 --[[

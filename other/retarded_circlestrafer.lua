@@ -1,3 +1,13 @@
+--[[
+	https://github.com/awesomeusername69420/meth_tools
+	
+	Command(s):
+		r_cs_size (integer)       -  Changes size of the circle
+		r_cs_toggle               -  Toggles circle strafer
+		r_cs_ahop (true/false)    -  Toggles auto bunny hop
+		r_cs_astrafe (true/false) -  Toggles auto strafer
+]]
+
 local table = table.Copy(table)
 
 local bit = table.Copy(bit)
