@@ -4293,7 +4293,13 @@ if ismeth then
 					
 					if vars.meth_render_fovcircle then
 						if cache.meth_fovcircle_reset then
+							local ogcros = mvar_o.GetVarInt("Player.Misc Players.Crosshair") -- WTF WOLFIE
+							local ogtarg = mvar_o.GetVarInt("Player.Misc Players.Target Text")
+						
 							mvar.SetVarInt("Player.Misc Players.FOV Circle", 0)
+							
+							mvar.SetVarInt("Player.Misc Players.Crosshair", ogcros) -- WTF DID YOU DO
+							mvar.SetVarInt("Player.Misc Players.Target Text", ogtarg)
 						end
 					
 						local fov = mvar.GetVarInt("Aimbot.Target.FoV")
@@ -4336,7 +4342,13 @@ if ismeth then
 							if not cache.meth_fovcircle_og then
 								cache.meth_fovcircle_og = mvar_o.GetVarInt("Player.Misc Players.FOV Circle")
 							else
+								local ogcros = mvar_o.GetVarInt("Player.Misc Players.Crosshair") -- WTF WOLFIE
+								local ogtarg = mvar_o.GetVarInt("Player.Misc Players.Target Text")
+							
 								mvar.SetVarInt("Player.Misc Players.FOV Circle", cache.meth_fovcircle_og)
+								
+								mvar.SetVarInt("Player.Misc Players.Crosshair", ogcros) -- WTF DID YOU DO
+								mvar.SetVarInt("Player.Misc Players.Target Text", ogtarg)
 							end
 							
 							cache.meth_fovcircle_reset = true
@@ -4534,7 +4546,9 @@ if not ismeth then
 	end)
 end
 
-hook.Add("PreDrawHUD", vars.hookname, function()
+hook.Add("PreDrawHUD", vars.hookname, function() -- Antiblind
+	render.SetLightingMode(0)
+
 	if vars.view_antiblind then
 		hook.Remove("HUDPaint", "ulx_blind")
 		hook.Remove("HUDPaint", "Blind")
@@ -5489,7 +5503,7 @@ hook.Add("RenderScene", vars.hookname, function()
 			if validMaterial(WORLDMAT_NAME) then
 				if DODEV then
 					if not materialbackup[WORLDMAT_NAME] then
-						materialbackup[WORLDMAT_NAME] = meta_im.GetTexture(WORLDMAT, "$basetexture")
+						materialbackup[WORLDMAT_NAME] = meta_im.GetTexture(WORLDMAT, "$basetexture") -- Create a backup of world materials
 					end
 					
 					if DODEV_O then
@@ -5497,8 +5511,8 @@ hook.Add("RenderScene", vars.hookname, function()
 					else
 						meta_im.SetTexture(WORLDMAT, "$basetexture", materials.devtexture)
 					end
-				else
-					meta_im.SetTexture(WORLDMAT, "$basetexture", materialbackup[WORLDMAT_NAME] or "")
+				elseif cache.world_devd then
+					meta_im.SetTexture(WORLDMAT, "$basetexture", materialbackup[WORLDMAT_NAME] or "") -- Attempt to restore from backup or replace with missing texture
 				end
 			end
 		
@@ -5515,8 +5529,10 @@ hook.Add("RenderScene", vars.hookname, function()
 			end
 		end
 	end
-	
+
 	-- Update cache
+
+	cache.world_devd = DODEV
 	
 	if DODEV then
 		if not cache.world_devtextures_set then
@@ -5546,6 +5562,8 @@ hook.Add("RenderScene", vars.hookname, function()
 		end
 	end
 	
+	-- Fullbright
+	
 	if vars.world_fullbright then
 		render.SuppressEngineLighting(false)
 		render.ResetModelLighting(1, 1, 1)
@@ -5555,7 +5573,7 @@ hook.Add("RenderScene", vars.hookname, function()
 		render.SetLightingMode(0)
 	end
 	
-	cache.world_devtextures_last = DODEV_O
+	cache.world_devtextures_last = DODEV_O -- Keep track of this to test when orange is toggled to run loop again
 end)
 
 hook.Add("PreRender", vars.hookname, function()
@@ -5564,7 +5582,7 @@ hook.Add("PreRender", vars.hookname, function()
 	cam.End3D()
 end)
 
-hook.Add("PreDrawEffects", vars.hookname, function() -- Prevent fullbright fucking up menus
+hook.Add("PreDrawEffects", vars.hookname, function() -- Prevent fullbright fucking up menus / huds / whatever
 	render.SetLightingMode(0)
 	render.MaterialOverride(nil)
 end)
