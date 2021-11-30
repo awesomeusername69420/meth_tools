@@ -2235,18 +2235,6 @@ local function canrender(flags)
 	return mesp and guicheck
 end
 
-local function toScreenScale(x, y) -- Useless, will be used for menu scaling at some point
-	--x = x or 0
-	--y = y or 0
-	--
-	--local nx, ny
-	--
-	--nx = math.Clamp(cache.scrw * (x / 1920), x, math.huge)
-	--ny = math.Clamp(cache.scrh * (y / 1080), y, math.huge)
-	
-	return x, y
-end
-
 local function getChamsMatNorm(mat)
 	if mat == "normal" then
 		return materials.debugwhite
@@ -2786,31 +2774,29 @@ local swag = {
 		x = (x + vars.menu_x) + 12
 		y = (y + vars.menu_y) + 40
 		
-		local w, h = toScreenScale(15, 15)
-	
-		if canclick(x, y, x + w, y + h) then
+		if canclick(x, y, x + 15, y + 15) then
 			vars[var] = not vars[var]
 		end
 	
 		draw.NoTexture()
 		
 		surface.SetDrawColor(colors.back_t)
-		surface.DrawRect(x, y, w, h)
+		surface.DrawRect(x, y, 15, 15)
 		
 		if vars[var] then
 			surface.SetDrawColor(getColor("accent"))
-			surface.DrawRect(x + 2, y + 2, w - 4, w - 4)
+			surface.DrawRect(x + 2, y + 2, 9, 9)
 		end
 		
 		surface.SetDrawColor(colors.outline)
-		surface.DrawOutlinedRect(x, y, w, h)
+		surface.DrawOutlinedRect(x, y, 15, 15)
 		
 		surface.SetFont("BudgetLabel")
 		surface.SetTextColor(colors.white)
 		
 		local tw, th = surface.GetTextSize(label)
 		
-		surface.SetTextPos((x + w) + 5, y + math.abs((h / 2) - (th / 2)))
+		surface.SetTextPos(x + 20, y + math.abs(7.5 - (th / 2)))
 		
 		surface.DrawText(label)
 	end,
@@ -5804,9 +5790,7 @@ hook.Add("player_hurt", vars.hookname, function(data) -- Shot Records
 		return
 	end
 	
-	local kill = data.health and data.health < 1
-	
-	local ins = getEntityHitboxes(victim, kill)
+	local ins = getEntityHitboxes(victim, data.health < 1) -- Sometimes data.health will be 0 when it shouldn't be because gmod
 	
 	if #ins > 0 then
 		table.insert(hits, {
@@ -5897,29 +5881,23 @@ concommand.Add("st_menu", function(p, c, args)
 	meta_pn.SetEnabled(CPpickerBoxThing, false)
 	meta_pn.SetEnabled(CPframe, false)
 	
-	if cache.scrw ~= ScrW() then
-		local nw = toScreenScale(600) -- These are useless currently
+	-- Center menu to screen (For init and resolution changes)
 	
-		vars.menu_w = nw
-
-		if not vars.menu_x then
-			vars.menu_x = (ScrW() / 2) - (nw / 2)
-		end
+	if cache.scrw ~= ScrW() then
+		vars.menu_w = 600
+		vars.menu_x = (ScrW() / 2) - (300)
 		
 		cache.scrw = ScrW()
 	end
 	
 	if cache.scrh ~= ScrH() then
-		local nh = toScreenScale(700)
-		
-		vars.menu_h = nh
-	
-		if not vars.menu_y then
-			vars.menu_y = (ScrH() / 2) - (nh / 2)
-		end
+		vars.menu_h = 700
+		vars.menu_y = (ScrH() / 2) - (350)
 		
 		cache.scrh = ScrH()
 	end
+	
+	-- Show menu and cursor
 	
 	vars["menu"] = args[1]
 	gui.EnableScreenClicker(args[1])
