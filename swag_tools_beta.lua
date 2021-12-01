@@ -2785,7 +2785,7 @@ local swag = {
 		
 		if vars[var] then
 			surface.SetDrawColor(getColor("accent"))
-			surface.DrawRect(x + 2, y + 2, 9, 9)
+			surface.DrawRect(x + 2, y + 2, 11, 11)
 		end
 		
 		surface.SetDrawColor(colors.outline)
