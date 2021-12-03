@@ -9,10 +9,23 @@
 	Localization
 ]]
 
-local G_ = _G or meth_lua_api.internal.Protected_G or "WHATTHEFUCK" -- Creates a pointer to a global table to use for localization
+local G_ = _G or "NICE _G" -- Anti _G manipulation (Swift AC)
 
-if G_ == "WHATTHEFUCK" then -- Prevent any fucky buisness
-	return
+if G_ == "NICE _G" then
+	local kill = true
+
+	if meth_lua_api then
+		if meth_lua_api.internal then
+			if meth_lua_api.internal.Protected_G then
+				G_ = meth_lua_api.internal.Protected_G -- Attempt to restore _G from meth_lua_api
+				kill = false
+			end
+		end
+	end
+	
+	if kill then
+		return -- Don't run the script if restore failed
+	end
 end
 
 -- Meth Stuff
@@ -213,6 +226,7 @@ local KEY_SPACE = input.GetKeyCode("SPACE")
 local MASK_SHOT = 1174421507
 local MATERIAL_FOG_NONE = 0
 local METHFLAG_ESPONLY = 1
+local METHFLAG_NOFREECAM = 3
 local METHFLAG_NONE = 0
 local METHFLAG_NOTHIRDPERSON = 2
 local MOUSE_LEFT = input.GetKeyCode("MOUSE1")
@@ -2213,11 +2227,13 @@ local function canrender(flags)
 	end
 
 	local mesp = true
+	local mfree = true
 	
 	if ismeth then
 		if not vars.menu then
 			if mvar then
 				mesp = mvar.GetVarInt("ESP..Enabled") == 1
+				mfree = mvar.GetVarInt("Player.Free Cam.Free Cam") == 1
 			end
 		end
 	end
@@ -2231,6 +2247,10 @@ local function canrender(flags)
 	if flags == 2 then
 		return not meta_pl.ShouldDrawLocalPlayer(LocalPlayer())
 	end
+	
+	if flags == 3 then
+		return not mfree
+	end	
 	
 	return mesp and guicheck
 end
@@ -4157,7 +4177,7 @@ if ismeth then
 					end
 				end
 			
-				if canrender(METHFLAG_NOTHIRDPERSON) and not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
+				if (canrender(METHFLAG_NOTHIRDPERSON) and canrender(METHFLAG_NOFREECAM)) and not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
 					if (vars.chams_viewmodel or vars.view_fov_viewmodel_changer or vars.view_screengrab_test) and validEntity(LocalPlayer()) then
 						local VM = meta_pl.GetViewModel(LocalPlayer())
 						
@@ -5611,7 +5631,7 @@ hook.Add("PreDrawViewModels", vars.hookname, function() -- Render a viewmodel th
 		extra = false
 	end
 	
-	if ((canrender(METHFLAG_NONE) and canrender(METHFLAG_NOTHIRDPERSON)) or (vars.view_viewmodel_offset_changer and vars.menu)) and not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
+	if ((canrender(METHFLAG_NONE) and canrender(METHFLAG_NOTHIRDPERSON) and canrender(METHFLAG_NOFREECAM)) or (vars.view_viewmodel_offset_changer and vars.menu)) and not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
 		if (((ismeth and vars.chams_viewmodel) or vars.view_fov_viewmodel_changer) or vars.view_viewmodel_offset_changer) and extra then
 			for i = 0, 2 do
 				meta_pl.DrawViewModel(LocalPlayer(), false, i) -- Hide original viewmodel
