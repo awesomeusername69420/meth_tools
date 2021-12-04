@@ -297,6 +297,7 @@ meta_im.SetInt(materials.beam, "$flags", bit.bor(meta_im.GetInt(materials.beam, 
 local colors = {
 	["accent"] = Color(255, 150, 0, 255), -- Menu accent
 	["background"] = Color(255, 255, 255, 255), -- Menu background
+	["background_mini"] = Color(255, 255, 255, 255),
 	["rainbow"] = Color(255, 255, 255),
 
 	["back"] = Color(45, 45, 45, 255), -- Back of menu
@@ -346,6 +347,8 @@ local vars = {
 	["menu_h"] = 0,
 	["menu_background"] = true,
 	["menu_background_style"] = "blur",
+	["menu_background_mini"] = false,
+	["menu_background_mini_style"] = "blur",
 	["menu_background_blur_updatetexture"] = true,
 	["menu_background_blur_scale"] = 3,
 	["menu_activedropdown"] = nil,
@@ -756,12 +759,15 @@ local menu = {
 		{"clr", 305, 175, 110, 25, "Menu Accent", "accent"},
 		{"clr", 305, 205, 110, 25, "Ambient Light", "world_ambient"},
 		{"clr", 425, 175, 105, 25, "Menu BG", "background"},
+		{"clr", 425, 205, 105, 25, "MiniMenu BG", "background_mini"},
 		
-		{"sect", 25, 290, 295, 90, "Menu"},
+		{"sect", 25, 290, 295, 115, "Menu"},
 		{"cb", 35, 305, "Menu Background", "menu_background"},
 		{"drp", 209, 305, 100,  "Background Style", {"blur", "color"}, "menu_background_style"},
-		{"cb", 60, 330, "Blur Updates Screenspace", "menu_background_blur_updatetexture"},
+		{"cb", 35, 330, "MiniMenu Background", "menu_background_mini"},
+		{"drp", 209, 330, 100, "Background Style", {"blur", "color"}, "menu_background_mini_style"},
 		{"sldr", 60, 355, 1, 10, 100, 0, "Blur - Scale", "menu_background_blur_scale"},
+		{"cb", 60, 380, "Blur Updates Screenspace", "menu_background_blur_updatetexture"},
 		
 		{"sect", 330, 290, 220, 90, "Config"},
 	},
@@ -3189,36 +3195,49 @@ local swag = {
 		surface.SetTextPos(x + 10, y - 7)
 		surface.DrawText(label)
 	end,
-}
-
-local function drawMenuBackground()
-	if vars.renderpanic then
-		return
-	end
 	
-	local bgcolor = copyColor(getColor("background"))
-	
-	surface.SetDrawColor(bgcolor)
-	
-	if vars.menu_background_style == "blur" then
-		surface.SetMaterial(materials.blur)
-		
-		local update = vars.menu_background_blur_updatetexture
-		
-		for i = 1, vars.menu_background_blur_scale do
-			meta_im.SetFloat(materials.blur, "$blur", i)
-			meta_im.Recompute(materials.blur)
-		
-			if update then
-				render.UpdateScreenEffectTexture()
-			end
-			
-			surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
+	["DrawMenuBackground"] = function(x, y, w, h, style)
+		if vars.renderpanic then
+			return
 		end
-	else
-		surface.DrawRect(0, 0, ScrW(), ScrH())
-	end
-end
+		
+		x = x or 0
+		y = y or 0
+		w = w or ScrW()
+		h = h or ScrH()
+		
+		style = style or "m"
+		
+		local dostyle = style == "m" and vars.menu_background_style or vars.menu_background_mini_style
+		
+		local bgcolor = style == "m" and getColor("background") or getColor("background_mini")
+		
+		surface.SetDrawColor(bgcolor)
+		
+		if dostyle == "blur" then
+			render.SetScissorRect(x, y, x + w, y + h, true)
+		
+			surface.SetMaterial(materials.blur)
+			
+			local update = vars.menu_background_blur_updatetexture
+			
+			for i = 1, vars.menu_background_blur_scale do
+				meta_im.SetFloat(materials.blur, "$blur", i)
+				meta_im.Recompute(materials.blur)
+			
+				if update then
+					render.UpdateScreenEffectTexture()
+				end
+				
+				surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
+			end
+		else
+			surface.DrawRect(x, y, w, h)
+		end
+		
+		render.SetScissorRect(0, 0, 0, 0, false)
+	end,
+}
 
 local function drawMenu()
 	if vars.renderpanic then
@@ -3583,9 +3602,6 @@ local function doSpectatorList()
 		return
 	end
 	
-	draw.NoTexture()
-	surface.SetFont("BudgetLabel")
-	
 	local x, y, w, h = vars.tools_detectors_spectatorlist_x, vars.tools_detectors_spectatorlist_y, vars.tools_detectors_spectatorlist_w, 20
 	
 	if vars.menu then
@@ -3606,6 +3622,15 @@ local function doSpectatorList()
 		vars.tools_detectors_spectatorlist_x = x
 		vars.tools_detectors_spectatorlist_y = y
 	end
+	
+	if vars.menu_background_mini then
+		local totalh = (#spectators + 1) * h
+
+		swag.DrawMenuBackground(x, y, w, totalh, "mm")
+	end
+	
+	draw.NoTexture()
+	surface.SetFont("BudgetLabel")
 	
 	local ofs, aw, bw, cw = 1, w - (w / 8), w / 2, w - (w / 4)
 	
@@ -3651,7 +3676,7 @@ local function doSpectatorList()
 		if doall then
 			if v.realtarg == LocalPlayer() then
 				local targcolor = copyColor(getColor("accent"))
-				targcolor.a = 150
+				targcolor.a = 75
 			
 				surface.SetDrawColor(targcolor)
 			end
@@ -3691,10 +3716,6 @@ local function doTraitorDetector()
 		return
 	end
 	
-	draw.NoTexture()
-	surface.SetFont("BudgetLabel")
-	surface.SetTextColor(colors.white)
-	
 	local x, y, w, h = vars.tools_detectors_traitordetector_x, vars.tools_detectors_traitordetector_y, vars.tools_detectors_traitordetector_w, 20
 	local ofs, aw, bw = 1, w - (w / 3), w - (w / 6)
 	
@@ -3717,6 +3738,17 @@ local function doTraitorDetector()
 			vars.tools_detectors_traitordetector_x = x
 			vars.tools_detectors_traitordetector_y = y
 		end
+		
+		if vars.menu_background_mini then
+			local totalh = (#traitors + 1) * h
+		
+			swag.DrawMenuBackground(x, y, w, totalh, "mm")
+		end
+		
+		draw.NoTexture()
+		
+		surface.SetFont("BudgetLabel")
+		surface.SetTextColor(colors.white)
 		
 		surface.SetDrawColor(colors.back_min)
 		surface.DrawRect(x, y, w, h)
@@ -4406,7 +4438,7 @@ if ismeth then
 			-- Render menu above everything
 			
 			if vars.menu and vars.menu_background then
-				drawMenuBackground()
+				swag.DrawMenuBackground()
 			end
 			
 			if vars.tools_detectors_spectatorlist then
@@ -4535,7 +4567,7 @@ end)
 if not ismeth then
 	hook.Add("DrawOverlay", vars.hookname, function()
 		if vars.menu and vars.menu_background then
-			drawMenuBackground()
+			swag.DrawMenuBackground()
 		end
 		
 		if vars.tools_detectors_spectatorlist then
