@@ -301,7 +301,8 @@ local colors = {
 	["rainbow"] = Color(255, 255, 255),
 
 	["back"] = Color(45, 45, 45, 255), -- Back of menu
-	["back_min"] = Color(55, 55, 55, 255), -- Back of mini menus
+	["back_min_head"] = Color(55, 55, 55, 255), -- Mini menu heads
+	["back_min"] = Color(55, 55, 55, 255), -- Same as above but reserved for menu
 	["back_t"] = Color(24, 24, 24, 255), -- Checkboxes and other backings
 	["back_t_a"] = Color(24, 24, 24, 150), -- Mini menu backings
 	["black"] = Color(0, 0, 0, 255),
@@ -309,7 +310,7 @@ local colors = {
 	["light_red"] = Color(255, 100, 100, 255),
 	["outline"] = Color(12, 12, 12, 255), -- Menu outlines
 	["white"] = Color(255, 255, 255, 255),
-	["red_a"] = Color(200, 0, 0, 150), -- Used for spectator list and traitor detector
+	["red_a"] = Color(200, 0, 0, 150), -- Used for traitor detector
 	["green_a"] = Color(0, 200, 0, 150),
 	["blue_a"] = Color(0, 0, 200, 150),
 	
@@ -759,6 +760,7 @@ local menu = {
 		{"clr", 305, 205, 110, 25, "Ambient Light", "world_ambient"},
 		{"clr", 425, 175, 105, 25, "Menu BG", "background"},
 		{"clr", 425, 205, 105, 25, "MiniMenu BG", "background_mini"},
+		{"clr", 305, 235, 110, 25, "MiniMenu Head", "back_min_head"},
 		
 		{"sect", 25, 290, 295, 115, "Menu"},
 		{"cb", 35, 305, "Menu Background", "menu_background"},
@@ -3633,7 +3635,7 @@ local function doSpectatorList()
 	
 	local ofs, aw, bw, cw = 1, w - (w / 8), w / 2, w - (w / 4)
 	
-	surface.SetDrawColor(colors.back_min)
+	surface.SetDrawColor(getColor("back_min_head"))
 	surface.DrawRect(x, y, w, h)
 	
 	surface.SetTextColor(colors.white)
@@ -3749,7 +3751,7 @@ local function doTraitorDetector()
 		surface.SetFont("BudgetLabel")
 		surface.SetTextColor(colors.white)
 		
-		surface.SetDrawColor(colors.back_min)
+		surface.SetDrawColor(getColor("back_min_head"))
 		surface.DrawRect(x, y, w, h)
 		
 		local tw, th = surface.GetTextSize("Player")
@@ -3766,6 +3768,7 @@ local function doTraitorDetector()
 	if engine.ActiveGamemode() ~= "terrortown" then
 		if vars.tools_detectors_traitordetector_list then
 			surface.SetDrawColor(colors.outline)
+			
 			surface.DrawOutlinedRect(x, y, w, h + ((ofs - 1) * h))
 			surface.DrawLine(x + aw, y, x + aw, y + (ofs * h))
 		end
