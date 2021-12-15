@@ -257,7 +257,7 @@ local glowflags = { -- Cleans up the code a little
 	["$selfillumtint"] = "[0.05 0.05 0.05]"
 }
 
-local boxflags = {
+local boxflags = { -- Default color material
 	["$alpha"] = 0.3,
 	["$basetexture"] = "color/white",
 	["$model"] = 1,
@@ -858,7 +858,6 @@ local badCommands = {
 	"+left",
 	"+moveleft",
 	"+right",
-	"+voicerecord",
 	"+zoom",
 	"-back",
 	"-forward",
@@ -1181,11 +1180,11 @@ local function log(event, noind, ltype)
 		end
 	
 		if event == 0 then
-			table.insert(addtologs, "")
+			addtologs[#addtologs + 1] = ""
 		else
 			event = tostring(event)
 
-			table.insert(addtologs, (not noind and "  " or "") .. (vars.logs_timestamps and os.date() .. "  " or "") .. event)
+			addtologs[#addtologs + 1] = (not noind and "  " or "") .. (vars.logs_timestamps and os.date() .. "  " or "") .. event
 		end
 	end
 end
@@ -1569,15 +1568,11 @@ local function initDetours() -- Rest of the detours
 	end
 	
 	_G.file.Read = function(file, path)
-		if path == nil then
-			path = "DATA"
-		end
-		
 		if path == true then
 			path = "GAME"
-		elseif path == false then
-			path = "DATA"
 		end
+		
+		path = path or "DATA"
 		
 		if type(file) ~= "string" then
 			return nil
@@ -2076,15 +2071,11 @@ detours.file_Write = function(file, cont)
 end
 
 detours.file_Read = function(file, path)
-	if path == nil then
-		path = "DATA"
-	end
-	
 	if path == true then
 		path = "GAME"
-	elseif path == false then
-		path = "DATA"
 	end
+	
+	path = path or "DATA"
 
 	if type(file) ~= "string" then
 		return
@@ -2470,12 +2461,12 @@ local function getBinds()
 			
 			local keyname = input.GetKeyName(key) or "ALWAYS"
 			
-			table.insert(binds, {
+			binds[#binds + 1] = {
 				["name"] = data[2],
 				["type"] = "Toggle",
 				["key"] = string.upper(keyname),
 				["status"] = stat
-			})
+			}
 		end
 		
 		for option, name in pairs(v.hold) do
@@ -2487,12 +2478,12 @@ local function getBinds()
 			
 			local keyname = input.GetKeyName(key) or "ALWAYS"
 			
-			table.insert(binds, {
+			binds[#binds + 1] = {
 				["name"] = name,
 				["type"] = "Hold",
 				["key"] = string.upper(keyname),
 				["status"] = stat
-			})
+			}
 		end
 	end
 	
@@ -2549,7 +2540,7 @@ local function getEntityHitboxes(ent, doOVR)
 				new.ovr = doOVR
 			end
 			
-			table.insert(hitboxes, new)
+			hitboxes[#hitboxes + 1] = new
 		end
 	end
 	
@@ -2569,9 +2560,9 @@ local function isVisible(thing)
 		if not validEntity(thing) then
 			return false
 		end
-		
-		local screenpos = meta_vc.ToScreen(meta_en.LocalToWorld(thing, meta_en.OBBCenter(thing)))
 
+		local screenpos = meta_vc.ToScreen(meta_en.LocalToWorld(thing, meta_en.OBBCenter(thing)))
+		
 		return screenpos.visible
 	end
 end
@@ -2865,7 +2856,7 @@ local swag = {
 		surface.DrawText(tostring(vars[var]))
 		
 		if canclick(cx - 6, y - 4, cx + 6, y + 11) then
-			if vars.menu_dragging == nil then
+			if not vars.menu_dragging then
 				vars.menu_dragging = "Slider_" .. var
 				
 				vars.menu_dragging_ox = detours.gui_MouseX() - cx
@@ -2918,7 +2909,7 @@ local swag = {
 				
 					if vars.menu_activedropdown == var then
 						vars.menu_activedropdown = nil
-					elseif vars.menu_activedropdown == nil then
+					elseif not vars.menu_activedropdown then
 						vars.menu_activedropdown = var
 					end
 				end
@@ -3107,7 +3098,7 @@ local swag = {
 		if not cache.txt_ignore then
 			if isclick then
 				if mousein(ox, y, ox + w, y + h) then
-					if vars.menu_typing == nil then
+					if not vars.menu_typing then
 						vars.menu_typing = var
 					end
 				else
@@ -3252,7 +3243,7 @@ local function drawMenu()
 		if vars.menu_mousedown then
 			if not vars.menu_mousedelay then
 				if mousein(x, y, x + w, y + 20) then
-					if vars.menu_dragging == nil then
+					if not vars.menu_dragging then
 						vars.menu_dragging = "main"
 						
 						vars.menu_dragging_ox = mx - x
@@ -3607,7 +3598,7 @@ local function doSpectatorList()
 	
 	if vars.menu then
 		if canclick(x, y, x + w, y + h, true) then
-			if vars.menu_dragging == nil then
+			if not vars.menu_dragging then
 				vars.menu_dragging = "SpectatorList"
 				
 				vars.menu_dragging_ox = detours.gui_MouseX() - x
@@ -3723,7 +3714,7 @@ local function doTraitorDetector()
 	if vars.tools_detectors_traitordetector_list then
 		if vars.menu then
 			if canclick(x, y, x + w, y + h, true) then
-				if vars.menu_dragging == nil then
+				if not vars.menu_dragging then
 					vars.menu_dragging = "TraitorList"
 					
 					vars.menu_dragging_ox = detours.gui_MouseX() - x
@@ -3877,12 +3868,16 @@ local function doHUDPaint()
 			end
 		
 			cam.Start3D()
+				render.SuppressEngineLighting(true)
+				
 				if vars.traces_breadcrumbs_usebeam then
 					render.SetMaterial(materials.beam)
 				end
 			
 				for i = 1, #breadcrumbs do
 					if vars.renderpanic then
+						render.SuppressEngineLighting(false)
+					
 						cam.End3D()
 						return
 					end
@@ -3895,6 +3890,8 @@ local function doHUDPaint()
 						end
 					end
 				end
+				
+				render.SuppressEngineLighting(false)
 			cam.End3D()
 			
 			cache.traces_breadcrumbs_empty = false
@@ -3908,6 +3905,8 @@ local function doHUDPaint()
 		if vars.traces_btr then
 			if vars.traces_btr_local or vars.traces_btr_other then
 				cam.Start3D()
+					render.SuppressEngineLighting(true)
+				
 					render.SetMaterial(materials.beam)
 				
 					local maxtime = UnPredictedCurTime() - vars.traces_btr_life
@@ -3916,6 +3915,8 @@ local function doHUDPaint()
 						local v = bullets[i]
 						
 						if vars.renderpanic then
+							render.SuppressEngineLighting(false)
+						
 							cam.End3D()
 							return
 						end
@@ -3932,6 +3933,8 @@ local function doHUDPaint()
 						
 						render.DrawBeam(v.src, v.endpos, 8, 1, 1, getColor("beam"))	
 					end
+					
+					render.SuppressEngineLighting(false)
 				cam.End3D()
 
 				cache.traces_btr_empty = false
@@ -4050,11 +4053,6 @@ local function doHUDPaint()
 			cam.Start3D()
 				for i = #hits, 1, -1 do
 					local g = hits[i]
-				
-					if vars.renderpanic then
-						cam.End3D()
-						return
-					end
 					
 					if g.timestamp < maxtime then
 						table.remove(hits, i)
@@ -4472,7 +4470,7 @@ if ismeth then
 
 				if vars.menu then
 					if canclick(x, y, x + w, y + 20) then
-						if vars.menu_dragging == nil then
+						if not vars.menu_dragging then
 							vars.menu_dragging = "BindList"
 							
 							vars.menu_dragging_ox = detours.gui_MouseX() - x
@@ -4636,7 +4634,7 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 	
 		if cache.traces_breadcrumbs_last ~= nil then
 			if meta_vc.DistToSqr(cache.traces_breadcrumbs_last, lpos) >= 100 then
-				table.insert(breadcrumbs, lpos)
+				breadcrumbs[#breadcrumbs + 1] = lpos
 				cache.traces_breadcrumbs_last = lpos
 			end
 		else
@@ -4891,7 +4889,7 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 			-- AA Fix
 		
 			if vars.meth_tools_aafix then
-				if vars.meth_tools_aafix_last == nil then
+				if not vars.meth_tools_aafix_last then
 					vars.meth_tools_aafix_last = mvar.GetVarInt("General.Options.Enabled") -- Get user set aa state
 				end
 				
@@ -5352,10 +5350,10 @@ hook.Add("Tick", vars.hookname, function()
 								if alive <= 2 then
 									add[2] = 2
 									
-									table.insert(traitors, add)
+									traitors[#traitors + 1] = add
 									
 									if not table.HasValue(cache.traitors, v) then
-										table.insert(cache.traitors, v)
+										cache.traitors[#cache.traitors + 1] = v
 									end
 									
 									forced = true
@@ -5384,11 +5382,11 @@ hook.Add("Tick", vars.hookname, function()
 										end
 									end
 									
-									table.insert(traitors, add)
+									traitors[#traitors + 1] = add
 									
 									if add[2] == 2 then
 										if not table.HasValue(cache.traitors, v) then
-											table.insert(cache.traitors, v)
+											cache.traitors[#cache.traitors + 1] = v
 										end
 									end
 								end
@@ -5438,7 +5436,7 @@ hook.Add("Tick", vars.hookname, function()
 					new.realtarg = starg
 					new.mode = specmodes[mode] or "UNKNOWN"
 				
-					table.insert(spectators, new)
+					spectators[#spectators + 1] = new
 				end
 			end
 		end
@@ -5453,10 +5451,10 @@ hook.Add("Tick", vars.hookname, function()
 			local ins = getEntityHitboxes(player)
 			
 			if #ins > 0 then
-				table.insert(backtrack, {
+				backtrack[#backtrack + 1] = {
 					["data"] = ins, 
 					["timestamp"] = UnPredictedCurTime()
-				})
+				}
 			end
 			
 			cache.backtrack_empty = false
@@ -5787,11 +5785,11 @@ hook.Add("EntityFireBullets", vars.hookname, function(ent, data)
 			mask = MASK_SHOT,
 		})
 		
-		table.insert(bullets, {
+		bullets[#bullets + 1] = {
 			["src"] = data.Src,
 			["endpos"] = tr.HitPos,
 			["timestamp"] = UnPredictedCurTime()
-		})
+		}
 	end
 end)
 
@@ -5819,11 +5817,11 @@ hook.Add("DoAnimationEvent", vars.hookname, function(ply, event, data)
 		mask = MASK_SHOT,
 	})
 	
-	table.insert(bullets, {
+	bullets[#bullets + 1] = {
 		["src"] = src,
 		["endpos"] = tr.HitPos,
 		["timestamp"] = UnPredictedCurTime()
-	})
+	}
 end)
 
 gameevent.Listen("player_hurt") -- This is stupid
@@ -5847,10 +5845,10 @@ hook.Add("player_hurt", vars.hookname, function(data) -- Shot Records
 	local ins = getEntityHitboxes(victim, data.health < 1) -- Sometimes data.health will be 0 when it shouldn't be because gmod
 	
 	if #ins > 0 then
-		table.insert(hits, {
+		hits[#hits + 1] = {
 			["data"] = ins,
 			["timestamp"] = UnPredictedCurTime()
-		})
+		}
 	end
 end)
 
@@ -5862,7 +5860,7 @@ timer.Create(vars.hookname, 1, 0, function() -- Funny timer
 		local datatowrite = ""
 		
 		for k, v in ipairs(addtologs) do
-			table.insert(logs, v)
+			logs[#logs + 1] = v
 			
 			if vars.logs_savetofile then
 				datatowrite = datatowrite .. v .. "\n"
