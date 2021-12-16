@@ -6032,10 +6032,20 @@ table.insert(menu.Config, 1, {"btn", 340, 335, 200, 35, "Reset Settings", functi
 		["h"] = vars.menu_h
 	}
 
-	vars = tCopy(defvar)
 	colors = tCopy(defcol)
 	cache = tCopy(defcache)
+
+	if vars.world_ambient_lighting then
+		cache.world_ambient_set = true
+	end
 	
+	if vars.world_devtextures then
+		cache.world_devtextures_set = true
+		cache.world_devd = true
+	end
+
+	vars = tCopy(defvar)
+
 	vars.menu = ogmenu -- Restore
 	vars.menu_tab = ogtab
 	vars.menu_x = ogmenupos.x
