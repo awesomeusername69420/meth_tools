@@ -12,6 +12,7 @@ Designed to work with https://methamphetamine.solutions/ but most things will wo
 - Meth hitbox backtrack visualization
 - Meth keybind indicators
 - Meth hitbox esp
+- Libbys hax
 - China hats
 - Meth custom antiaim
 - Shitty circle strafer paste
