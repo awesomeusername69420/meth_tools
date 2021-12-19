@@ -67,10 +67,8 @@ timer.Create(tostring({}), 1, 0, function()
 	end
 end)
 
--- Auto add/remove build mode people to friends
-
 hook.Add("Tick", tostring({}), function()
-	if mutil then
+	if mutil then -- Auto add/remove build mode people to friends
 		for _, v in ipairs(player.GetAll()) do
 			local ind = v:EntIndex()
 		
@@ -83,8 +81,8 @@ hook.Add("Tick", tostring({}), function()
 			end
 		end
 	end
-	
-	if stor.group ~= LocalPlayer():GetUserGroup() then
+
+	if stor.group ~= LocalPlayer():GetUserGroup() then -- Update permissions & parameters
 		stor.canhp = hasAccessToCommand("ulx hp")
 		stor.canarmor = hasAccessToCommand("ulx armor")
 		stor.canammo = hasAccessToCommand("ulx giveammo")
