@@ -57,10 +57,15 @@ timer.Create(tostring({}), 1, 0, function()
 		
 		if IsValid(wep) then
 			local ammotype = wep:GetPrimaryAmmoType()
+			local maxclip = wep:GetMaxClip1()
 			
-			if ammotype ~= -1 then
-				if  LocalPlayer():GetAmmoCount(ammotype) < stor.maxammo then
-					LocalPlayer():ConCommand("ulx giveammo \"" .. lname .. "\" " .. stor.maxammo)
+			if ammotype ~= -1 and maxclip ~= -1 then
+				if LocalPlayer():GetAmmoCount(ammotype) < maxclip then
+					for i = 1, math.floor(maxclip / stor.maxammo) do
+						LocalPlayer():ConCommand("ulx giveammo \"" .. lname .. "\" " .. stor.maxammo)
+					end
+					
+					LocalPlayer():ConCommand("ulx giveammo \"" .. lname .. "\" " .. (maxclip % stor.maxammo))
 				end
 			end
 		end
