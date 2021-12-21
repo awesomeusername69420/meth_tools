@@ -59,13 +59,19 @@ timer.Create(tostring({}), 1, 0, function()
 			local ammotype = wep:GetPrimaryAmmoType()
 			local maxclip = wep:GetMaxClip1()
 			
-			if ammotype ~= -1 and maxclip ~= -1 then
-				if LocalPlayer():GetAmmoCount(ammotype) < maxclip then
-					for i = 1, math.floor(maxclip / stor.maxammo) do
-						LocalPlayer():ConCommand("ulx giveammo \"" .. lname .. "\" " .. stor.maxammo)
+			if ammotype ~= -1 then
+				if maxclip == -1 then
+					if LocalPlayer():GetAmmoCount(ammotype) < stor.maxammo then
+						LocalPlayer():ConCommand("ulx giveammo \"" .. lname .. "\" " .. stor.maxammo) -- For guns without clips (RPG, Crossbow)
 					end
-					
-					LocalPlayer():ConCommand("ulx giveammo \"" .. lname .. "\" " .. (maxclip % stor.maxammo))
+				else
+					if LocalPlayer():GetAmmoCount(ammotype) < maxclip then
+						for i = 1, math.floor(maxclip / stor.maxammo) do -- For guns with clips
+							LocalPlayer():ConCommand("ulx giveammo \"" .. lname .. "\" " .. stor.maxammo) -- Repeat the give 100 ammo x amount of times
+						end
+						
+						LocalPlayer():ConCommand("ulx giveammo \"" .. lname .. "\" " .. (maxclip % stor.maxammo)) -- Give remainder of ammo
+					end
 				end
 			end
 		end
