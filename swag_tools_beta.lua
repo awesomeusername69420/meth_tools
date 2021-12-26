@@ -4114,7 +4114,7 @@ if ismeth then
 					
 					if vars.view_fov_changer then
 						if vars.view_fov_override then
-							fov = vars.view_fov_set
+							fov = vars.view_fov_set - 1
 						else
 							fov = fov + (vars.view_fov_set - meta_cv.GetInt(GetConVar("fov_desired")))
 						end
@@ -4231,7 +4231,7 @@ if ismeth then
 								
 								if vars.view_screengrab_test then
 									if vars.view_fov_override then
-										plyfov = vars.view_fov_set
+										plyfov = vars.view_fov_set - 1
 									else
 										plyfov = plyfov + (vars.view_fov_set - meta_cv.GetInt(GetConVar("fov_desired")))
 									end
@@ -4957,7 +4957,7 @@ hook.Add("CalcView", vars.hookname, function(ply, pos, ang, fov, zn, zf)
 	if not vars.view_screengrab_test then
 		if vars.view_fov_changer then
 			if override then
-				nfov = vars.view_fov_set
+				nfov = vars.view_fov_set - 1
 			else
 				nfov = cfov
 			end
@@ -5680,7 +5680,7 @@ hook.Add("PreDrawViewModels", vars.hookname, function() -- Render a viewmodel th
 				
 				if vars.view_screengrab_test then
 					if vars.view_fov_override then
-						plyfov = vars.view_fov_set
+						plyfov = vars.view_fov_set - 1
 					else
 						plyfov = plyfov + (vars.view_fov_set - meta_cv.GetInt(GetConVar("fov_desired")))
 					end
