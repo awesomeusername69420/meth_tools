@@ -4555,12 +4555,6 @@ hook.Add("HUDPaint", vars.hookname, function(ignoreUpdate)
 		if not ignoreUpdate then
 			vars.renderpanic = true
 		end
-		
-		if vars.meth_render_mirrorfix then
-			cam.Start3D()
-				render.PushCustomClipPlane(Vector(0, 0, 0), 0)
-			cam.End3D()
-		end
 	end
 end)
 
@@ -5625,9 +5619,13 @@ hook.Add("ShutDown", vars.hookname, function()
 	render.PopCustomClipPlane() -- Prevent clip planes from persistening through a retry/server restart/etc
 end)
 
-hook.Add("PreDrawEffects", vars.hookname, function() -- Prevent fullbright fucking up menus / huds / whatever
-	render.SetLightingMode(0)
+hook.Add("PreDrawEffects", vars.hookname, function()
+	render.SetLightingMode(0) -- Prevent fullbright fucking up menus / huds / whatever
 	render.MaterialOverride(nil)
+	
+	if vars.meth_render_mirrorfix then
+		render.PushCustomClipPlane(Vector(0, 0, 0), 0)
+	end
 end)
 
 hook.Add("PreDrawSkyBox", vars.hookname, function() -- Prevent things getting messed up by devtextures
