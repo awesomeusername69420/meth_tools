@@ -5618,9 +5618,11 @@ hook.Add("RenderScene", vars.hookname, function()
 end)
 
 hook.Add("PreRender", vars.hookname, function()
-	cam.Start3D()
-		render.PopCustomClipPlane() -- Prevent clip planes stacking
-	cam.End3D()
+	render.PopCustomClipPlane() -- Prevent clip planes stacking
+end)
+
+hook.Add("ShutDown", vars.hookname, function()
+	render.PopCustomClipPlane() -- Prevent clip planes from persistening through a retry/server restart/etc
 end)
 
 hook.Add("PreDrawEffects", vars.hookname, function() -- Prevent fullbright fucking up menus / huds / whatever
