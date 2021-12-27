@@ -14,10 +14,10 @@ local G_ = _G or "NICE _G" -- Anti _G manipulation (Swift AC)
 if G_ == "NICE _G" then
 	local kill = true
 
-	if meth_lua_api then
+	if meth_lua_api then -- Attempt to restore _G from meth_lua_api
 		if meth_lua_api.internal then
 			if meth_lua_api.internal.Protected_G then
-				G_ = meth_lua_api.internal.Protected_G -- Attempt to restore _G from meth_lua_api
+				G_ = meth_lua_api.internal.Protected_G
 				kill = false
 			end
 		end
@@ -225,7 +225,7 @@ local KEY_PERIOD = input.GetKeyCode(".")
 local KEY_SPACE = input.GetKeyCode("SPACE")
 local MASK_SHOT = G_.MASK_SHOT
 local MATERIAL_FOG_NONE = 0
-local METHFLAG_ESPONLY = 1
+local METHFLAG_ESPONLY = 1 -- Custom flags used for canrender function
 local METHFLAG_NOFREECAM = 3
 local METHFLAG_NONE = 0
 local METHFLAG_NOTHIRDPERSON = 2
@@ -271,8 +271,8 @@ if not render.GetHDREnabled() then -- Fix glow chams on maps without HDR
 end
 
 local materials = {
-	["blur"] = Material("pp/blurscreen"), -- Blur
-	["beam"] = Material("cable/redlaser"), -- Bullet tracers
+	["blur"] = Material("pp/blurscreen"),
+	["beam"] = Material("cable/redlaser"), -- Bullet tracers, breadcrumb beams
 	["traitor"] = Material("vgui/ttt/sprite_traitor"), -- Traitor "T" icon
 	["wireframe"] = Material("models/wireframe"),
 	["debugwhite"] = Material("models/debug/debugwhite"), -- Generic debug white chams material
@@ -356,6 +356,7 @@ local vars = {
 	["menu_colorpicker_var"] = nil,
 	["hookname"] = randomString(),
 	["renderpanic"] = false,
+	["rendercall"] = false, -- For meth_lua_api and SetRenderTarget
 	["darkrp_gestures"] = {
 		["dance"] = ACT_GMOD_TAUNT_DANCE,
 		["muscle"] = ACT_GMOD_TAUNT_MUSCLE,
@@ -773,7 +774,7 @@ local menu = {
 		{"sect", 330, 290, 220, 90, "Config"},
 	},
 	
-	["Logs"] = {}
+	["Logs"] = {} -- Custom
 }
 
 local menu_order = {"Render", "Tools", "Detours", "Config", "Logs"}
@@ -937,8 +938,8 @@ local cache = { -- Vastly improves performance
 	["blockbot_targ"] = nil,
 	["calcview_eyeangles"] = meta_en.EyeAngles(LocalPlayer()),
 	["calcview_eyepos"] = meta_en.EyePos(LocalPlayer()),
-	["calcview_fov"] = meta_pl.GetFOV(LocalPlayer()) or (meta_cv.GetInt(GetConVar("fov_desired")) - 1),
-	["calcview_fov_custom"] = meta_pl.GetFOV(LocalPlayer()) or (meta_cv.GetInt(GetConVar("fov_desired")) - 1),
+	["calcview_fov"] = meta_pl.GetFOV(LocalPlayer()) or meta_cv.GetInt(GetConVar("fov_desired")) - 1,
+	["calcview_fov_custom"] = meta_pl.GetFOV(LocalPlayer()) or meta_cv.GetInt(GetConVar("fov_desired")) - 1,
 	["circlestrafer_active"] = false,
 	["circlestrafer_delta"] = 0,
 	["cp_ignore"] = true,
@@ -1061,6 +1062,8 @@ local meth_binds = {
 	}
 }
 
+-- Used to store stuff
+
 local addtologs = {}
 local backtrack = {}
 local breadcrumbs = {}
@@ -1078,7 +1081,7 @@ local files = { -- Files to keep safe
 	"methlogo.jpg"
 }
 
-local detours = {
+local detours = { -- Clean copies of to-be-modified functions
 	["cam_ApplyShake"] = cam.ApplyShake,
 	["concommand_GetTable"] = concommand.GetTable,
 	["concommand_Remove"] = concommand.Remove,
@@ -1131,7 +1134,7 @@ local detours = {
 	["vgui_CursorVisible"] = vgui.CursorVisible,
 }
 
--- Retarded Derma Trash
+-- Retarded Derma Trash (Color Picker)
 
 local CPframe = vgui.Create("DFrame")
 
@@ -1157,7 +1160,7 @@ local CPpickerRGB = CPframeChildren[5]
 local CPpickerALPHA = CPframeChildren[6]
 
 meta_pn.SetSize(CPpickerBoxThing, 15, 15)
-meta_pn.SetCursor(CPpickerBoxThing, "arrow") -- Prevent the color picker from changing your mouse
+meta_pn.SetCursor(CPpickerBoxThing, "arrow") -- Prevent the color picker from changing your mouse cursor
 
 --[[
 	Detours
@@ -4100,12 +4103,21 @@ if ismeth then
 
 	if mcall then
 		mcall.Add("OnHUDPaint", vars.hookname, function()
-			vars.renderpanic = false
-			
-			if vars.meth_render_chamsfix then
-				mvar.SetVarInt("Player.Misc Players.Fake Angle Chams", mvar.GetVarInt("Player.Third Person.Third Person"))
+			-- Fixes rendering with SetRenderTarget
+		
+			if vars.rendercall then
+				return
 			end
 			
+			vars.rendercall = true
+			
+			local ogrt = render.GetRenderTarget()
+			render.SetRenderTarget()
+		
+			vars.renderpanic = false -- Reset renderpanic
+
+			-- Actual stuff
+
 			local canrendernone = canrender(METHFLAG_NONE)
 			
 			if canrendernone then
@@ -4552,6 +4564,9 @@ if ismeth then
 			if vars.menu then
 				drawMenu()
 			end
+			
+			render.SetRenderTarget(ogrt)
+			vars.rendercall = false
 		end)
 	end
 end
@@ -5034,7 +5049,7 @@ end)
 hook.Add("Tick", vars.hookname, function()
 	colors.rainbow = HSVToColor((UnPredictedCurTime() % 6) * 60, 1, 1) -- Exploit city moment
 	colors.rainbow.a = 255
-	
+
 	-- Tick shoot
 	
 	if vars.tools_misc_tickshoot then
@@ -5090,7 +5105,7 @@ hook.Add("Tick", vars.hookname, function()
 				local id = vars.darkrp_gestures.dance or -1
 				
 				if id ~= -1 then
-					detours.RunConsoleCommand("act", dance)
+					detours.RunConsoleCommand("_darkrp_doanimation", id)
 					
 					local sid, slen = meta_en.LookupSequence(LocalPlayer(), meta_en.GetSequenceName(LocalPlayer(), meta_en.SelectWeightedSequence(LocalPlayer(), id)))
 					
@@ -5112,6 +5127,14 @@ hook.Add("Tick", vars.hookname, function()
 	
 	if ismeth then
 		if mvar then
+			-- Fake angle chams fix
+	
+			if vars.meth_render_chamsfix then
+				mvar.SetVarInt("Player.Misc Players.Fake Angle Chams", mvar.GetVarInt("Player.Third Person.Third Person"))
+			end
+		
+			-- Autofire delay
+		
 			if vars.meth_tools_afdelay then
 				local cur = vars.meth_tools_afdelay_cur
 				
