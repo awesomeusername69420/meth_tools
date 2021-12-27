@@ -4250,10 +4250,12 @@ if ismeth then
 								local plyfov = cache.calcview_fov_custom
 								
 								if vars.view_screengrab_test then
-									if vars.view_fov_override then
-										plyfov = vars.view_fov_set - 1
-									else
-										plyfov = plyfov + (vars.view_fov_set - meta_cv.GetInt(GetConVar("fov_desired")))
+									if vars.view_fov_changer then
+										if vars.view_fov_override then
+											plyfov = vars.view_fov_set - 1
+										else
+											plyfov = cache.calcview_fov_custom + (vars.view_fov_set - meta_cv.GetInt(GetConVar("fov_desired")))
+										end
 									end
 								end
 								
