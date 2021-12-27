@@ -4756,49 +4756,45 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 					if not moving then
 						local ontop = meta_en.GetGroundEntity(LocalPlayer()) == followee
 						
-						local lpos = meta_en.GetPos(LocalPlayer())
-						local fpos =  meta_en.GetPos(followee)
+						local lang = meta_cd.GetViewAngles(cmd)
+						local fwd = meta_en.GetPos(followee) - meta_en.GetPos(LocalPlayer())
+						local fwdang = meta_vc.Angle(fwd)
 						
-						if not ontop then
-							if not meta_en.IsOnGround(LocalPlayer()) then
-								if lpos.z - fpos.z > meta_en.LocalToWorld(followee, meta_en.OBBCenter(followee) * 2).z - 5 then
-									ontop = true
-								end
-							end
-						end
+						local maxfwd = meta_cv.GetInt(GetConVar("cl_forwardspeed"))
+						local maxsid = meta_cv.GetInt(GetConVar("cl_sidespeed"))
 						
-						local lang
-						
-						if ontop or not cache.blockbot_active then
-							lang = meta_cd.GetViewAngles(cmd) or cache.calcview_eyeangles
+						if ontop then
+							local lpos = meta_en.GetPos(LocalPlayer())
+							local fpos = meta_en.GetPos(followee)
+							local lposz = Vector(lpos.x, lpos.y, 0)
+							local fposz = Vector(fpos.x, fpos.y, 0)
 							
-							cache.blockbot_ang = lang
-							cache.blockbot_active = true
+							local zdis = meta_vc.DistToSqr(lposz, fposz)
+							
+							maxfwd = zdis
+							maxsid = zdis
+
+							meta_cd.SetForwardMove(cmd, math.Clamp(((math.sin(math.rad(lang.yaw)) * fwd.y) + (math.cos(math.rad(lang.yaw)) * fwd.x)) * maxfwd, 0 - maxfwd, maxfwd))
+							meta_cd.SetSideMove(cmd, math.Clamp(((math.cos(math.rad(lang.yaw)) * fwd.y) + (math.sin(math.rad(lang.yaw)) * fwd.x)) * maxsid, 0 - maxsid, maxsid))
 						else
-							lang = cache.blockbot_ang
-						end
-						
-						local dir = fpos - lpos
-						local movementAngle = meta_vc.Angle(Vector(dir.x, dir.y, dir.z))
-						
-						local lposnz = Vector(lpos.x, lpos.y, 0)
-						local fposnz = Vector(fpos.x, fpos.y, 0)
-						local dist = math.Round(meta_vc.DistToSqr(lposnz, fposnz))
-				
-						local movementYaw = math.rad(movementAngle.y - lang.y)
-						
-						if (not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(followee)) and (dist > 225 or meta_pl.IsSprinting(followee)) then
-							meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
-						end
-				
-						if dist > 4 then
-							local maxSpeed = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
-						
-							if ontop then
-								meta_cd.SetForwardMove(cmd, math.cos(movementYaw) * maxSpeed)
+							local fvel = meta_vc.Length(meta_en.GetVelocity(followee))
+							local dyaw = fwdang.yaw - lang.yaw
+							
+							if dyaw > 180 then
+								dyaw = dyaw - 360
+							elseif dyaw < -180 then
+								dyaw = dyaw + 360
 							end
 							
-							meta_cd.SetSideMove(cmd, (0 - math.sin(movementYaw)) * maxSpeed)
+							if fvel > 285 then
+								meta_cd.SetForwardMove(cmd, 0 - math.abs(fvel))
+							end
+							
+							if dyaw > 0.25 then
+								meta_cd.SetSideMove(cmd, 0 - maxsid)
+							elseif dyaw < -0.25 then
+								meta_cd.SetSideMove(cmd, maxsid)
+							end
 						end
 					else
 						cache.blockbot_active = false
