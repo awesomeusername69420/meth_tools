@@ -252,7 +252,7 @@ end
 
 local glowflags = { -- Cleans up the code a little
 	["$basetexture"] = "vgui/white_additive",
-	["$bumpmap"] = "models/player/shared/shared_normal",
+	["$bumpmap"] = render.GetHDREnabled() and "models/player/shared/shared_normal" or "",
 	["$envmap"] = "skybox/sky_dustbowl_01",
 	["$envmapfresnel"] = 1,
 	["$phong"] = 1,
@@ -272,10 +272,6 @@ local boxflags = { -- Default color material
 	["$vertexalpha"] = 1,
 	["$vertexcolor"] = 1
 }
-
-if not render.GetHDREnabled() then -- Fix glow chams on maps without HDR
-	glowflags["$bumpmap"] = ""
-end
 
 local materials = {
 	["blur"] = Material("pp/blurscreen"),
@@ -2570,10 +2566,15 @@ local function isVisible(thing)
 		if not validEntity(thing) then
 			return false
 		end
-
-		local screenpos = meta_vc.ToScreen(meta_en.LocalToWorld(thing, meta_en.OBBCenter(thing)))
 		
-		return screenpos.visible
+		local cpos = meta_en.GetPos(thing) - cache.calcview_eyepos
+		local len = meta_vc.Length(cpos)
+		local rad = meta_en.BoundingRadius(thing)
+		local max = math.abs(math.cos(math.acos(len / math.sqrt((len * len) + (rad * rad))) + 60 * (math.pi /180)))
+		
+		meta_vc.Normalize(cpos)
+		
+		return meta_vc.Dot(cpos, meta_an.Forward(cache.calcview_eyeangles)) > max
 	end
 end
 
@@ -4657,7 +4658,7 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 		local lpos = meta_en.GetPos(LocalPlayer())
 	
 		if cache.traces_breadcrumbs_last ~= nil then
-			if meta_vc.DistToSqr(cache.traces_breadcrumbs_last, lpos) >= 100 then
+			if meta_vc.DistToSqr(cache.traces_breadcrumbs_last, lpos) >= 50 then
 				breadcrumbs[#breadcrumbs + 1] = lpos
 				cache.traces_breadcrumbs_last = lpos
 			end
