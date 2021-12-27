@@ -201,11 +201,18 @@ local ACT_GMOD_GESTURE_AGREE = G_.ACT_GMOD_GESTURE_AGREE
 local ACT_GMOD_GESTURE_BECON = G_.ACT_GMOD_GESTURE_BECON
 local ACT_GMOD_GESTURE_BOW = G_.ACT_GMOD_GESTURE_BOW
 local ACT_GMOD_GESTURE_DISAGREE = G_.ACT_GMOD_GESTURE_DISAGREE
+local ACT_GMOD_GESTURE_TAUNT_ZOMBIE = G_.ACT_GMOD_GESTURE_TAUNT_ZOMBIE
 local ACT_GMOD_GESTURE_WAVE = G_.ACT_GMOD_GESTURE_WAVE
+local ACT_GMOD_TAUNT_CHEER = G_.ACT_GMOD_TAUNT_CHEER
 local ACT_GMOD_TAUNT_DANCE = G_.ACT_GMOD_TAUNT_DANCE
 local ACT_GMOD_TAUNT_LAUGH = G_.ACT_GMOD_TAUNT_LAUGH
 local ACT_GMOD_TAUNT_MUSCLE = G_.ACT_GMOD_TAUNT_MUSCLE
 local ACT_GMOD_TAUNT_PERSISTENCE = G_.ACT_GMOD_TAUNT_PERSISTENCE
+local ACT_GMOD_TAUNT_ROBOT = G_.ACT_GMOD_TAUNT_ROBOT
+local ACT_GMOD_TAUNT_SALUTE = G_.ACT_GMOD_TAUNT_SALUTE
+local ACT_SIGNAL_FORWARD = G_.ACT_SIGNAL_FORWARD
+local ACT_SIGNAL_GROUP = G_.ACT_SIGNAL_GROUP
+local ACT_SIGNAL_HALT = G_.ACT_SIGNAL_HALT
 local EF_NODRAW = G_.EF_NODRAW
 local FILL = G_.FILL
 local FSASYNC_ERR_FAILURE = G_.FSASYNC_ERR_FAILURE
@@ -361,19 +368,19 @@ local vars = {
 		["dance"] = ACT_GMOD_TAUNT_DANCE,
 		["muscle"] = ACT_GMOD_TAUNT_MUSCLE,
 		["wave"] = ACT_GMOD_GESTURE_WAVE,
-		["robot"] = -1, -- These animations don't exist (In base DarkRP)
+		["robot"] = ACT_GMOD_TAUNT_ROBOT,
 		["bow"] = ACT_GMOD_GESTURE_BOW,
-		["cheer"] = -1,
+		["cheer"] = ACT_GMOD_TAUNT_CHEER,
 		["laugh"] = ACT_GMOD_TAUNT_LAUGH,
-		["zombie"] = -1,
+		["zombie"] = ACT_GMOD_GESTURE_TAUNT_ZOMBIE,
 		["agree"] = ACT_GMOD_GESTURE_AGREE,
 		["disagree"] = ACT_GMOD_GESTURE_DISAGREE,
-		["forward"] = -1,
+		["forward"] = ACT_SIGNAL_FORWARD,
 		["becon"] = ACT_GMOD_GESTURE_BECON,
-		["salute"] = -1,
+		["salute"] = ACT_GMOD_TAUNT_SALUTE,
 		["pose"] = ACT_GMOD_TAUNT_PERSISTENCE,
-		["halt"] = -1,
-		["group"] = -1,
+		["halt"] = ACT_SIGNAL_HALT,
+		["group"] = ACT_SIGNAL_GROUP,
 	},
 	
 	-- Render
@@ -5105,7 +5112,7 @@ hook.Add("Tick", vars.hookname, function()
 				local id = vars.darkrp_gestures.dance or -1
 				
 				if id ~= -1 then
-					detours.RunConsoleCommand("_darkrp_doanimation", id)
+					detours.RunConsoleCommand("_DarkRP_DoAnimation ", id)
 					
 					local sid, slen = meta_en.LookupSequence(LocalPlayer(), meta_en.GetSequenceName(LocalPlayer(), meta_en.SelectWeightedSequence(LocalPlayer(), id)))
 					
