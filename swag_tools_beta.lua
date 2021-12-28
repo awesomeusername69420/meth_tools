@@ -4093,6 +4093,22 @@ local function doHUDPaint()
 				cache.traces_shotrecord_empty = true
 			end
 		end
+		
+		if vars.tools_movement_blockbot then
+			if cache.blockbot_active then
+				if validEntity(cache.blockbot_targ) then
+					local tent = cache.blockbot_targ
+					
+					surface.SetFont("BudgetLabel")
+					surface.SetTextColor(255, 255, 255, 255)
+					
+					local tpos = meta_vc.ToScreen(meta_en.LocalToWorld(tent, meta_en.OBBCenter(tent)))
+					
+					surface.SetTextPos(tpos.x, tpos.y)
+					surface.DrawText("X")
+				end
+			end
+		end
 	end
 end
 
@@ -4752,6 +4768,8 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 					cache.blockbot_targ = getClosest(true)
 				else
 					if not moving then
+						cache.blockbot_active = true
+					
 						local ontop = meta_en.GetGroundEntity(LocalPlayer()) == followee
 						
 						local lang = meta_cd.GetViewAngles(cmd)
