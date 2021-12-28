@@ -4765,7 +4765,7 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 				local followee = cache.blockbot_targ
 				
 				if not validEntity(followee) then
-					cache.blockbot_targ = getClosest(true)
+					cache.blockbot_targ = getClosest(false)
 				else
 					if not moving then
 						cache.blockbot_active = true
