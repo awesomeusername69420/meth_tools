@@ -4337,8 +4337,7 @@ if ismeth then
 									end
 								end
 
-								local plfov = vars.view_screengrab_test and vars.view_fov_set or cache.calcview_fov_custom
-								local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(plfov / 2)) * ScrW()) / retardednumber
+								local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(cache.calcview_fov_custom / 2)) * ScrW()) / retardednumber
 								local size = (rad * 1.955) + retardednumber
 								
 								surface.SetDrawColor(getColor("meth_catpng"))
@@ -4394,8 +4393,7 @@ if ismeth then
 								retardednumber = retardednumber + ((add / 100) * 1.5) + 1
 							end
 							
-							local plfov = vars.view_screengrab_test and vars.view_fov_set or cache.calcview_fov_custom
-							local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(plfov / 2)) * ScrW()) / retardednumber
+							local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(cache.calcview_fov_custom / 2)) * ScrW()) / retardednumber
 							
 							local x, y = ScrW() / 2, ScrH() / 2
 							
