@@ -4773,9 +4773,11 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 							
 							maxfwd = zdis
 							maxsid = zdis
+							
+							local moveyaw = math.rad(meta_vc.Angle(fwd).yaw - lang.yaw)
 
-							meta_cd.SetForwardMove(cmd, math.Clamp(((math.sin(math.rad(lang.yaw)) * fwd.y) + (math.cos(math.rad(lang.yaw)) * fwd.x)) * maxfwd, 0 - maxfwd, maxfwd))
-							meta_cd.SetSideMove(cmd, math.Clamp(((math.cos(math.rad(lang.yaw)) * fwd.y) + (math.sin(math.rad(lang.yaw)) * fwd.x)) * maxsid, 0 - maxsid, maxsid))
+							meta_cd.SetForwardMove(cmd, math.Clamp(math.cos(moveyaw) * maxfwd, 0 - maxfwd, maxfwd))
+							meta_cd.SetSideMove(cmd, math.Clamp((0 - math.sin(moveyaw)) * maxsid, 0 - maxsid, maxsid))
 						else
 							local fvel = meta_vc.Length(meta_en.GetVelocity(followee))
 							local dyaw = fwdang.yaw - lang.yaw
