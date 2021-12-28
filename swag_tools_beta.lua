@@ -4796,6 +4796,10 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 								meta_cd.SetSideMove(cmd, maxsid)
 							end
 						end
+						
+						if not meta_cd.KeyDown(cmd, IN_SPEED) and meta_pl.IsSprinting(followee) then
+							meta_cd.AddKey(cmd, IN_SPEED)
+						end
 					else
 						cache.blockbot_active = false
 					end
