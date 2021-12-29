@@ -4779,6 +4779,10 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 						local maxfwd = meta_cv.GetInt(GetConVar("cl_forwardspeed"))
 						local maxsid = meta_cv.GetInt(GetConVar("cl_sidespeed"))
 						
+						if not meta_cd.KeyDown(cmd, IN_SPEED) then
+							meta_cd.AddKey(cmd, IN_SPEED)
+						end
+						
 						if ontop then
 							local lpos = meta_en.GetPos(LocalPlayer())
 							local fpos = meta_en.GetPos(followee)
@@ -4813,10 +4817,6 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 							elseif dyaw < -0.25 then
 								meta_cd.SetSideMove(cmd, maxsid)
 							end
-						end
-						
-						if not meta_cd.KeyDown(cmd, IN_SPEED) and meta_pl.IsSprinting(followee) then
-							meta_cd.AddKey(cmd, IN_SPEED)
 						end
 					else
 						cache.blockbot_active = false
