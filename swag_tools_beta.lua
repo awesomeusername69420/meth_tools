@@ -111,6 +111,7 @@ local http = tCopy(G_.http)
 local input = tCopy(G_.input)
 local ipairs = G_.ipairs
 local IsConCommandBlocked = G_.IsConCommandBlocked
+local Lerp = Lerp
 local LocalPlayer = G_.LocalPlayer
 local Material = G_.Material
 local math = tCopy(G_.math)
@@ -124,6 +125,7 @@ local ScrH = G_.ScrH
 local ScrW = G_.ScrW
 local string = tCopy(G_.string)
 local surface = tCopy(G_.surface)
+local SysTime = SysTime
 local timer = tCopy(G_.timer)
 local tostring = G_.tostring
 local UnPredictedCurTime = G_.UnPredictedCurTime
@@ -946,6 +948,7 @@ local cache = { -- Vastly improves performance
 	["circlestrafer_delta"] = 0,
 	["cp_ignore"] = true,
 	["drp_ignore"] = true,
+	["menu_background_step"] = 0,
 	["scrh"] = 0,
 	["scrw"] = 0,
 	["traitors"] = {},
@@ -3203,6 +3206,30 @@ local swag = {
 			return
 		end
 		
+		local ismain = x == nil
+		
+		if ismain then
+			if not cache.menu_background_start or vars.menu ~= cache.menu_background_lerp_last then
+				cache.menu_background_start = SysTime()
+			end
+			
+			local lerptime = (SysTime() - cache.menu_background_start) / 0.3
+			
+			if vars.menu then
+				cache.menu_background_step = Lerp(lerptime, 0, 255)
+			else
+				cache.menu_background_step = Lerp(lerptime, 255, 0)
+			end
+			
+			cache.menu_background_step = math.Clamp(cache.menu_background_step, 0, 255)
+			
+			if not vars.menu and cache.menu_background_step == 0 then
+				cache.menu_background_start = nil
+			end
+		end
+		
+		cache.menu_background_lerp_last = vars.menu
+		
 		x = x or 0
 		y = y or 0
 		w = w or ScrW()
@@ -3211,8 +3238,11 @@ local swag = {
 		style = style or "m"
 		
 		local dostyle = style == "m" and vars.menu_background_style or vars.menu_background_mini_style
+		local bgcolor = style == "m" and copyColor(getColor("background")) or copyColor(getColor("background_mini"))
 		
-		local bgcolor = style == "m" and getColor("background") or getColor("background_mini")
+		if ismain then
+			bgcolor.a = cache.menu_background_step
+		end
 		
 		surface.SetDrawColor(bgcolor)
 		
@@ -3233,11 +3263,11 @@ local swag = {
 				
 				surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 			end
+			
+			render.SetScissorRect(0, 0, 0, 0, false)
 		else
 			surface.DrawRect(x, y, w, h)
 		end
-		
-		render.SetScissorRect(0, 0, 0, 0, false)
 	end,
 }
 
@@ -4480,7 +4510,7 @@ if ismeth then
 			
 			-- Render menu above everything
 			
-			if vars.menu and vars.menu_background then
+			if (vars.menu and vars.menu_background) or (vars.menu_background and cache.menu_background_step > 0) then
 				swag.DrawMenuBackground()
 			end
 			
@@ -4585,6 +4615,8 @@ if ismeth then
 			end
 			
 			if vars.menu then
+				
+				
 				drawMenu()
 			end
 			
@@ -4606,7 +4638,7 @@ end)
 
 if not ismeth then
 	hook.Add("DrawOverlay", vars.hookname, function()
-		if vars.menu and vars.menu_background then
+		if (vars.menu and vars.menu_background) or (vars.menu_background and cache.menu_background_step > 0) then
 			swag.DrawMenuBackground()
 		end
 		
