@@ -3241,7 +3241,7 @@ local swag = {
 		local bgcolor = style == "m" and copyColor(getColor("background")) or copyColor(getColor("background_mini"))
 		
 		if ismain then
-			bgcolor.a = cache.menu_background_step
+			bgcolor.a = math.Clamp((bgcolor.a + cache.menu_background_step) - 255, 0, 255)
 		end
 		
 		surface.SetDrawColor(bgcolor)
