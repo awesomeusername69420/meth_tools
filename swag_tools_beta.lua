@@ -6101,13 +6101,21 @@ table.insert(menu.Config, 1, {"btn", 445, 305, 95, 25, "Load Config", function()
 end})
 
 table.insert(menu.Config, 1, {"btn", 340, 335, 200, 35, "Reset Settings", function()
-	local ogmenu = vars.menu -- Backup
-	local ogtab = vars.menu_tab
-	local ogmenupos = {
-		["x"] = vars.menu_x,
-		["y"] = vars.menu_y,
-		["w"] = vars.menu_w,
-		["h"] = vars.menu_h
+	local backup = { -- Backup important stuff
+		["menu"] = {
+			["en"] = vars.menu,
+			["tb"] = vars.menu_tab,
+			["x"] = vars.menu_x,
+			["y"] = vars.menu_y,
+			["w"] = vars.menu_w,
+			["h"] = vars.menu_h
+		},
+		
+		["cache"] = {
+			["step"] = cache.menu_background_step,
+			["scrw"] = cache.scrw,
+			["scrh"] = cache.scrh,
+		}
 	}
 
 	colors = tCopy(defcol)
@@ -6124,12 +6132,18 @@ table.insert(menu.Config, 1, {"btn", 340, 335, 200, 35, "Reset Settings", functi
 
 	vars = tCopy(defvar)
 
-	vars.menu = ogmenu -- Restore
-	vars.menu_tab = ogtab
-	vars.menu_x = ogmenupos.x
-	vars.menu_y = ogmenupos.y
-	vars.menu_w = ogmenupos.w
-	vars.menu_h = ogmenupos.h
+	-- Restore
+
+	vars.menu = backup.menu.en
+	vars.menu_tab = backup.menu.tb
+	vars.menu_x = backup.menu.x
+	vars.menu_y = backup.menu.y
+	vars.menu_w = backup.menu.w
+	vars.menu_h = backup.menu.h
+	
+	cache.menu_background_step = backup.cache.step
+	cache.scrw = backup.cache.scrw
+	cache.scrh = backup.cache.scrh
 	
 	alert("Settings reset")
 end})
