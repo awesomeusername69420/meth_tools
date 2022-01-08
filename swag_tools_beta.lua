@@ -4283,7 +4283,7 @@ if ismeth then
 				end
 			
 				if (canrender(METHFLAG_NOTHIRDPERSON) and canrender(METHFLAG_NOFREECAM)) and not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
-					if (vars.chams_viewmodel or vars.view_fov_viewmodel_changer or vars.view_screengrab_test) and validEntity(LocalPlayer()) then
+					if (vars.chams_viewmodel or vars.view_screengrab_test) and validEntity(LocalPlayer()) then
 						local VM = meta_pl.GetViewModel(LocalPlayer())
 						
 						if validEntity(VM) then
@@ -4330,7 +4330,7 @@ if ismeth then
 							cam.Start3D(EYEPOS, EYEANGLES, VMFOV, 0, 0, ScrW(), ScrH(), 1, 30000)
 								cam.IgnoreZ(true)
 							
-								if canrender(METHFLAG_ESPONLY) and vars.chams_viewmodel then
+								if canrender(METHFLAG_ESPONLY) then
 									local vmc = getColor("chams_color_viewmodel", LocalPlayer())
 									
 									if colors.chams_color_viewmodel == "HP" then
