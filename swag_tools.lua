@@ -14,10 +14,10 @@ local G_ = _G or "NICE _G" -- Anti _G manipulation (Swift AC)
 if G_ == "NICE _G" then
 	local kill = true
 
-	if meth_lua_api then
+	if meth_lua_api then -- Attempt to restore _G from meth_lua_api
 		if meth_lua_api.internal then
 			if meth_lua_api.internal.Protected_G then
-				G_ = meth_lua_api.internal.Protected_G -- Attempt to restore _G from meth_lua_api
+				G_ = meth_lua_api.internal.Protected_G
 				kill = false
 			end
 		end
@@ -101,9 +101,6 @@ local file = tCopy(G_.file)
 local game = tCopy(G_.game)
 local gameevent = tCopy(G_.gameevent)
 local GetConVar = G_.GetConVar
-local GetConVarNumber = G_.GetConVarNumber
-local GetConVarString = G_.GetConVarString
-local GetConVar_Internal = G_.GetConVar_Internal
 local gui = tCopy(G_.gui)
 local hook = tCopy(G_.hook)
 local HSVToColor = G_.HSVToColor
@@ -111,6 +108,7 @@ local http = tCopy(G_.http)
 local input = tCopy(G_.input)
 local ipairs = G_.ipairs
 local IsConCommandBlocked = G_.IsConCommandBlocked
+local Lerp = Lerp
 local LocalPlayer = G_.LocalPlayer
 local Material = G_.Material
 local math = tCopy(G_.math)
@@ -124,6 +122,7 @@ local ScrH = G_.ScrH
 local ScrW = G_.ScrW
 local string = tCopy(G_.string)
 local surface = tCopy(G_.surface)
+local SysTime = SysTime
 local timer = tCopy(G_.timer)
 local tostring = G_.tostring
 local UnPredictedCurTime = G_.UnPredictedCurTime
@@ -183,8 +182,7 @@ local meta_cd_g = debug.getregistry()["CUserCmd"]
 local meta_cd = tCopy(meta_cd_g) -- Create a local copy for detours
 local meta_cl = tCopy(debug.getregistry()["Color"])
 local meta_cv = tCopy(debug.getregistry()["ConVar"])
-local meta_en_g = debug.getregistry()["Entity"]
-local meta_en = tCopy(meta_en_g)
+local meta_en = tCopy(debug.getregistry()["Entity"])
 local meta_fl_g = debug.getregistry()["File"]
 local meta_fl = tCopy(meta_fl_g)
 local meta_im = tCopy(debug.getregistry()["IMaterial"])
@@ -197,45 +195,52 @@ local meta_wn = tCopy(debug.getregistry()["Weapon"])
 
 -- Enums
 
-local ACT_GMOD_GESTURE_AGREE = 1610
-local ACT_GMOD_GESTURE_BECON = 1611
-local ACT_GMOD_GESTURE_BOW = 1612
-local ACT_GMOD_GESTURE_DISAGREE = 1613
-local ACT_GMOD_GESTURE_WAVE = 1615
-local ACT_GMOD_TAUNT_DANCE = 1642
-local ACT_GMOD_TAUNT_LAUGH = 1618
-local ACT_GMOD_TAUNT_MUSCLE = 1617
-local ACT_GMOD_TAUNT_PERSISTENCE = 1616
-local EF_NODRAW = 32
-local FILL = 1
-local FSASYNC_ERR_FAILURE = -5
-local IN_BACK = 16
-local IN_FORWARD = 8
-local IN_JUMP = 2
-local IN_MOVELEFT = 512
-local IN_MOVERIGHT = 1024
-local IN_RELOAD = 8192
-local IN_SPEED = 131072
-local IN_USE = 32
-local IN_WALK = 262144
+local ACT_GMOD_GESTURE_AGREE = G_.ACT_GMOD_GESTURE_AGREE
+local ACT_GMOD_GESTURE_BECON = G_.ACT_GMOD_GESTURE_BECON
+local ACT_GMOD_GESTURE_BOW = G_.ACT_GMOD_GESTURE_BOW
+local ACT_GMOD_GESTURE_DISAGREE = G_.ACT_GMOD_GESTURE_DISAGREE
+local ACT_GMOD_GESTURE_TAUNT_ZOMBIE = G_.ACT_GMOD_GESTURE_TAUNT_ZOMBIE
+local ACT_GMOD_GESTURE_WAVE = G_.ACT_GMOD_GESTURE_WAVE
+local ACT_GMOD_TAUNT_CHEER = G_.ACT_GMOD_TAUNT_CHEER
+local ACT_GMOD_TAUNT_DANCE = G_.ACT_GMOD_TAUNT_DANCE
+local ACT_GMOD_TAUNT_LAUGH = G_.ACT_GMOD_TAUNT_LAUGH
+local ACT_GMOD_TAUNT_MUSCLE = G_.ACT_GMOD_TAUNT_MUSCLE
+local ACT_GMOD_TAUNT_PERSISTENCE = G_.ACT_GMOD_TAUNT_PERSISTENCE
+local ACT_GMOD_TAUNT_ROBOT = G_.ACT_GMOD_TAUNT_ROBOT
+local ACT_GMOD_TAUNT_SALUTE = G_.ACT_GMOD_TAUNT_SALUTE
+local ACT_SIGNAL_FORWARD = G_.ACT_SIGNAL_FORWARD
+local ACT_SIGNAL_GROUP = G_.ACT_SIGNAL_GROUP
+local ACT_SIGNAL_HALT = G_.ACT_SIGNAL_HALT
+local EF_NODRAW = G_.EF_NODRAW
+local FILL = G_.FILL
+local FSASYNC_ERR_FAILURE = G_.FSASYNC_ERR_FAILURE
+local IN_BACK = G_.IN_BACK
+local IN_FORWARD = G_.IN_FORWARD
+local IN_JUMP = G_.IN_JUMP
+local IN_MOVELEFT = G_.IN_MOVELEFT
+local IN_MOVERIGHT = G_.IN_MOVERIGHT
+local IN_RELOAD = G_.IN_RELOAD
+local IN_SPEED = G_.IN_SPEED
+local IN_USE = G_.IN_USE
+local IN_WALK = G_.IN_WALK
 local KEY_BACKSPACE = input.GetKeyCode("BACKSPACE")
 local KEY_ENTER = input.GetKeyCode("ENTER")
 local KEY_ESCAPE = input.GetKeyCode("ESCAPE")
 local KEY_PERIOD = input.GetKeyCode(".")
 local KEY_SPACE = input.GetKeyCode("SPACE")
-local MASK_SHOT = 1174421507
+local MASK_SHOT = G_.MASK_SHOT
 local MATERIAL_FOG_NONE = 0
-local METHFLAG_ESPONLY = 1
+local METHFLAG_ESPONLY = 1 -- Custom flags used for canrender function
 local METHFLAG_NOFREECAM = 3
 local METHFLAG_NONE = 0
 local METHFLAG_NOTHIRDPERSON = 2
 local MOUSE_LEFT = input.GetKeyCode("MOUSE1")
-local MOVETYPE_LADDER = 9
-local MOVETYPE_NOCLIP = 8
-local MOVETYPE_OBSERVER = 10
-local PLAYERANIMEVENT_ATTACK_PRIMARY = 0
-local RENDERMODE_TRANSCOLOR = 1
-local TEAM_SPECTATOR = 1002
+local MOVETYPE_LADDER = G_.MOVETYPE_LADDER
+local MOVETYPE_NOCLIP = G_.MOVETYPE_NOCLIP
+local MOVETYPE_OBSERVER = G_.MOVETYPE_OBSERVER
+local PLAYERANIMEVENT_ATTACK_PRIMARY = G_.PLAYERANIMEVENT_ATTACK_PRIMARY
+local RENDERMODE_TRANSCOLOR = G_.RENDERMODE_TRANSCOLOR
+local TEAM_SPECTATOR = G_.TEAM_SPECTATOR
 
 -- Tables + randomString()
 
@@ -245,7 +250,7 @@ end
 
 local glowflags = { -- Cleans up the code a little
 	["$basetexture"] = "vgui/white_additive",
-	["$bumpmap"] = "models/player/shared/shared_normal",
+	["$bumpmap"] = render.GetHDREnabled() and "models/player/shared/shared_normal" or "",
 	["$envmap"] = "skybox/sky_dustbowl_01",
 	["$envmapfresnel"] = 1,
 	["$phong"] = 1,
@@ -266,13 +271,9 @@ local boxflags = { -- Default color material
 	["$vertexcolor"] = 1
 }
 
-if not render.GetHDREnabled() then -- Fix glow chams on maps without HDR
-	glowflags["$bumpmap"] = ""
-end
-
 local materials = {
-	["blur"] = Material("pp/blurscreen"), -- Blur
-	["beam"] = Material("cable/redlaser"), -- Bullet tracers
+	["blur"] = Material("pp/blurscreen"),
+	["beam"] = Material("cable/redlaser"), -- Bullet tracers, breadcrumb beams
 	["traitor"] = Material("vgui/ttt/sprite_traitor"), -- Traitor "T" icon
 	["wireframe"] = Material("models/wireframe"),
 	["debugwhite"] = Material("models/debug/debugwhite"), -- Generic debug white chams material
@@ -356,23 +357,24 @@ local vars = {
 	["menu_colorpicker_var"] = nil,
 	["hookname"] = randomString(),
 	["renderpanic"] = false,
+	["rendercall"] = false, -- For meth_lua_api and SetRenderTarget
 	["darkrp_gestures"] = {
 		["dance"] = ACT_GMOD_TAUNT_DANCE,
 		["muscle"] = ACT_GMOD_TAUNT_MUSCLE,
 		["wave"] = ACT_GMOD_GESTURE_WAVE,
-		["robot"] = -1, -- These animations don't exist (In base DarkRP)
+		["robot"] = ACT_GMOD_TAUNT_ROBOT,
 		["bow"] = ACT_GMOD_GESTURE_BOW,
-		["cheer"] = -1,
+		["cheer"] = ACT_GMOD_TAUNT_CHEER,
 		["laugh"] = ACT_GMOD_TAUNT_LAUGH,
-		["zombie"] = -1,
+		["zombie"] = ACT_GMOD_GESTURE_TAUNT_ZOMBIE,
 		["agree"] = ACT_GMOD_GESTURE_AGREE,
 		["disagree"] = ACT_GMOD_GESTURE_DISAGREE,
-		["forward"] = -1,
+		["forward"] = ACT_SIGNAL_FORWARD,
 		["becon"] = ACT_GMOD_GESTURE_BECON,
-		["salute"] = -1,
+		["salute"] = ACT_GMOD_TAUNT_SALUTE,
 		["pose"] = ACT_GMOD_TAUNT_PERSISTENCE,
-		["halt"] = -1,
-		["group"] = -1,
+		["halt"] = ACT_SIGNAL_HALT,
+		["group"] = ACT_SIGNAL_GROUP,
 	},
 	
 	-- Render
@@ -485,19 +487,9 @@ local vars = {
 	["tools_misc_tickshoot"] = false,
 	
 	-- Detours
-	["detours_cvars"] = true,
+	["detours_cmds"] = true,
 	["detours_concommand_GetTable"] = true,
 	["detours_concommand_Remove"] = true,
-	["detours_cvars_AddChangeCallback"] = true,
-	["detours_cvars_Bool"] = true,
-	["detours_cvars_Number"] = true,
-	["detours_cvars_RemoveChangeCallback"] = true,
-	["detours_cvars_GetConVarCallbacks"] = true,
-	["detours_cvars_String"] = true,
-	["detours_GetConVar"] = true,
-	["detours_GetConVarNumber"] = true,
-	["detours_GetConVarString"] = true,
-	["detours_GetConVar_Internal"] = true,
 	["detours_IsConCommandBlocked"] = true,
 	
 	["detours_file"] = true,
@@ -668,9 +660,9 @@ local menu = {
 	["Detours"] = {
 		{"sect", 25, 25, 525, 65, "Master"},
 		{"cb", 35, 40, "File Protection", "detours_file"},
-		{"cb", 180, 40, "CVAR Protection", "detours_cvars"},
-		{"cb", 325, 40, "Hook Protection", "detours_hook"},
+		{"cb", 180, 40, "ConCommand Protection", "detours_cmds"},
 		{"cb", 35, 65, "Timer Protection", "detours_timer"},
+		{"cb", 180, 65, "Hook Protection", "detours_hook"},
 		
 		{"sect", 25, 100, 525, 90, "File Detours"},
 		{"cb", 35, 115, "Append", "detours_file_Append"},
@@ -685,51 +677,42 @@ local menu = {
 		{"cb", 180, 165, "Time", "detours_file_Time"},
 		{"cb", 325, 165, "Write", "detours_file_Write"},
 		
-		{"sect", 25, 200, 525, 115, "CVAR Detours"},
+		{"sect", 25, 200, 525, 40, "ConCommand Detours"},
 		{"cb", 35, 215, "GetTable", "detours_concommand_GetTable"},
 		{"cb", 180, 215, "Remove", "detours_concommand_Remove"},
-		{"cb", 325, 215, "AddChangeCallback", "detours_cvars_AddChangeCallback"},
-		{"cb", 35, 240, "Bool", "detours_cvars_Bool"},
-		{"cb", 180, 240, "Number", "detours_cvars_Number"},
-		{"cb", 325, 240, "RemoveChangeCallback", "detours_cvars_RemoveChangeCallback"},
-		{"cb", 35, 265, "String", "detours_cvars_String"},
-		{"cb", 180, 265, "GetConVar", "detours_GetConVar"},
-		{"cb", 325, 265, "GetConVarNumber", "detours_GetConVarNumber"},
-		{"cb", 35, 290, "GetConVarString", "detours_GetConVarString"},
-		{"cb", 180, 290, "GetConVarInternal", "detours_GetConVar_Internal"},
-		{"cb", 325, 290, "IsConCommandBlocked", "detours_IsConCommandBlocked"},
+		{"cb", 325, 215, "IsConCommandBlocked", "detours_IsConCommandBlocked"},
 		
-		{"sect", 25, 325, 525, 90, "Timer Detours"},
-		{"cb", 35, 340, "Adjust", "detours_timer_Adjust"},
-		{"cb", 180, 340, "Create", "detours_timer_Create"},
-		{"cb", 325, 340, "Destroy", "detours_timer_Destroy"},
-		{"cb", 450, 340, "Exists", "detours_timer_Exists"},
-		{"cb", 35, 365, "Pause", "detours_timer_Pause"},
-		{"cb", 180, 365, "Remove", "detours_timer_Remove"},
-		{"cb", 325, 365, "RepsLeft", "detours_timer_RepsLeft"},
-		{"cb", 450, 365, "Start", "detours_timer_Start"},
-		{"cb", 35, 390, "Stop", "detours_timer_Stop"},
-		{"cb", 180, 390, "TimeLeft", "detours_timer_TimeLeft"},
-		{"cb", 325, 390, "Toggle", "detours_timer_Toggle"},
-		{"cb", 450, 390, "UnPause", "detours_timer_UnPause"},
+		{"sect", 25, 250, 525, 90, "Timer Detours"},
+		{"cb", 35, 265, "Adjust", "detours_timer_Adjust"},
+		{"cb", 180, 265, "Create", "detours_timer_Create"},
+		{"cb", 325, 265, "Destroy", "detours_timer_Destroy"},
+		{"cb", 450, 265, "Exists", "detours_timer_Exists"},
+		{"cb", 35, 290, "Pause", "detours_timer_Pause"},
+		{"cb", 180, 290, "Remove", "detours_timer_Remove"},
+		{"cb", 325, 290, "RepsLeft", "detours_timer_RepsLeft"},
+		{"cb", 450, 290, "Start", "detours_timer_Start"},
+		{"cb", 35, 315, "Stop", "detours_timer_Stop"},
+		{"cb", 180, 315, "TimeLeft", "detours_timer_TimeLeft"},
+		{"cb", 325, 315, "Toggle", "detours_timer_Toggle"},
+		{"cb", 450, 315, "UnPause", "detours_timer_UnPause"},
 		
-		{"sect", 25, 425, 525, 40, "Hook Detours"},
-		{"cb", 35, 440, "Add", "detours_hook_Add"},
-		{"cb", 180, 440, "Remove", "detours_hook_Remove"},
-		{"cb", 325, 440, "GetTable", "detours_hook_GetTable"},
+		{"sect", 25, 350, 525, 40, "Hook Detours"},
+		{"cb", 35, 365, "Add", "detours_hook_Add"},
+		{"cb", 180, 365, "Remove", "detours_hook_Remove"},
+		{"cb", 325, 365, "GetTable", "detours_hook_GetTable"},
 		
-		{"sect", 25, 475, 525, 115, "Miscellaneous Detours"},
-		{"cb", 35, 490, "gui.MousePos", "detours_gui_MousePos"},
-		{"cb", 180, 490, "gui.MouseX", "detours_gui_MouseX"},
-		{"cb", 325, 490, "gui.MouseY", "detours_gui_MouseY"},
-		{"cb", 450, 490, "gui.OpenURL", "detours_gui_OpenURL"},
-		{"cb", 35, 515, "vgui.CursorVisible", "detours_vgui_CursorVisible"},
-		{"cb", 180, 515, "render.DrawTextureToScreen", "detours_render_DrawTextureToScreen"},
-		{"cb", 35, 540, "RunConsoleCommand", "detours_RunConsoleCommand"},
-		{"cb", 180, 540, "table.Empty", "detours_table_Empty"},
-		{"cb", 325, 540, "taunt_camera", "detours_taunt_camera"},
-		{"cb", 35, 565, "cam.ApplyShake", "detours_cam_ApplyShake"},
-		{"cb", 180, 565, "util.ScreenShake", "detours_util_ScreenShake"},
+		{"sect", 25, 400, 525, 115, "Miscellaneous Detours"},
+		{"cb", 35, 415, "gui.MousePos", "detours_gui_MousePos"},
+		{"cb", 180, 415, "gui.MouseX", "detours_gui_MouseX"},
+		{"cb", 325, 415, "gui.MouseY", "detours_gui_MouseY"},
+		{"cb", 450, 415, "gui.OpenURL", "detours_gui_OpenURL"},
+		{"cb", 35, 440, "vgui.CursorVisible", "detours_vgui_CursorVisible"},
+		{"cb", 180, 440, "render.DrawTextureToScreen", "detours_render_DrawTextureToScreen"},
+		{"cb", 35, 465, "RunConsoleCommand", "detours_RunConsoleCommand"},
+		{"cb", 180, 465, "table.Empty", "detours_table_Empty"},
+		{"cb", 325, 465, "taunt_camera", "detours_taunt_camera"},
+		{"cb", 35, 490, "cam.ApplyShake", "detours_cam_ApplyShake"},
+		{"cb", 180, 490, "util.ScreenShake", "detours_util_ScreenShake"},
 	},
 	
 	["Config"] = {
@@ -773,7 +756,7 @@ local menu = {
 		{"sect", 330, 290, 220, 90, "Config"},
 	},
 	
-	["Logs"] = {}
+	["Logs"] = {} -- Custom
 }
 
 local menu_order = {"Render", "Tools", "Detours", "Config", "Logs"}
@@ -937,12 +920,13 @@ local cache = { -- Vastly improves performance
 	["blockbot_targ"] = nil,
 	["calcview_eyeangles"] = meta_en.EyeAngles(LocalPlayer()),
 	["calcview_eyepos"] = meta_en.EyePos(LocalPlayer()),
-	["calcview_fov"] = meta_pl.GetFOV(LocalPlayer()) or (meta_cv.GetInt(GetConVar("fov_desired")) - 1),
-	["calcview_fov_custom"] = meta_pl.GetFOV(LocalPlayer()) or (meta_cv.GetInt(GetConVar("fov_desired")) - 1),
+	["calcview_fov"] = meta_pl.GetFOV(LocalPlayer()) or meta_cv.GetInt(GetConVar("fov_desired")) - 1,
+	["calcview_fov_custom"] = meta_pl.GetFOV(LocalPlayer()) or meta_cv.GetInt(GetConVar("fov_desired")) - 1,
 	["circlestrafer_active"] = false,
 	["circlestrafer_delta"] = 0,
 	["cp_ignore"] = true,
 	["drp_ignore"] = true,
+	["menu_background_step"] = 0,
 	["scrh"] = 0,
 	["scrw"] = 0,
 	["traitors"] = {},
@@ -1061,6 +1045,8 @@ local meth_binds = {
 	}
 }
 
+-- Used to store stuff
+
 local addtologs = {}
 local backtrack = {}
 local breadcrumbs = {}
@@ -1078,7 +1064,7 @@ local files = { -- Files to keep safe
 	"methlogo.jpg"
 }
 
-local detours = {
+local detours = { -- Clean copies of to-be-modified functions
 	["cam_ApplyShake"] = cam.ApplyShake,
 	["concommand_GetTable"] = concommand.GetTable,
 	["concommand_Remove"] = concommand.Remove,
@@ -1131,7 +1117,7 @@ local detours = {
 	["vgui_CursorVisible"] = vgui.CursorVisible,
 }
 
--- Retarded Derma Trash
+-- Retarded Derma Trash (Color Picker)
 
 local CPframe = vgui.Create("DFrame")
 
@@ -1157,7 +1143,7 @@ local CPpickerRGB = CPframeChildren[5]
 local CPpickerALPHA = CPframeChildren[6]
 
 meta_pn.SetSize(CPpickerBoxThing, 15, 15)
-meta_pn.SetCursor(CPpickerBoxThing, "arrow") -- Prevent the color picker from changing your mouse
+meta_pn.SetCursor(CPpickerBoxThing, "arrow") -- Prevent the color picker from changing your mouse cursor
 
 --[[
 	Detours
@@ -1258,7 +1244,7 @@ local function initDetours() -- Rest of the detours
 		local og, at = concommand.GetTable()
 		local cb = tCopy(og)
 		
-		if vars.detours_cvars and vars.detours_concommand_GetTable then
+		if vars.detours_cmds and vars.detours_concommand_GetTable then
 			for k, _ in pairs(cb) do
 				if k == "st_menu" then
 					cb[k] = nil
@@ -1276,7 +1262,7 @@ local function initDetours() -- Rest of the detours
 			return
 		end
 		
-		if vars.detours_cvars and vars.detours_concommand_Remove then
+		if vars.detours_cmds and vars.detours_concommand_Remove then
 			if cmd == "st_menu" then
 				alert("Blocked concommand.Remove()", vars.logs_detours, "d")
 				return
@@ -1291,7 +1277,7 @@ local function initDetours() -- Rest of the detours
 			return nil
 		end
 		
-		if vars.detours_cvars and vars.detours_GetConVar then
+		if vars.detours_cmds and vars.detours_GetConVar then
 			if cmd == "st_menu" then
 				alert("Blocked GetConVar()", vars.logs_detours, "d")
 				return nil
@@ -1306,7 +1292,7 @@ local function initDetours() -- Rest of the detours
 			return 0
 		end
 		
-		if vars.detours_cvars and vars.detours_GetConVarNumber then
+		if vars.detours_cmds and vars.detours_GetConVarNumber then
 			if cmd == "st_menu" then
 				alert("Blocked GetConVarNumber()", vars.logs_detours, "d")
 				return 0
@@ -1321,7 +1307,7 @@ local function initDetours() -- Rest of the detours
 			return ""
 		end
 		
-		if vars.detours_cvars and vars.detours_GetConVarString then
+		if vars.detours_cmds and vars.detours_GetConVarString then
 			if cmd == "st_menu" then
 				alert("Blocked GetConVarString()", vars.logs_detours, "d")
 				return ""
@@ -1336,7 +1322,7 @@ local function initDetours() -- Rest of the detours
 			return
 		end
 		
-		if vars.detours_cvars and vars.detours_GetConVar_Internal then
+		if vars.detours_cmds and vars.detours_GetConVar_Internal then
 			if cmd == "st_menu" then
 				alert("Blocked GetConVar_Internal()", vars.logs_detours, "d")
 				return
@@ -1353,7 +1339,7 @@ local function initDetours() -- Rest of the detours
 			return
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_GetConVarCallbacks then
+		if vars.detours_cmds and vars.detours_cmds_GetConVarCallbacks then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.GetConVarCallbacks()", vars.logs_detours, "d")
 				return nil
@@ -1372,7 +1358,7 @@ local function initDetours() -- Rest of the detours
 			return
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_AddChangeCallback then
+		if vars.detours_cmds and vars.detours_cmds_AddChangeCallback then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.AddChangeCallback()", vars.logs_detours, "d")
 				return
@@ -1391,7 +1377,7 @@ local function initDetours() -- Rest of the detours
 			return
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_RemoveChangeCallback then
+		if vars.detours_cmds and vars.detours_cmds_RemoveChangeCallback then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.RemoveChangeCallback()", vars.logs_detours, "d")
 				return
@@ -1408,7 +1394,7 @@ local function initDetours() -- Rest of the detours
 			return def
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_Bool then
+		if vars.detours_cmds and vars.detours_cmds_Bool then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.Bool()", vars.logs_detours, "d")
 				return def
@@ -1425,7 +1411,7 @@ local function initDetours() -- Rest of the detours
 			return def
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_Number then
+		if vars.detours_cmds and vars.detours_cmds_Number then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.Number()", vars.logs_detours, "d")
 				return def
@@ -1442,7 +1428,7 @@ local function initDetours() -- Rest of the detours
 			return def
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_String then
+		if vars.detours_cmds and vars.detours_cmds_String then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.String()", vars.logs_detours, "d")
 				return def
@@ -2560,10 +2546,15 @@ local function isVisible(thing)
 		if not validEntity(thing) then
 			return false
 		end
-
-		local screenpos = meta_vc.ToScreen(meta_en.LocalToWorld(thing, meta_en.OBBCenter(thing)))
 		
-		return screenpos.visible
+		local cpos = meta_en.GetPos(thing) - cache.calcview_eyepos
+		local len = meta_vc.Length(cpos)
+		local rad = meta_en.BoundingRadius(thing)
+		local max = math.abs(math.cos(math.acos(len / math.sqrt((len * len) + (rad * rad))) + 60 * (math.pi /180)))
+		
+		meta_vc.Normalize(cpos)
+		
+		return meta_vc.Dot(cpos, meta_an.Forward(cache.calcview_eyeangles)) > max
 	end
 end
 
@@ -3193,6 +3184,30 @@ local swag = {
 			return
 		end
 		
+		local ismain = x == nil
+		
+		if ismain then
+			if not cache.menu_background_start or vars.menu ~= cache.menu_background_lerp_last then
+				cache.menu_background_start = SysTime()
+			end
+			
+			local lerptime = (SysTime() - cache.menu_background_start) / 0.3
+			
+			if vars.menu then
+				cache.menu_background_step = Lerp(lerptime, 0, 255)
+			else
+				cache.menu_background_step = Lerp(lerptime, 255, 0)
+			end
+			
+			cache.menu_background_step = math.Clamp(cache.menu_background_step, 0, 255)
+			
+			if not vars.menu and cache.menu_background_step == 0 then
+				cache.menu_background_start = nil
+			end
+		end
+		
+		cache.menu_background_lerp_last = vars.menu
+		
 		x = x or 0
 		y = y or 0
 		w = w or ScrW()
@@ -3201,8 +3216,11 @@ local swag = {
 		style = style or "m"
 		
 		local dostyle = style == "m" and vars.menu_background_style or vars.menu_background_mini_style
+		local bgcolor = style == "m" and copyColor(getColor("background")) or copyColor(getColor("background_mini"))
 		
-		local bgcolor = style == "m" and getColor("background") or getColor("background_mini")
+		if ismain then
+			bgcolor.a = math.Clamp((bgcolor.a + cache.menu_background_step) - 255, 0, 255)
+		end
 		
 		surface.SetDrawColor(bgcolor)
 		
@@ -3223,11 +3241,11 @@ local swag = {
 				
 				surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 			end
+			
+			render.SetScissorRect(0, 0, 0, 0, false)
 		else
 			surface.DrawRect(x, y, w, h)
 		end
-		
-		render.SetScissorRect(0, 0, 0, 0, false)
 	end,
 }
 
@@ -4082,6 +4100,22 @@ local function doHUDPaint()
 				cache.traces_shotrecord_empty = true
 			end
 		end
+		
+		if vars.tools_movement_blockbot then
+			if cache.blockbot_active then
+				if validEntity(cache.blockbot_targ) then
+					local tent = cache.blockbot_targ
+					
+					surface.SetFont("BudgetLabel")
+					surface.SetTextColor(255, 255, 255, 255)
+					
+					local tpos = meta_vc.ToScreen(meta_en.LocalToWorld(tent, meta_en.OBBCenter(tent)))
+					
+					surface.SetTextPos(tpos.x, tpos.y)
+					surface.DrawText("X")
+				end
+			end
+		end
 	end
 end
 
@@ -4090,14 +4124,31 @@ end
 ]]
 
 if ismeth then
+	hook.Add("PreRender", vars.hookname, function()
+		render.PopCustomClipPlane() -- Prevent clip planes stacking
+	end)
+	
+	hook.Add("ShutDown", vars.hookname, function()
+		render.PopCustomClipPlane() -- Prevent clip planes from persistening through a retry/server restart/etc
+	end)
+
 	if mcall then
 		mcall.Add("OnHUDPaint", vars.hookname, function()
-			vars.renderpanic = false
-			
-			if vars.meth_render_chamsfix then
-				mvar.SetVarInt("Player.Misc Players.Fake Angle Chams", mvar.GetVarInt("Player.Third Person.Third Person"))
+			-- Fixes rendering with SetRenderTarget
+		
+			if vars.rendercall then
+				return
 			end
 			
+			vars.rendercall = true
+			
+			local ogrt = render.GetRenderTarget()
+			render.SetRenderTarget()
+		
+			vars.renderpanic = false -- Reset renderpanic
+
+			-- Actual stuff
+
 			local canrendernone = canrender(METHFLAG_NONE)
 			
 			if canrendernone then
@@ -4106,7 +4157,7 @@ if ismeth then
 					
 					if vars.view_fov_changer then
 						if vars.view_fov_override then
-							fov = vars.view_fov_set
+							fov = vars.view_fov_set - 1
 						else
 							fov = fov + (vars.view_fov_set - meta_cv.GetInt(GetConVar("fov_desired")))
 						end
@@ -4210,7 +4261,7 @@ if ismeth then
 				end
 			
 				if (canrender(METHFLAG_NOTHIRDPERSON) and canrender(METHFLAG_NOFREECAM)) and not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
-					if (vars.chams_viewmodel or vars.view_fov_viewmodel_changer or vars.view_screengrab_test) and validEntity(LocalPlayer()) then
+					if (vars.chams_viewmodel or vars.view_screengrab_test) and validEntity(LocalPlayer()) then
 						local VM = meta_pl.GetViewModel(LocalPlayer())
 						
 						if validEntity(VM) then
@@ -4222,10 +4273,12 @@ if ismeth then
 								local plyfov = cache.calcview_fov_custom
 								
 								if vars.view_screengrab_test then
-									if vars.view_fov_override then
-										plyfov = vars.view_fov_set
-									else
-										plyfov = plyfov + (vars.view_fov_set - meta_cv.GetInt(GetConVar("fov_desired")))
+									if vars.view_fov_changer then
+										if vars.view_fov_override then
+											plyfov = vars.view_fov_set - 1
+										else
+											plyfov = cache.calcview_fov_custom + (vars.view_fov_set - meta_cv.GetInt(GetConVar("fov_desired")))
+										end
 									end
 								end
 								
@@ -4255,7 +4308,7 @@ if ismeth then
 							cam.Start3D(EYEPOS, EYEANGLES, VMFOV, 0, 0, ScrW(), ScrH(), 1, 30000)
 								cam.IgnoreZ(true)
 							
-								if canrender(METHFLAG_ESPONLY) and vars.chams_viewmodel then
+								if canrender(METHFLAG_ESPONLY) then
 									local vmc = getColor("chams_color_viewmodel", LocalPlayer())
 									
 									if colors.chams_color_viewmodel == "HP" then
@@ -4307,8 +4360,7 @@ if ismeth then
 									end
 								end
 
-								local plfov = vars.view_screengrab_test and vars.view_fov_set or cache.calcview_fov_custom
-								local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(plfov / 2)) * ScrW()) / retardednumber
+								local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(cache.calcview_fov_custom / 2)) * ScrW()) / retardednumber
 								local size = (rad * 1.955) + retardednumber
 								
 								surface.SetDrawColor(getColor("meth_catpng"))
@@ -4364,8 +4416,7 @@ if ismeth then
 								retardednumber = retardednumber + ((add / 100) * 1.5) + 1
 							end
 							
-							local plfov = vars.view_screengrab_test and vars.view_fov_set or cache.calcview_fov_custom
-							local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(plfov / 2)) * ScrW()) / retardednumber
+							local rad = (math.tan(math.rad(fov)) / math.tan(math.rad(cache.calcview_fov_custom / 2)) * ScrW()) / retardednumber
 							
 							local x, y = ScrW() / 2, ScrH() / 2
 							
@@ -4437,7 +4488,7 @@ if ismeth then
 			
 			-- Render menu above everything
 			
-			if vars.menu and vars.menu_background then
+			if (vars.menu and vars.menu_background) or (vars.menu_background and cache.menu_background_step > 0) then
 				swag.DrawMenuBackground()
 			end
 			
@@ -4542,8 +4593,13 @@ if ismeth then
 			end
 			
 			if vars.menu then
+				
+				
 				drawMenu()
 			end
+			
+			render.SetRenderTarget(ogrt)
+			vars.rendercall = false
 		end)
 	end
 end
@@ -4555,18 +4611,12 @@ hook.Add("HUDPaint", vars.hookname, function(ignoreUpdate)
 		if not ignoreUpdate then
 			vars.renderpanic = true
 		end
-		
-		if vars.meth_render_mirrorfix then
-			cam.Start3D()
-				render.PushCustomClipPlane(Vector(0, 0, 0), 0)
-			cam.End3D()
-		end
 	end
 end)
 
 if not ismeth then
 	hook.Add("DrawOverlay", vars.hookname, function()
-		if vars.menu and vars.menu_background then
+		if (vars.menu and vars.menu_background) or (vars.menu_background and cache.menu_background_step > 0) then
 			swag.DrawMenuBackground()
 		end
 		
@@ -4624,6 +4674,20 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 			cache.usespam_tick = 0
 		end
 	end
+	
+	-- Flashlight Spammer
+	
+	if vars.tools_misc_flashlightspam then
+		local key = input.LookupBinding("impulse 100")
+		
+		if key then
+			if not vars.menu and not detours.vgui_CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vgui.GetKeyboardFocus() then
+				if input.IsKeyDown(input.GetKeyCode(key)) then
+					meta_cd.SetImpulse(cmd, 100)
+				end
+			end
+		end
+	end
 
 	local moving = isMoving(cmd)
 
@@ -4633,7 +4697,7 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 		local lpos = meta_en.GetPos(LocalPlayer())
 	
 		if cache.traces_breadcrumbs_last ~= nil then
-			if meta_vc.DistToSqr(cache.traces_breadcrumbs_last, lpos) >= 100 then
+			if meta_vc.DistToSqr(cache.traces_breadcrumbs_last, lpos) >= 50 then
 				breadcrumbs[#breadcrumbs + 1] = lpos
 				cache.traces_breadcrumbs_last = lpos
 			end
@@ -4724,54 +4788,58 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 				local followee = cache.blockbot_targ
 				
 				if not validEntity(followee) then
-					cache.blockbot_targ = getClosest(true)
+					cache.blockbot_targ = getClosest(false)
 				else
 					if not moving then
+						cache.blockbot_active = true
+					
 						local ontop = meta_en.GetGroundEntity(LocalPlayer()) == followee
 						
-						local lpos = meta_en.GetPos(LocalPlayer())
-						local fpos =  meta_en.GetPos(followee)
+						local lang = meta_cd.GetViewAngles(cmd)
+						local fwd = meta_en.GetPos(followee) - meta_en.GetPos(LocalPlayer())
+						local fwdang = meta_vc.Angle(fwd)
 						
-						if not ontop then
-							if not meta_en.IsOnGround(LocalPlayer()) then
-								if lpos.z - fpos.z > meta_en.LocalToWorld(followee, meta_en.OBBCenter(followee) * 2).z - 5 then
-									ontop = true
-								end
-							end
+						local maxfwd = meta_cv.GetInt(GetConVar("cl_forwardspeed"))
+						local maxsid = meta_cv.GetInt(GetConVar("cl_sidespeed"))
+						
+						if not meta_cd.KeyDown(cmd, IN_SPEED) then
+							meta_cd.AddKey(cmd, IN_SPEED)
 						end
 						
-						local lang
-						
-						if ontop or not cache.blockbot_active then
-							lang = meta_cd.GetViewAngles(cmd) or cache.calcview_eyeangles
+						if ontop then
+							local lpos = meta_en.GetPos(LocalPlayer())
+							local fpos = meta_en.GetPos(followee)
+							local lposz = Vector(lpos.x, lpos.y, 0)
+							local fposz = Vector(fpos.x, fpos.y, 0)
 							
-							cache.blockbot_ang = lang
-							cache.blockbot_active = true
+							local zdis = meta_vc.DistToSqr(lposz, fposz)
+							
+							maxfwd = zdis
+							maxsid = zdis
+							
+							local moveyaw = math.rad(meta_vc.Angle(fwd).yaw - lang.yaw)
+
+							meta_cd.SetForwardMove(cmd, math.Clamp(math.cos(moveyaw) * maxfwd, 0 - maxfwd, maxfwd))
+							meta_cd.SetSideMove(cmd, math.Clamp((0 - math.sin(moveyaw)) * maxsid, 0 - maxsid, maxsid))
 						else
-							lang = cache.blockbot_ang
-						end
-						
-						local dir = fpos - lpos
-						local movementAngle = meta_vc.Angle(Vector(dir.x, dir.y, dir.z))
-						
-						local lposnz = Vector(lpos.x, lpos.y, 0)
-						local fposnz = Vector(fpos.x, fpos.y, 0)
-						local dist = math.Round(meta_vc.DistToSqr(lposnz, fposnz))
-				
-						local movementYaw = math.rad(movementAngle.y - lang.y)
-						
-						if (not meta_cd.KeyDown(cmd, IN_SPEED) and not meta_pl.Crouching(followee)) and (dist > 225 or meta_pl.IsSprinting(followee)) then
-							meta_cd.SetButtons(cmd, meta_cd.GetButtons(cmd) + IN_SPEED)
-						end
-				
-						if dist > 4 then
-							local maxSpeed = meta_pl.GetRunSpeed(LocalPlayer()) * 1000
-						
-							if ontop then
-								meta_cd.SetForwardMove(cmd, math.cos(movementYaw) * maxSpeed)
+							local fvel = meta_vc.Length(meta_en.GetVelocity(followee))
+							local dyaw = fwdang.yaw - lang.yaw
+							
+							if dyaw > 180 then
+								dyaw = dyaw - 360
+							elseif dyaw < -180 then
+								dyaw = dyaw + 360
 							end
 							
-							meta_cd.SetSideMove(cmd, (0 - math.sin(movementYaw)) * maxSpeed)
+							if fvel > 285 then
+								meta_cd.SetForwardMove(cmd, 0 - math.abs(fvel))
+							end
+							
+							if dyaw > 0.25 then
+								meta_cd.SetSideMove(cmd, 0 - maxsid)
+							elseif dyaw < -0.25 then
+								meta_cd.SetSideMove(cmd, maxsid)
+							end
 						end
 					else
 						cache.blockbot_active = false
@@ -4955,7 +5023,7 @@ hook.Add("CalcView", vars.hookname, function(ply, pos, ang, fov, zn, zf)
 	if not vars.view_screengrab_test then
 		if vars.view_fov_changer then
 			if override then
-				nfov = vars.view_fov_set
+				nfov = vars.view_fov_set - 1
 			else
 				nfov = cfov
 			end
@@ -5032,7 +5100,7 @@ end)
 hook.Add("Tick", vars.hookname, function()
 	colors.rainbow = HSVToColor((UnPredictedCurTime() % 6) * 60, 1, 1) -- Exploit city moment
 	colors.rainbow.a = 255
-	
+
 	-- Tick shoot
 	
 	if vars.tools_misc_tickshoot then
@@ -5042,7 +5110,7 @@ hook.Add("Tick", vars.hookname, function()
 			if defwep then
 				input.SelectWeapon(meta_pl.GetWeapon(LocalPlayer(), defwep))
 			else
-				detours.RunConsoleCommand("lastinv")
+				meta_pl.ConCommand(LocalPlayer(), "lastinv")
 			end
 			
 			cache.tools_misc_tickshoot_swap = false
@@ -5064,20 +5132,6 @@ hook.Add("Tick", vars.hookname, function()
 		end
 	end
 	
-	-- Flashlight Spammer
-	
-	if vars.tools_misc_flashlightspam then
-		local key = input.LookupBinding("impulse 100")
-		
-		if key then
-			if not vars.menu and not detours.vgui_CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vgui.GetKeyboardFocus() then
-				if input.IsKeyDown(input.GetKeyCode(key)) then
-					detours.RunConsoleCommand("impulse", "100")
-				end
-			end
-		end
-	end
-	
 	-- Gesture loop
 	
 	if vars.tools_misc_gestureloop then
@@ -5088,7 +5142,7 @@ hook.Add("Tick", vars.hookname, function()
 				local id = vars.darkrp_gestures.dance or -1
 				
 				if id ~= -1 then
-					detours.RunConsoleCommand("act", dance)
+					meta_pl.ConCommand(LocalPlayer(), "_DarkRP_DoAnimation " .. id)
 					
 					local sid, slen = meta_en.LookupSequence(LocalPlayer(), meta_en.GetSequenceName(LocalPlayer(), meta_en.SelectWeightedSequence(LocalPlayer(), id)))
 					
@@ -5103,13 +5157,21 @@ hook.Add("Tick", vars.hookname, function()
 			end
 		else
 			if not meta_pl.IsPlayingTaunt(LocalPlayer()) then
-				detours.RunConsoleCommand("act", dance)
+				meta_pl.ConCommand(LocalPlayer(), "act ".. dance)
 			end
 		end
 	end
 	
 	if ismeth then
 		if mvar then
+			-- Fake angle chams fix
+	
+			if vars.meth_render_chamsfix then
+				mvar.SetVarInt("Player.Misc Players.Fake Angle Chams", mvar.GetVarInt("Player.Third Person.Third Person"))
+			end
+		
+			-- Autofire delay
+		
 			if vars.meth_tools_afdelay then
 				local cur = vars.meth_tools_afdelay_cur
 				
@@ -5617,15 +5679,15 @@ hook.Add("RenderScene", vars.hookname, function()
 	cache.world_devtextures_last = DODEV_O -- Keep track of this to test when orange is toggled to run loop again
 end)
 
-hook.Add("PreRender", vars.hookname, function()
-	cam.Start3D()
-		render.PopCustomClipPlane() -- Prevent clip planes stacking
-	cam.End3D()
-end)
-
-hook.Add("PreDrawEffects", vars.hookname, function() -- Prevent fullbright fucking up menus / huds / whatever
-	render.SetLightingMode(0)
+hook.Add("PreDrawEffects", vars.hookname, function()
+	render.SetLightingMode(0) -- Prevent fullbright fucking up menus / huds / whatever
 	render.MaterialOverride(nil)
+	
+	if ismeth then
+		if vars.meth_render_mirrorfix then
+			render.PushCustomClipPlane(Vector(0, 0, 0), 0)
+		end
+	end
 end)
 
 hook.Add("PreDrawSkyBox", vars.hookname, function() -- Prevent things getting messed up by devtextures
@@ -5678,7 +5740,7 @@ hook.Add("PreDrawViewModels", vars.hookname, function() -- Render a viewmodel th
 				
 				if vars.view_screengrab_test then
 					if vars.view_fov_override then
-						plyfov = vars.view_fov_set
+						plyfov = vars.view_fov_set - 1
 					else
 						plyfov = plyfov + (vars.view_fov_set - meta_cv.GetInt(GetConVar("fov_desired")))
 					end
@@ -5903,7 +5965,7 @@ timer.Create(vars.hookname, 1, 0, function() -- Funny timer
 					continue
 				end
 				
-				detours.RunConsoleCommand("ulx", "psay", meta_pl.GetName(v), vars.tools_misc_psay_message)
+				meta_pl.ConCommand(LocalPlayer(), "ulx psay \"" .. meta_pl.GetName(v) .. "\" " .. vars.tools_misc_psay_message)
 			end
 		end
 	end
@@ -6032,10 +6094,20 @@ table.insert(menu.Config, 1, {"btn", 340, 335, 200, 35, "Reset Settings", functi
 		["h"] = vars.menu_h
 	}
 
-	vars = tCopy(defvar)
 	colors = tCopy(defcol)
 	cache = tCopy(defcache)
+
+	if vars.world_ambient_lighting then
+		cache.world_ambient_set = true
+	end
 	
+	if vars.world_devtextures then
+		cache.world_devtextures_set = true
+		cache.world_devd = true
+	end
+
+	vars = tCopy(defvar)
+
 	vars.menu = ogmenu -- Restore
 	vars.menu_tab = ogtab
 	vars.menu_x = ogmenupos.x
