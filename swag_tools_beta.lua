@@ -2196,6 +2196,10 @@ local function mousein(a, b, c, d)
 end
 
 local function canclick(a, b, c, d, igdly)
+	if not vars.menu then
+		return false
+	end
+
 	local extra = true
 
 	if not igdly then
@@ -3288,6 +3292,7 @@ local function drawMenu()
 		
 		draw.NoTexture()
 		
+		surface.SetAlphaMultiplier(cache.menu_background_step / 255)
 		render.SetScissorRect(x, y, x + w, y + h, true)
 		
 		surface.SetDrawColor(colors.black)
@@ -3298,7 +3303,7 @@ local function drawMenu()
 		for i = 1, grad do
 			local c = grad - i
 			
-			surface.SetDrawColor(c, c, c, 255)
+			surface.SetDrawColor(c, c, c, cache.menu_background_step)
 			surface.DrawLine(x, y + i, x + w, y + i)
 		end
 		
@@ -3418,7 +3423,7 @@ local function drawMenu()
 			local lw, lh = 525, 490
 			
 			render.SetScissorRect(ox + 25, oy + 25, ox + lw + 25, oy + lh + 25, true)
-			
+
 			surface.SetDrawColor(colors.back_t)
 			surface.DrawRect(ox + 25, oy + 25, lw, lh)
 			
@@ -3470,6 +3475,7 @@ local function drawMenu()
 		end
 	end
 	
+	surface.SetAlphaMultiplier(1)
 	render.SetScissorRect(0, 0, 0, 0, false)
 	
 	if not vars.menu_mousedown then
@@ -3485,8 +3491,10 @@ local function drawMenu()
 		vars.menu_mousedelay = true
 	end
 	
-	if not detours.vgui_CursorVisible() then
-		gui.EnableScreenClicker(true)
+	if vars.menu then
+		if not detours.vgui_CursorVisible() then
+			gui.EnableScreenClicker(true)
+		end
 	end
 end
 
@@ -4592,9 +4600,7 @@ if ismeth then
 				surface.DrawLine(x + 10, y + 21, (x + w) - 10, y + 21)
 			end
 			
-			if vars.menu then
-				
-				
+			if vars.menu or (vars.menu_background and cache.menu_background_step > 0) then
 				drawMenu()
 			end
 			
@@ -4628,7 +4634,7 @@ if not ismeth then
 			doTraitorDetector()
 		end
 		
-		if vars.menu then
+		if vars.menu or (vars.menu_background and cache.menu_background_step > 0) then
 			drawMenu()
 		else
 			vars.menu_dragging = nil
