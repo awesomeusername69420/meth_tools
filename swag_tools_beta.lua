@@ -4628,7 +4628,7 @@ end)
 
 if not ismeth then
 	hook.Add("DrawOverlay", vars.hookname, function()
-		if (vars.menu and vars.menu_background) or (vars.menu_fade and (cache.menu_background_step > 0 or vars.menu) then
+		if (vars.menu and vars.menu_background) or (vars.menu_fade and (cache.menu_background_step > 0 or vars.menu)) then
 			swag.DrawMenuBackground()
 		end
 		
