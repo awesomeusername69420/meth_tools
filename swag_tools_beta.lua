@@ -183,8 +183,7 @@ local meta_cd_g = debug.getregistry()["CUserCmd"]
 local meta_cd = tCopy(meta_cd_g) -- Create a local copy for detours
 local meta_cl = tCopy(debug.getregistry()["Color"])
 local meta_cv = tCopy(debug.getregistry()["ConVar"])
-local meta_en_g = debug.getregistry()["Entity"]
-local meta_en = tCopy(meta_en_g)
+local meta_en = tCopy(debug.getregistry()["Entity"])
 local meta_fl_g = debug.getregistry()["File"]
 local meta_fl = tCopy(meta_fl_g)
 local meta_im = tCopy(debug.getregistry()["IMaterial"])
@@ -4665,6 +4664,20 @@ hook.Add("CreateMove", vars.hookname, function(cmd)
 			cache.usespam_tick = 0
 		end
 	end
+	
+	-- Flashlight Spammer
+	
+	if vars.tools_misc_flashlightspam then
+		local key = input.LookupBinding("impulse 100")
+		
+		if key then
+			if not vars.menu and not detours.vgui_CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vgui.GetKeyboardFocus() then
+				if input.IsKeyDown(input.GetKeyCode(key)) then
+					meta_cd.SetImpulse(cmd, 100)
+				end
+			end
+		end
+	end
 
 	local moving = isMoving(cmd)
 
@@ -5087,7 +5100,7 @@ hook.Add("Tick", vars.hookname, function()
 			if defwep then
 				input.SelectWeapon(meta_pl.GetWeapon(LocalPlayer(), defwep))
 			else
-				detours.RunConsoleCommand("lastinv")
+				meta_pl.ConCommand(LocalPlayer(), "lastinv")
 			end
 			
 			cache.tools_misc_tickshoot_swap = false
@@ -5109,20 +5122,6 @@ hook.Add("Tick", vars.hookname, function()
 		end
 	end
 	
-	-- Flashlight Spammer
-	
-	if vars.tools_misc_flashlightspam then
-		local key = input.LookupBinding("impulse 100")
-		
-		if key then
-			if not vars.menu and not detours.vgui_CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not meta_pl.IsTyping(LocalPlayer()) and not vgui.GetKeyboardFocus() then
-				if input.IsKeyDown(input.GetKeyCode(key)) then
-					detours.RunConsoleCommand("impulse", "100")
-				end
-			end
-		end
-	end
-	
 	-- Gesture loop
 	
 	if vars.tools_misc_gestureloop then
@@ -5133,7 +5132,7 @@ hook.Add("Tick", vars.hookname, function()
 				local id = vars.darkrp_gestures.dance or -1
 				
 				if id ~= -1 then
-					detours.RunConsoleCommand("_DarkRP_DoAnimation ", id)
+					meta_pl.ConCommand(LocalPlayer(), "_DarkRP_DoAnimation " .. id)
 					
 					local sid, slen = meta_en.LookupSequence(LocalPlayer(), meta_en.GetSequenceName(LocalPlayer(), meta_en.SelectWeightedSequence(LocalPlayer(), id)))
 					
@@ -5148,7 +5147,7 @@ hook.Add("Tick", vars.hookname, function()
 			end
 		else
 			if not meta_pl.IsPlayingTaunt(LocalPlayer()) then
-				detours.RunConsoleCommand("act", dance)
+				meta_pl.ConCommand(LocalPlayer(), "act ".. dance)
 			end
 		end
 	end
@@ -5956,7 +5955,7 @@ timer.Create(vars.hookname, 1, 0, function() -- Funny timer
 					continue
 				end
 				
-				detours.RunConsoleCommand("ulx", "psay", meta_pl.GetName(v), vars.tools_misc_psay_message)
+				meta_pl.ConCommand(LocalPlayer(), "ulx psay \"" .. meta_pl.GetName(v) .. "\" " .. vars.tools_misc_psay_message)
 			end
 		end
 	end
