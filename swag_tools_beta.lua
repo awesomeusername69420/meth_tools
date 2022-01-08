@@ -101,9 +101,6 @@ local file = tCopy(G_.file)
 local game = tCopy(G_.game)
 local gameevent = tCopy(G_.gameevent)
 local GetConVar = G_.GetConVar
-local GetConVarNumber = G_.GetConVarNumber
-local GetConVarString = G_.GetConVarString
-local GetConVar_Internal = G_.GetConVar_Internal
 local gui = tCopy(G_.gui)
 local hook = tCopy(G_.hook)
 local HSVToColor = G_.HSVToColor
@@ -490,19 +487,9 @@ local vars = {
 	["tools_misc_tickshoot"] = false,
 	
 	-- Detours
-	["detours_cvars"] = true,
+	["detours_cmds"] = true,
 	["detours_concommand_GetTable"] = true,
 	["detours_concommand_Remove"] = true,
-	["detours_cvars_AddChangeCallback"] = true,
-	["detours_cvars_Bool"] = true,
-	["detours_cvars_Number"] = true,
-	["detours_cvars_RemoveChangeCallback"] = true,
-	["detours_cvars_GetConVarCallbacks"] = true,
-	["detours_cvars_String"] = true,
-	["detours_GetConVar"] = true,
-	["detours_GetConVarNumber"] = true,
-	["detours_GetConVarString"] = true,
-	["detours_GetConVar_Internal"] = true,
 	["detours_IsConCommandBlocked"] = true,
 	
 	["detours_file"] = true,
@@ -673,9 +660,9 @@ local menu = {
 	["Detours"] = {
 		{"sect", 25, 25, 525, 65, "Master"},
 		{"cb", 35, 40, "File Protection", "detours_file"},
-		{"cb", 180, 40, "CVAR Protection", "detours_cvars"},
-		{"cb", 325, 40, "Hook Protection", "detours_hook"},
+		{"cb", 180, 40, "ConCommand Protection", "detours_cmds"},
 		{"cb", 35, 65, "Timer Protection", "detours_timer"},
+		{"cb", 180, 65, "Hook Protection", "detours_hook"},
 		
 		{"sect", 25, 100, 525, 90, "File Detours"},
 		{"cb", 35, 115, "Append", "detours_file_Append"},
@@ -690,51 +677,42 @@ local menu = {
 		{"cb", 180, 165, "Time", "detours_file_Time"},
 		{"cb", 325, 165, "Write", "detours_file_Write"},
 		
-		{"sect", 25, 200, 525, 115, "CVAR Detours"},
+		{"sect", 25, 200, 525, 40, "ConCommand Detours"},
 		{"cb", 35, 215, "GetTable", "detours_concommand_GetTable"},
 		{"cb", 180, 215, "Remove", "detours_concommand_Remove"},
-		{"cb", 325, 215, "AddChangeCallback", "detours_cvars_AddChangeCallback"},
-		{"cb", 35, 240, "Bool", "detours_cvars_Bool"},
-		{"cb", 180, 240, "Number", "detours_cvars_Number"},
-		{"cb", 325, 240, "RemoveChangeCallback", "detours_cvars_RemoveChangeCallback"},
-		{"cb", 35, 265, "String", "detours_cvars_String"},
-		{"cb", 180, 265, "GetConVar", "detours_GetConVar"},
-		{"cb", 325, 265, "GetConVarNumber", "detours_GetConVarNumber"},
-		{"cb", 35, 290, "GetConVarString", "detours_GetConVarString"},
-		{"cb", 180, 290, "GetConVarInternal", "detours_GetConVar_Internal"},
-		{"cb", 325, 290, "IsConCommandBlocked", "detours_IsConCommandBlocked"},
+		{"cb", 325, 215, "IsConCommandBlocked", "detours_IsConCommandBlocked"},
 		
-		{"sect", 25, 325, 525, 90, "Timer Detours"},
-		{"cb", 35, 340, "Adjust", "detours_timer_Adjust"},
-		{"cb", 180, 340, "Create", "detours_timer_Create"},
-		{"cb", 325, 340, "Destroy", "detours_timer_Destroy"},
-		{"cb", 450, 340, "Exists", "detours_timer_Exists"},
-		{"cb", 35, 365, "Pause", "detours_timer_Pause"},
-		{"cb", 180, 365, "Remove", "detours_timer_Remove"},
-		{"cb", 325, 365, "RepsLeft", "detours_timer_RepsLeft"},
-		{"cb", 450, 365, "Start", "detours_timer_Start"},
-		{"cb", 35, 390, "Stop", "detours_timer_Stop"},
-		{"cb", 180, 390, "TimeLeft", "detours_timer_TimeLeft"},
-		{"cb", 325, 390, "Toggle", "detours_timer_Toggle"},
-		{"cb", 450, 390, "UnPause", "detours_timer_UnPause"},
+		{"sect", 25, 250, 525, 90, "Timer Detours"},
+		{"cb", 35, 265, "Adjust", "detours_timer_Adjust"},
+		{"cb", 180, 265, "Create", "detours_timer_Create"},
+		{"cb", 325, 265, "Destroy", "detours_timer_Destroy"},
+		{"cb", 450, 265, "Exists", "detours_timer_Exists"},
+		{"cb", 35, 290, "Pause", "detours_timer_Pause"},
+		{"cb", 180, 290, "Remove", "detours_timer_Remove"},
+		{"cb", 325, 290, "RepsLeft", "detours_timer_RepsLeft"},
+		{"cb", 450, 290, "Start", "detours_timer_Start"},
+		{"cb", 35, 315, "Stop", "detours_timer_Stop"},
+		{"cb", 180, 315, "TimeLeft", "detours_timer_TimeLeft"},
+		{"cb", 325, 315, "Toggle", "detours_timer_Toggle"},
+		{"cb", 450, 315, "UnPause", "detours_timer_UnPause"},
 		
-		{"sect", 25, 425, 525, 40, "Hook Detours"},
-		{"cb", 35, 440, "Add", "detours_hook_Add"},
-		{"cb", 180, 440, "Remove", "detours_hook_Remove"},
-		{"cb", 325, 440, "GetTable", "detours_hook_GetTable"},
+		{"sect", 25, 350, 525, 40, "Hook Detours"},
+		{"cb", 35, 365, "Add", "detours_hook_Add"},
+		{"cb", 180, 365, "Remove", "detours_hook_Remove"},
+		{"cb", 325, 365, "GetTable", "detours_hook_GetTable"},
 		
-		{"sect", 25, 475, 525, 115, "Miscellaneous Detours"},
-		{"cb", 35, 490, "gui.MousePos", "detours_gui_MousePos"},
-		{"cb", 180, 490, "gui.MouseX", "detours_gui_MouseX"},
-		{"cb", 325, 490, "gui.MouseY", "detours_gui_MouseY"},
-		{"cb", 450, 490, "gui.OpenURL", "detours_gui_OpenURL"},
-		{"cb", 35, 515, "vgui.CursorVisible", "detours_vgui_CursorVisible"},
-		{"cb", 180, 515, "render.DrawTextureToScreen", "detours_render_DrawTextureToScreen"},
-		{"cb", 35, 540, "RunConsoleCommand", "detours_RunConsoleCommand"},
-		{"cb", 180, 540, "table.Empty", "detours_table_Empty"},
-		{"cb", 325, 540, "taunt_camera", "detours_taunt_camera"},
-		{"cb", 35, 565, "cam.ApplyShake", "detours_cam_ApplyShake"},
-		{"cb", 180, 565, "util.ScreenShake", "detours_util_ScreenShake"},
+		{"sect", 25, 400, 525, 115, "Miscellaneous Detours"},
+		{"cb", 35, 415, "gui.MousePos", "detours_gui_MousePos"},
+		{"cb", 180, 415, "gui.MouseX", "detours_gui_MouseX"},
+		{"cb", 325, 415, "gui.MouseY", "detours_gui_MouseY"},
+		{"cb", 450, 415, "gui.OpenURL", "detours_gui_OpenURL"},
+		{"cb", 35, 440, "vgui.CursorVisible", "detours_vgui_CursorVisible"},
+		{"cb", 180, 440, "render.DrawTextureToScreen", "detours_render_DrawTextureToScreen"},
+		{"cb", 35, 465, "RunConsoleCommand", "detours_RunConsoleCommand"},
+		{"cb", 180, 465, "table.Empty", "detours_table_Empty"},
+		{"cb", 325, 465, "taunt_camera", "detours_taunt_camera"},
+		{"cb", 35, 490, "cam.ApplyShake", "detours_cam_ApplyShake"},
+		{"cb", 180, 490, "util.ScreenShake", "detours_util_ScreenShake"},
 	},
 	
 	["Config"] = {
@@ -1266,7 +1244,7 @@ local function initDetours() -- Rest of the detours
 		local og, at = concommand.GetTable()
 		local cb = tCopy(og)
 		
-		if vars.detours_cvars and vars.detours_concommand_GetTable then
+		if vars.detours_cmds and vars.detours_concommand_GetTable then
 			for k, _ in pairs(cb) do
 				if k == "st_menu" then
 					cb[k] = nil
@@ -1284,7 +1262,7 @@ local function initDetours() -- Rest of the detours
 			return
 		end
 		
-		if vars.detours_cvars and vars.detours_concommand_Remove then
+		if vars.detours_cmds and vars.detours_concommand_Remove then
 			if cmd == "st_menu" then
 				alert("Blocked concommand.Remove()", vars.logs_detours, "d")
 				return
@@ -1299,7 +1277,7 @@ local function initDetours() -- Rest of the detours
 			return nil
 		end
 		
-		if vars.detours_cvars and vars.detours_GetConVar then
+		if vars.detours_cmds and vars.detours_GetConVar then
 			if cmd == "st_menu" then
 				alert("Blocked GetConVar()", vars.logs_detours, "d")
 				return nil
@@ -1314,7 +1292,7 @@ local function initDetours() -- Rest of the detours
 			return 0
 		end
 		
-		if vars.detours_cvars and vars.detours_GetConVarNumber then
+		if vars.detours_cmds and vars.detours_GetConVarNumber then
 			if cmd == "st_menu" then
 				alert("Blocked GetConVarNumber()", vars.logs_detours, "d")
 				return 0
@@ -1329,7 +1307,7 @@ local function initDetours() -- Rest of the detours
 			return ""
 		end
 		
-		if vars.detours_cvars and vars.detours_GetConVarString then
+		if vars.detours_cmds and vars.detours_GetConVarString then
 			if cmd == "st_menu" then
 				alert("Blocked GetConVarString()", vars.logs_detours, "d")
 				return ""
@@ -1344,7 +1322,7 @@ local function initDetours() -- Rest of the detours
 			return
 		end
 		
-		if vars.detours_cvars and vars.detours_GetConVar_Internal then
+		if vars.detours_cmds and vars.detours_GetConVar_Internal then
 			if cmd == "st_menu" then
 				alert("Blocked GetConVar_Internal()", vars.logs_detours, "d")
 				return
@@ -1361,7 +1339,7 @@ local function initDetours() -- Rest of the detours
 			return
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_GetConVarCallbacks then
+		if vars.detours_cmds and vars.detours_cmds_GetConVarCallbacks then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.GetConVarCallbacks()", vars.logs_detours, "d")
 				return nil
@@ -1380,7 +1358,7 @@ local function initDetours() -- Rest of the detours
 			return
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_AddChangeCallback then
+		if vars.detours_cmds and vars.detours_cmds_AddChangeCallback then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.AddChangeCallback()", vars.logs_detours, "d")
 				return
@@ -1399,7 +1377,7 @@ local function initDetours() -- Rest of the detours
 			return
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_RemoveChangeCallback then
+		if vars.detours_cmds and vars.detours_cmds_RemoveChangeCallback then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.RemoveChangeCallback()", vars.logs_detours, "d")
 				return
@@ -1416,7 +1394,7 @@ local function initDetours() -- Rest of the detours
 			return def
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_Bool then
+		if vars.detours_cmds and vars.detours_cmds_Bool then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.Bool()", vars.logs_detours, "d")
 				return def
@@ -1433,7 +1411,7 @@ local function initDetours() -- Rest of the detours
 			return def
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_Number then
+		if vars.detours_cmds and vars.detours_cmds_Number then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.Number()", vars.logs_detours, "d")
 				return def
@@ -1450,7 +1428,7 @@ local function initDetours() -- Rest of the detours
 			return def
 		end
 		
-		if vars.detours_cvars and vars.detours_cvars_String then
+		if vars.detours_cmds and vars.detours_cmds_String then
 			if cmd == "st_menu" then
 				alert("Blocked cvars.String()", vars.logs_detours, "d")
 				return def
