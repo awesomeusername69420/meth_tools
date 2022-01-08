@@ -336,6 +336,7 @@ local colors = {
 
 local vars = {
 	["menu"] = false,
+	["menu_fade"] = true,
 	["menu_tab"] = "render",
 	["menu_mousedown"] = false,
 	["menu_mousedelay"] = false,
@@ -745,13 +746,14 @@ local menu = {
 		{"clr", 425, 205, 105, 25, "MiniMenu BG", "background_mini"},
 		{"clr", 305, 235, 110, 25, "MiniMenu Head", "back_min_head"},
 		
-		{"sect", 25, 290, 295, 115, "Menu"},
+		{"sect", 25, 290, 295, 140, "Menu"},
 		{"cb", 35, 305, "Menu Background", "menu_background"},
 		{"drp", 209, 305, 100,  "Background Style", {"blur", "color"}, "menu_background_style"},
 		{"cb", 35, 330, "MiniMenu Background", "menu_background_mini"},
 		{"drp", 209, 330, 100, "Background Style", {"blur", "color"}, "menu_background_mini_style"},
 		{"sldr", 60, 355, 1, 10, 100, 0, "Blur - Scale", "menu_background_blur_scale"},
 		{"cb", 60, 380, "Blur Updates Screenspace", "menu_background_blur_updatetexture"},
+		{"cb", 35, 405, "Menu Fade In/Out", "menu_fade"},
 		
 		{"sect", 330, 290, 220, 90, "Config"},
 	},
@@ -3190,7 +3192,7 @@ local swag = {
 		
 		local ismain = x == nil
 		
-		if ismain then
+		if ismain and vars.menu_fade then
 			if not cache.menu_background_start or vars.menu ~= cache.menu_background_lerp_last then
 				cache.menu_background_start = SysTime()
 			end
@@ -3212,6 +3214,10 @@ local swag = {
 		
 		cache.menu_background_lerp_last = vars.menu
 		
+		if not vars.menu_background then -- DrawMenuBackground updates the fade so if there isn't any background just return
+			return
+		end
+		
 		x = x or 0
 		y = y or 0
 		w = w or ScrW()
@@ -3222,7 +3228,7 @@ local swag = {
 		local dostyle = style == "m" and vars.menu_background_style or vars.menu_background_mini_style
 		local bgcolor = style == "m" and copyColor(getColor("background")) or copyColor(getColor("background_mini"))
 		
-		if ismain then
+		if ismain and vars.menu_fade then
 			bgcolor.a = math.Clamp((bgcolor.a + cache.menu_background_step) - 255, 0, 255)
 		end
 		
@@ -4496,7 +4502,7 @@ if ismeth then
 			
 			-- Render menu above everything
 			
-			if (vars.menu and vars.menu_background) or (vars.menu_background and cache.menu_background_step > 0) then
+			if (vars.menu and vars.menu_background) or (vars.menu_fade and (cache.menu_background_step > 0 or vars.menu)) then
 				swag.DrawMenuBackground()
 			end
 			
@@ -4600,7 +4606,7 @@ if ismeth then
 				surface.DrawLine(x + 10, y + 21, (x + w) - 10, y + 21)
 			end
 			
-			if vars.menu or (vars.menu_background and cache.menu_background_step > 0) then
+			if vars.menu or (vars.menu_fade and cache.menu_background_step > 0) then
 				drawMenu()
 			end
 			
@@ -4622,7 +4628,7 @@ end)
 
 if not ismeth then
 	hook.Add("DrawOverlay", vars.hookname, function()
-		if (vars.menu and vars.menu_background) or (vars.menu_background and cache.menu_background_step > 0) then
+		if (vars.menu and vars.menu_background) or (vars.menu_fade and (cache.menu_background_step > 0 or vars.menu) then
 			swag.DrawMenuBackground()
 		end
 		
@@ -4634,7 +4640,7 @@ if not ismeth then
 			doTraitorDetector()
 		end
 		
-		if vars.menu or (vars.menu_background and cache.menu_background_step > 0) then
+		if vars.menu or (vars.menu_fade and cache.menu_background_step > 0) then
 			drawMenu()
 		else
 			vars.menu_dragging = nil
