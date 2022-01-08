@@ -3191,27 +3191,31 @@ local swag = {
 		end
 		
 		local ismain = x == nil
+		local step = cache.menu_background_step
 		
 		if ismain and vars.menu_fade then
 			if not cache.menu_background_start or vars.menu ~= cache.menu_background_lerp_last then
 				cache.menu_background_start = SysTime()
 			end
 			
-			local lerptime = (SysTime() - cache.menu_background_start) / 0.3
-			
-			if vars.menu then
-				cache.menu_background_step = Lerp(lerptime, 0, 255)
-			else
-				cache.menu_background_step = Lerp(lerptime, 255, 0)
+			if (vars.menu and step < 255) or (not vars.menu and step > 0) then
+				local lerptime = (SysTime() - cache.menu_background_start) / 0.3
+				
+				if vars.menu then
+					step = Lerp(lerptime, 0, 255)
+				else
+					step = Lerp(lerptime, 255, 0)
+				end
+				
+				step = math.Clamp(step, 0, 255)
 			end
 			
-			cache.menu_background_step = math.Clamp(cache.menu_background_step, 0, 255)
-			
-			if not vars.menu and cache.menu_background_step == 0 then
+			if not vars.menu and step == 0 then
 				cache.menu_background_start = nil
 			end
 		end
 		
+		cache.menu_background_step = step
 		cache.menu_background_lerp_last = vars.menu
 		
 		if not vars.menu_background then -- DrawMenuBackground updates the fade so if there isn't any background just return
@@ -3229,7 +3233,7 @@ local swag = {
 		local bgcolor = style == "m" and copyColor(getColor("background")) or copyColor(getColor("background_mini"))
 		
 		if ismain and vars.menu_fade then
-			bgcolor.a = math.Clamp((bgcolor.a + cache.menu_background_step) - 255, 0, 255)
+			bgcolor.a = math.Clamp((bgcolor.a + step) - 255, 0, 255)
 		end
 		
 		surface.SetDrawColor(bgcolor)
