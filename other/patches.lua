@@ -19,6 +19,18 @@ local stuff = {
 	apiperms = meth_lua_api.util.GetPermissions() or {}
 }
 
+local function normalizeAngle(n, r)
+	while n > r do
+		n = n - r
+	end
+
+	while n < 0 - r do
+		n = n + r
+	end
+
+	return n
+end
+
 if stuff.apiperms.CheatSettings then
 	if not stuff.ogaa then
 		stuff.ogaa = meth_lua_api.var.GetVarInt("General.Options.Enabled") % 256
@@ -71,8 +83,10 @@ hook.Add("InitPostEntity", stuff.name, function()
 		end
 	end)
 
-	if stuff.apiperms.CheatSettings then-- API fixes
+	if stuff.apiperms.CheatSettings then -- API fixes + Additions
 		meth_lua_api.var.GetVarInt = function(var) -- Stop API returning retarded numbers sometimes
+			var = string.Trim(var)
+
 			local og = stuff.ogapi.var.GetVarInt(var)
 
 			if string.find(string.lower(var), "color") then -- Fix color calls
@@ -82,18 +96,46 @@ hook.Add("InitPostEntity", stuff.name, function()
 			return og % 256
 		end
 
+		meth_lua_api.var.GetVarFloat = function(var) -- Gay
+			var = string.Trim(var)
+
+			return stuff.ogapi.var.GetVarFloat(var)
+		end
+
+		meth_lua_api.var.SetVarFloat = function(var, val) -- Fix crashes from setting fucky custom antiaim angles + makes it act more like normal gmod
+			var = string.Trim(var)
+
+			if string.find(var, "Custom.Config.") then
+				if var == "Custom.Config.Custom Pitch" then
+					val = math.Clamp(val, -89, 89)
+				else
+					val = normalizeAngle(val, 360)
+				end
+			end
+
+			return stuff.ogapi.var.SetVarFloat(var, val)
+		end
+
+		meth_lua_api.var.SetVarInt = function(var, val) -- Gay
+			var = string.Trim(var)
+
+			return stuff.ogapi.var.SetVarInt(var, val)
+		end
+
 		meth_lua_api.var.GetVarColor = function(var) -- Convenient way to get colors from the API
-			local x = stuff.ogapi.var.GetVarInt(var)
+			var = string.Trim(var)
+
+			local og = stuff.ogapi.var.GetVarInt(var)
 			
 			local r, g, b
 			
-			r = x % 256
-			g = ((x - r) / 256) % 256
-			b = (((x - r) / 65536) - (g / 256)) + 256 
+			r = og % 256
+			g = ((og - r) / 256) % 256
+			b = (((og - r) / 65536) - (g / 256)) + 256 
 			
-			local a = math.floor(math.abs(x) / 16777216) 
+			local a = math.floor(math.abs(og) / 16777216) 
 			
-			if x < 0 then
+			if og < 0 then
 				a = 255 - a
 			end
 			
