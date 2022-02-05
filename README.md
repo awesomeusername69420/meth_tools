@@ -16,4 +16,5 @@ Designed to work with https://methamphetamine.solutions/ but most things will wo
 - China hats
 - Meth custom antiaim
 - Shitty circle strafer paste
+- Meth patch lua thing
 </details>
