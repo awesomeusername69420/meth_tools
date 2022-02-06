@@ -87,13 +87,13 @@ hook.Add("InitPostEntity", stuff.name, function()
 		meth_lua_api.var.GetVarInt = function(var) -- Stop API returning retarded numbers sometimes
 			var = string.Trim(var)
 
-			local og = stuff.ogapi.var.GetVarInt(var)
+			--local og = stuff.ogapi.var.GetVarInt(var)
 
-			if string.find(string.lower(var), "color") then -- Fix color calls
-				return og
-			end
+			--if string.find(string.lower(var), "color") then -- Fix color calls
+			--	return og
+			--end
 
-			return og % 256
+			return og --% 256
 		end
 
 		meth_lua_api.var.GetVarFloat = function(var) -- Gay
