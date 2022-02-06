@@ -13,7 +13,6 @@ local _reg = debug.getregistry()
 
 local stuff = {
 	name = string.char(math.random(97, 122)) .. tostring(math.random(-123456, 123456)),
-	called = false,
 	ogdebug = _reg[1],
 	ogapi = table.Copy(meth_lua_api),
 	apiperms = meth_lua_api.util.GetPermissions() or {},
@@ -194,23 +193,5 @@ hook.Add("InitPostEntity", stuff.name, function()
 			
 			return Color(r, g, b, a)
 		end
-	end
-
-	if meth_lua_api.callbacks then
-		meth_lua_api.callbacks.Add("OnHUDPaint", stuff.name, function() -- Fix API rendering with SetRenderTarget
-			if stuff.called then
-				return
-			end
-	
-			stuff.called = true
-	
-			local ogrt = render.GetRenderTarget()
-			render.SetRenderTarget()
-	
-			meth_lua_api.callbacks.OnHUDPaint()
-	
-			render.SetRenderTarget(ogrt)
-			stuff.called = false
-		end)
 	end
 end)
