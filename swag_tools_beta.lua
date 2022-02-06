@@ -1969,14 +1969,16 @@ local function initDetours() -- Rest of the detours
 		local rest = {...}
 		
 		if vars.detours_RunConsoleCommand then
+			local lcmd = string.lower(cmd)
+
 			for _, v in ipairs(badCommands) do
-				if string.find(cmd, v) then
+				if lcmd == v then
 					alert("Block RunConsoleCommand()", vars.logs_detours, "d")
 					return
 				end
-				
+
 				for _, r in ipairs(rest) do
-					if string.find(r, v) then
+					if v == string.lower(r) then
 						alert("Block RunConsoleCommand()", vars.logs_detours, "d")
 						return
 					end
