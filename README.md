@@ -17,4 +17,5 @@ Designed to work with https://methamphetamine.solutions/ but most things will wo
 - Meth custom antiaim
 - Shitty circle strafer paste
 - Meth patch lua thing
+- Manual antiaim
 </details>
