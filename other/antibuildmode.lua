@@ -17,7 +17,7 @@ timer.Create("bruh", 0.3, 0, function()
 
 			local ind = v:EntIndex()
 		
-			if v:GetNWBool("BuildMode", false) or v:GetNWBool("buildmode") or v:GetNWBool("_Kyle_Buildmode", false) then
+			if v:GetNWBool("BuildMode", false) or v:GetNWBool("buildmode", false) or v:GetNWBool("_Kyle_Buildmode", false) then
 				mutil.AddFriend(ind)
 			else
 				if mutil.IsFriend(ind) then
