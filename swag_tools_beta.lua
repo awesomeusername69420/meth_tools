@@ -358,7 +358,6 @@ local vars = {
 	["menu_colorpicker_var"] = nil,
 	["hookname"] = randomString(),
 	["renderpanic"] = false,
-	["rendercall"] = false, -- For meth_lua_api and SetRenderTarget
 	["darkrp_gestures"] = {
 		["dance"] = ACT_GMOD_TAUNT_DANCE,
 		["muscle"] = ACT_GMOD_TAUNT_MUSCLE,
@@ -853,8 +852,8 @@ local badCommands = {
 	"-voicerecord",
 	"-zoom",
 	"bind",
-	"bind_mac",
 	"bindtoggle",
+	"bind_mac",
 	"cl_chatfilters",
 	"cl_interp",
 	"cl_interp_all",
@@ -4153,13 +4152,7 @@ if ismeth then
 	if mcall then
 		mcall.Add("OnHUDPaint", vars.hookname, function()
 			-- Fixes rendering with SetRenderTarget
-		
-			if vars.rendercall then
-				return
-			end
-			
-			vars.rendercall = true
-			
+
 			local ogrt = render.GetRenderTarget()
 			render.SetRenderTarget()
 		
@@ -4615,7 +4608,6 @@ if ismeth then
 			end
 			
 			render.SetRenderTarget(ogrt)
-			vars.rendercall = false
 		end)
 	end
 end
