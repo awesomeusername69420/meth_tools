@@ -16,10 +16,37 @@ local stuff = {
 	called = false,
 	ogdebug = _reg[1],
 	ogapi = table.Copy(meth_lua_api),
-	apiperms = meth_lua_api.util.GetPermissions() or {}
+	apiperms = meth_lua_api.util.GetPermissions() or {},
+
+	getvarwhitelist = { -- Fixing these vars will break them
+		"color",
+		"custom.config",
+		"entity.misc entity.max distance",
+		"player.ignore.max distance",
+		"player.config.player font weight",
+		"entity.config.entity font weight",
+		"general.exploits.freeze power",
+		"misc.server lagger.server lagger custom value",
+		"aimbot.position adjustment.fake latency"
+	}
 }
 
+local function isWhiteListed(var)
+	var = string.lower(var or "")
+
+	for _, v in ipairs(stuff.getvarwhitelist) do
+		if string.find(var, v) then
+			return true
+		end
+	end
+
+	return false
+end
+
 local function normalizeAngle(n, r)
+	n = n or 0
+	r = r or 0
+
 	while n > r do
 		n = n - r
 	end
@@ -58,7 +85,7 @@ hook.Add("InitPostEntity", stuff.name, function()
 	hook.Add("PreDrawEffects", stuff.name, function()
 		render.PushCustomClipPlane(Vector(0, 0, 0), 0) -- Fix clipping issues
 
-		if stuff.apiperms.CheatSettings then -- Prevent fake angle chams rendering in mirrors, cameras, etc
+		if stuff.apiperms.CheatSettings then -- Prevent fake angle chams rendering in mirrors, cameras, etc (in first person)
 			meth_lua_api.var.SetVarInt("Player.Misc Players.Fake Angle Chams", meth_lua_api.var.GetVarInt("Player.Third Person.Third Person"))
 		end
 	end)
@@ -75,7 +102,7 @@ hook.Add("InitPostEntity", stuff.name, function()
 				meth_lua_api.var.SetVarInt("General.Options.Enabled", stuff.ogaa)
 				stuff.ogaa = nil
 			end
-
+			
 			if meth_lua_api.var.GetVarInt("Player.Free Cam.Free Cam") == 1 then
 				cmd:ClearButtons()
 				cmd:ClearMovement()
@@ -85,24 +112,42 @@ hook.Add("InitPostEntity", stuff.name, function()
 
 	if stuff.apiperms.CheatSettings then -- API fixes + Additions
 		meth_lua_api.var.GetVarInt = function(var) -- Stop API returning retarded numbers sometimes
+			if not var then
+				return
+			end
+
 			var = string.Trim(var)
 
-			--local og = stuff.ogapi.var.GetVarInt(var)
+			local og = stuff.ogapi.var.GetVarInt(var)
 
-			--if string.find(string.lower(var), "color") then -- Fix color calls
-			--	return og
-			--end
+			if isWhiteListed(var) then -- Fix certain calls
+				return og
+			end
 
-			return og --% 256
+			return og % 256
 		end
 
-		meth_lua_api.var.GetVarFloat = function(var) -- Gay
+		meth_lua_api.var.GetVarFloat = function(var)
+			if not var then
+				return
+			end
+
 			var = string.Trim(var)
 
-			return stuff.ogapi.var.GetVarFloat(var)
+			local og = stuff.ogapi.var.GetVarFloat(var)
+
+			if isWhiteListed(var) then -- Fix certain calls
+				return og
+			end
+
+			return og % 256
 		end
 
 		meth_lua_api.var.SetVarFloat = function(var, val) -- Fix crashes from setting fucky custom antiaim angles + makes it act more like normal gmod
+			if not var or not val then
+				return
+			end
+
 			var = string.Trim(var)
 
 			if string.find(var, "Custom.Config.") then
@@ -117,12 +162,20 @@ hook.Add("InitPostEntity", stuff.name, function()
 		end
 
 		meth_lua_api.var.SetVarInt = function(var, val) -- Gay
+			if not var or not val then
+				return
+			end
+
 			var = string.Trim(var)
 
 			return stuff.ogapi.var.SetVarInt(var, val)
 		end
 
 		meth_lua_api.var.GetVarColor = function(var) -- Convenient way to get colors from the API
+			if not var then
+				return
+			end
+
 			var = string.Trim(var)
 
 			local og = stuff.ogapi.var.GetVarInt(var)
