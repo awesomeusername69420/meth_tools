@@ -336,6 +336,7 @@ local colors = {
 
 local vars = {
 	["menu"] = false,
+	["menu_fade"] = true,
 	["menu_tab"] = "render",
 	["menu_mousedown"] = false,
 	["menu_mousedelay"] = false,
@@ -357,7 +358,6 @@ local vars = {
 	["menu_colorpicker_var"] = nil,
 	["hookname"] = randomString(),
 	["renderpanic"] = false,
-	["rendercall"] = false, -- For meth_lua_api and SetRenderTarget
 	["darkrp_gestures"] = {
 		["dance"] = ACT_GMOD_TAUNT_DANCE,
 		["muscle"] = ACT_GMOD_TAUNT_MUSCLE,
@@ -745,13 +745,14 @@ local menu = {
 		{"clr", 425, 205, 105, 25, "MiniMenu BG", "background_mini"},
 		{"clr", 305, 235, 110, 25, "MiniMenu Head", "back_min_head"},
 		
-		{"sect", 25, 290, 295, 115, "Menu"},
+		{"sect", 25, 290, 295, 140, "Menu"},
 		{"cb", 35, 305, "Menu Background", "menu_background"},
 		{"drp", 209, 305, 100,  "Background Style", {"blur", "color"}, "menu_background_style"},
 		{"cb", 35, 330, "MiniMenu Background", "menu_background_mini"},
 		{"drp", 209, 330, 100, "Background Style", {"blur", "color"}, "menu_background_mini_style"},
 		{"sldr", 60, 355, 1, 10, 100, 0, "Blur - Scale", "menu_background_blur_scale"},
 		{"cb", 60, 380, "Blur Updates Screenspace", "menu_background_blur_updatetexture"},
+		{"cb", 35, 405, "Menu Fade In/Out", "menu_fade"},
 		
 		{"sect", 330, 290, 220, 90, "Config"},
 	},
@@ -851,8 +852,8 @@ local badCommands = {
 	"-voicerecord",
 	"-zoom",
 	"bind",
-	"bind_mac",
 	"bindtoggle",
+	"bind_mac",
 	"cl_chatfilters",
 	"cl_interp",
 	"cl_interp_all",
@@ -2196,6 +2197,10 @@ local function mousein(a, b, c, d)
 end
 
 local function canclick(a, b, c, d, igdly)
+	if not vars.menu then
+		return false
+	end
+
 	local extra = true
 
 	if not igdly then
@@ -3185,28 +3190,36 @@ local swag = {
 		end
 		
 		local ismain = x == nil
+		local step = cache.menu_background_step
 		
-		if ismain then
+		if ismain and vars.menu_fade then
 			if not cache.menu_background_start or vars.menu ~= cache.menu_background_lerp_last then
 				cache.menu_background_start = SysTime()
 			end
 			
-			local lerptime = (SysTime() - cache.menu_background_start) / 0.3
-			
-			if vars.menu then
-				cache.menu_background_step = Lerp(lerptime, 0, 255)
-			else
-				cache.menu_background_step = Lerp(lerptime, 255, 0)
+			if (vars.menu and step < 255) or (not vars.menu and step > 0) then
+				local lerptime = (SysTime() - cache.menu_background_start) / 0.3
+				
+				if vars.menu then
+					step = Lerp(lerptime, 0, 255)
+				else
+					step = Lerp(lerptime, 255, 0)
+				end
+				
+				step = math.Clamp(step, 0, 255)
 			end
 			
-			cache.menu_background_step = math.Clamp(cache.menu_background_step, 0, 255)
-			
-			if not vars.menu and cache.menu_background_step == 0 then
+			if not vars.menu and step == 0 then
 				cache.menu_background_start = nil
 			end
 		end
 		
+		cache.menu_background_step = step
 		cache.menu_background_lerp_last = vars.menu
+		
+		if not vars.menu_background then -- DrawMenuBackground updates the fade so if there isn't any background just return
+			return
+		end
 		
 		x = x or 0
 		y = y or 0
@@ -3218,8 +3231,8 @@ local swag = {
 		local dostyle = style == "m" and vars.menu_background_style or vars.menu_background_mini_style
 		local bgcolor = style == "m" and copyColor(getColor("background")) or copyColor(getColor("background_mini"))
 		
-		if ismain then
-			bgcolor.a = math.Clamp((bgcolor.a + cache.menu_background_step) - 255, 0, 255)
+		if ismain and vars.menu_fade then
+			bgcolor.a = math.Clamp((bgcolor.a + step) - 255, 0, 255)
 		end
 		
 		surface.SetDrawColor(bgcolor)
@@ -3288,6 +3301,7 @@ local function drawMenu()
 		
 		draw.NoTexture()
 		
+		surface.SetAlphaMultiplier(cache.menu_background_step / 255)
 		render.SetScissorRect(x, y, x + w, y + h, true)
 		
 		surface.SetDrawColor(colors.black)
@@ -3298,7 +3312,7 @@ local function drawMenu()
 		for i = 1, grad do
 			local c = grad - i
 			
-			surface.SetDrawColor(c, c, c, 255)
+			surface.SetDrawColor(c, c, c, cache.menu_background_step)
 			surface.DrawLine(x, y + i, x + w, y + i)
 		end
 		
@@ -3418,7 +3432,7 @@ local function drawMenu()
 			local lw, lh = 525, 490
 			
 			render.SetScissorRect(ox + 25, oy + 25, ox + lw + 25, oy + lh + 25, true)
-			
+
 			surface.SetDrawColor(colors.back_t)
 			surface.DrawRect(ox + 25, oy + 25, lw, lh)
 			
@@ -3470,6 +3484,7 @@ local function drawMenu()
 		end
 	end
 	
+	surface.SetAlphaMultiplier(1)
 	render.SetScissorRect(0, 0, 0, 0, false)
 	
 	if not vars.menu_mousedown then
@@ -3485,8 +3500,10 @@ local function drawMenu()
 		vars.menu_mousedelay = true
 	end
 	
-	if not detours.vgui_CursorVisible() then
-		gui.EnableScreenClicker(true)
+	if vars.menu then
+		if not detours.vgui_CursorVisible() then
+			gui.EnableScreenClicker(true)
+		end
 	end
 end
 
@@ -4135,13 +4152,7 @@ if ismeth then
 	if mcall then
 		mcall.Add("OnHUDPaint", vars.hookname, function()
 			-- Fixes rendering with SetRenderTarget
-		
-			if vars.rendercall then
-				return
-			end
-			
-			vars.rendercall = true
-			
+
 			local ogrt = render.GetRenderTarget()
 			render.SetRenderTarget()
 		
@@ -4488,7 +4499,7 @@ if ismeth then
 			
 			-- Render menu above everything
 			
-			if (vars.menu and vars.menu_background) or (vars.menu_background and cache.menu_background_step > 0) then
+			if (vars.menu and vars.menu_background) or (vars.menu_fade and (cache.menu_background_step > 0 or vars.menu)) then
 				swag.DrawMenuBackground()
 			end
 			
@@ -4592,14 +4603,11 @@ if ismeth then
 				surface.DrawLine(x + 10, y + 21, (x + w) - 10, y + 21)
 			end
 			
-			if vars.menu then
-				
-				
+			if vars.menu or (vars.menu_fade and cache.menu_background_step > 0) then
 				drawMenu()
 			end
 			
 			render.SetRenderTarget(ogrt)
-			vars.rendercall = false
 		end)
 	end
 end
@@ -4616,7 +4624,7 @@ end)
 
 if not ismeth then
 	hook.Add("DrawOverlay", vars.hookname, function()
-		if (vars.menu and vars.menu_background) or (vars.menu_background and cache.menu_background_step > 0) then
+		if (vars.menu and vars.menu_background) or (vars.menu_fade and (cache.menu_background_step > 0 or vars.menu)) then
 			swag.DrawMenuBackground()
 		end
 		
@@ -4628,7 +4636,7 @@ if not ismeth then
 			doTraitorDetector()
 		end
 		
-		if vars.menu then
+		if vars.menu or (vars.menu_fade and cache.menu_background_step > 0) then
 			drawMenu()
 		else
 			vars.menu_dragging = nil
@@ -6085,13 +6093,21 @@ table.insert(menu.Config, 1, {"btn", 445, 305, 95, 25, "Load Config", function()
 end})
 
 table.insert(menu.Config, 1, {"btn", 340, 335, 200, 35, "Reset Settings", function()
-	local ogmenu = vars.menu -- Backup
-	local ogtab = vars.menu_tab
-	local ogmenupos = {
-		["x"] = vars.menu_x,
-		["y"] = vars.menu_y,
-		["w"] = vars.menu_w,
-		["h"] = vars.menu_h
+	local backup = { -- Backup important stuff
+		["menu"] = {
+			["en"] = vars.menu,
+			["tb"] = vars.menu_tab,
+			["x"] = vars.menu_x,
+			["y"] = vars.menu_y,
+			["w"] = vars.menu_w,
+			["h"] = vars.menu_h
+		},
+		
+		["cache"] = {
+			["step"] = cache.menu_background_step,
+			["scrw"] = cache.scrw,
+			["scrh"] = cache.scrh,
+		}
 	}
 
 	colors = tCopy(defcol)
@@ -6108,12 +6124,18 @@ table.insert(menu.Config, 1, {"btn", 340, 335, 200, 35, "Reset Settings", functi
 
 	vars = tCopy(defvar)
 
-	vars.menu = ogmenu -- Restore
-	vars.menu_tab = ogtab
-	vars.menu_x = ogmenupos.x
-	vars.menu_y = ogmenupos.y
-	vars.menu_w = ogmenupos.w
-	vars.menu_h = ogmenupos.h
+	-- Restore
+
+	vars.menu = backup.menu.en
+	vars.menu_tab = backup.menu.tb
+	vars.menu_x = backup.menu.x
+	vars.menu_y = backup.menu.y
+	vars.menu_w = backup.menu.w
+	vars.menu_h = backup.menu.h
+	
+	cache.menu_background_step = backup.cache.step
+	cache.scrw = backup.cache.scrw
+	cache.scrh = backup.cache.scrh
 	
 	alert("Settings reset")
 end})
