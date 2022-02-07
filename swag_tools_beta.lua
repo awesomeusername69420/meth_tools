@@ -928,6 +928,7 @@ local cache = { -- Vastly improves performance
 	["cp_ignore"] = true,
 	["drp_ignore"] = true,
 	["menu_background_step"] = 0,
+	["players"] = {},
 	["scrh"] = 0,
 	["scrw"] = 0,
 	["traitors"] = {},
@@ -2655,7 +2656,7 @@ local function getClosest(smart)
 	
 	local lpos = meta_en.GetPos(LocalPlayer())
 	
-	for _, v in ipairs(player.GetAll()) do
+	for _, v in ipairs(cache.players) do
 		if not validEntity(v) or v == LocalPlayer() then
 			continue
 		end
@@ -3987,7 +3988,7 @@ local function doHUDPaint()
 			local blend = render.GetBlend()
 		
 			cam.Start3D()
-				for _, v in ipairs(player.GetAll()) do
+				for _, v in ipairs(cache.players) do
 					if vars.renderpanic then
 						render.SetBlend(blend)
 						
@@ -4224,7 +4225,7 @@ if ismeth then
 							local mx, my = ScrW() / 2, ScrH() / 2
 							local lpos = meta_en.GetPos(LocalPlayer())
 							
-							for _, v in ipairs(player.GetAll()) do -- Get the best backtrack target base off cursor and distance
+							for _, v in ipairs(cache.players) do -- Get the best backtrack target base off cursor and distance
 								if not validEntity(v) or v == LocalPlayer() then
 									continue
 								end
@@ -5376,7 +5377,7 @@ hook.Add("Tick", vars.hookname, function()
 
 	if isttt then -- Get alive players to force last player to be traitor in TTT
 		if vars.tools_detectors_traitordetector then
-			for _, v in ipairs(player.GetAll()) do
+			for _, v in ipairs(cache.players) do
 				if not meta_en.IsValid(v) or not meta_pl.Alive(v) then
 					continue
 				end
@@ -5390,7 +5391,7 @@ hook.Add("Tick", vars.hookname, function()
 		table.Empty(traitors)
 		table.Empty(spectators)
 	
-		for _, v in ipairs(player.GetAll()) do
+		for _, v in ipairs(cache.players) do
 			if not meta_en.IsValid(v) or v == LocalPlayer() then
 				continue
 			end
@@ -5884,7 +5885,7 @@ hook.Add("DoAnimationEvent", vars.hookname, function(ply, event, data)
 	local tr = util.TraceLine({
 		start = src,
 		endpos = src + (dir * 32767),
-		filter = player.GetAll(),
+		filter = cache.players,
 		ignoreworld = false,
 		mask = MASK_SHOT,
 	})
@@ -5924,7 +5925,13 @@ hook.Add("player_hurt", vars.hookname, function(data) -- Shot Records
 	end
 end)
 
-timer.Create(vars.hookname, 1, 0, function() -- Funny timer
+timer.Create(vars.hookname, 0.3, 0, function() -- Funny timer
+	cache.players = {}
+
+	for _, v in ipairs(player.GetAll()) do
+		cache.players[#cache.players + 1] = v
+	end
+
 	-- Log handling
 	
 	if vars.logs then
@@ -5970,7 +5977,7 @@ timer.Create(vars.hookname, 1, 0, function() -- Funny timer
 		local cd, ac = detours.concommand_GetTable()
 	
 		if cd.ulx then
-			for _, v in ipairs(player.GetAll()) do
+			for _, v in ipairs(cache.players) do
 				if not meta_en.IsValid(v) or v == LocalPlayer() then
 					continue
 				end
