@@ -107,6 +107,8 @@ hook.Add("PlayerTraceAttack", tostring({}), function(ply, dinfo, dir, tr)
 	stuff.hitboxes[#stuff.hitboxes + 1] = {hitboxes, SysTime(), ply, engine.TickCount()}
 
 	timer.Simple(0, function()
-		ply._ShotTick = nil
+		if IsValid(ply) then
+			ply._ShotTick = nil
+		end
 	end)
 end)
