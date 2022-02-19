@@ -4,7 +4,7 @@
 
 local stuff = {
 	boxmat = CreateMaterial("", "UnlitGeneric", { -- Default color material but with alpha
-		["$alpha"] = 0.3,
+		["$alpha"] = 0.15,
 		["$basetexture"] = "color/white",
 		["$model"] = 1,
 		["$translucent"] = 1,
@@ -99,7 +99,7 @@ hook.Add("PlayerTraceAttack", tostring({}), function(ply, dinfo, dir, tr)
 				mins = mins,
 				maxs = maxs,
 				hitbox = ii,
-				col = tr.HitBox == ii and stuff.colors.red or color_white
+				col = (tr.HitGroup ~= 0 and tr.HitBox == ii) and stuff.colors.red or color_white
 			}
 		end
 	end
