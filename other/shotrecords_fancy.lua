@@ -1,3 +1,7 @@
+--[[
+	https://github.com/awesomeusername69420/meth_tools
+]]
+
 local stuff = {
 	boxmat = CreateMaterial("", "UnlitGeneric", { -- Default color material but with alpha
 		["$alpha"] = 0.3,
