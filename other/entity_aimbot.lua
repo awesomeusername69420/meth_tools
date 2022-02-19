@@ -107,7 +107,7 @@ local meth_bind_keys = { -- Hardcoded because I don't know how meth's keybinds w
 local function fixAngle(ang)
 	ang = ang or angle_zero
 
-	return Angle(math.Clamp(ang.pitch, -89, 89), math.NormalizeAngle(ang.yaw), math.NormalizeAngle(ang.roll))
+	return Angle(math.Remap(math.NormalizeAngle(ang.pitch), -180, 180, -89, 89), math.NormalizeAngle(ang.yaw), math.NormalizeAngle(ang.roll))
 end
 
 local function getKey(key)
