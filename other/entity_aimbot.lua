@@ -47,7 +47,6 @@ local stuff = {
 		}
 	},
 
-	entcache = {},
 	badents = {
 		player = true,
 		worldspawn = true
