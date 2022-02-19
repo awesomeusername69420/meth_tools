@@ -149,7 +149,7 @@ local function getBestTarget()
 	local mx, my = ScrW() / 2, ScrH() / 2
 
 	for _, v in ipairs(ents.GetAll()) do
-		if v:IsPlayer() or v:IsWorld() or v:IsDormant() or not stuff.aiments[v:GetClass()] or v:Health() < 1 then -- Don't waste time on bad entities
+		if v:IsPlayer() or v:IsWorld() or v:IsDormant() or not stuff.aiments[v:GetClass()] or ((v:IsNPC() or v:IsNextBot()) and v:Health() < 1) then -- Don't waste time on bad entities
 			continue
 		end
 
@@ -216,7 +216,7 @@ hook.Add("CreateMove", tostring({}), function(cmd)
 	if stuff.meth.aimbot.shooting then -- Aimbot entities
 		local targ = stuff.meth.aimbot.target
 
-		if not shouldAimbot() or not IsValid(targ) or targ:Health() < 1 then -- If stopped aimbotting or target goes away, stop
+		if not shouldAimbot() or not IsValid(targ) or ((targ:IsNPC() or targ:IsNextBot()) and targ:Health() < 1) then -- If stopped aimbotting or target goes away, stop
 			stuff.meth.aimbot.target = nil
 			stuff.meth.aimbot.shooting = false
 
