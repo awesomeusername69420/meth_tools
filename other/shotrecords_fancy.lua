@@ -22,9 +22,7 @@ meth_lua_api.callbacks.Add("OnHUDPaint", "", function()
 		render.SetMaterial(stuff.boxmat)
 
 		for k, v in ipairs(stuff.hitboxes) do
-			local spawn = v[2]
-
-			if curtime - spawn > 3 then
+			if curtime - v[2] > 3 then
 				remove[#remove + 1] = k
 				continue
 			end
