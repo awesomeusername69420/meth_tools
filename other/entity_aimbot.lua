@@ -4,6 +4,7 @@
 	Command(s):
 		_ents_add (class) -- Adds an entity class to the aimbot list
 		_ents_remove (class) -- Remove an entity class from the aimbot list
+		_ents_removeall -- Removes all entities from the aimbot list
 		_ents_eyetrace -- Prints the class of the entity you're looking at
 ]]
 
@@ -279,25 +280,25 @@ end)
 
 concommand.Add("_ents_add", function(p, c, args)
 	if not args[1] or stuff.badents[args[1]] then
-		MsgC(Color(255, 100, 100), "Entity class invalid")
+		MsgC(Color(255, 100, 100), "Entity class invalid\n")
 		surface.PlaySound("buttons/button10.wav")
 		return
 	end
 
 	if stuff.aiments[args[1]] then
-		MsgC(Color(255, 100, 100), "Entity class already in list")
+		MsgC(Color(255, 100, 100), "Entity class already in list\n")
 		surface.PlaySound("buttons/button10.wav")
 	else
 		stuff.aiments[args[1]] = true
 
-		MsgC(Color(100, 255, 100), "Entity class added to list")
+		MsgC(Color(100, 255, 100), "Entity class added to list\n")
 		surface.PlaySound("buttons/button14.wav")
 	end
 end)
 
 concommand.Add("_ents_remove", function(p, c, args)
 	if not args[1] then
-		MsgC(Color(255, 100, 100), "Entity class invalid")
+		MsgC(Color(255, 100, 100), "Entity class invalid\n")
 		surface.PlaySound("buttons/button10.wav")
 		return
 	end
@@ -305,22 +306,29 @@ concommand.Add("_ents_remove", function(p, c, args)
 	if stuff.aiments[args[1]] then
 		stuff.aiments[args[1]] = nil
 
-		MsgC(Color(100, 255, 100), "Entity class removed to list")
+		MsgC(Color(100, 255, 100), "Entity class removed to list\n")
 		surface.PlaySound("buttons/button14.wav")
 	else
-		MsgC(Color(255, 100, 100), "Entity class not in list")
+		MsgC(Color(255, 100, 100), "Entity class not in list\n")
 		surface.PlaySound("buttons/button10.wav")
 	end
+end)
+
+concommand.Add("_ents_removeall", function()
+	stuff.aiments = {}
+
+	MsgC(Color(100, 255, 100), "Entity table wiped\n")
+	surface.PlaySound("buttons/button14.wav")
 end)
 
 concommand.Add("_ents_eyetrace", function()
 	local ent = LocalPlayer():GetEyeTrace().Entity
 
 	if IsValid(ent) then
-		MsgC(Color(100, 255, 100), ent:GetClass())
+		MsgC(Color(100, 255, 100), ent:GetClass() .. "\n")
 		surface.PlaySound("buttons/button14.wav")
 	else
-		MsgC(Color(255, 100, 100), "No entity found")
+		MsgC(Color(255, 100, 100), "No entity found\n")
 		surface.PlaySound("buttons/button10.wav")
 	end
 end)
