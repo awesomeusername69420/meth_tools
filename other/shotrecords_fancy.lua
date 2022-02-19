@@ -18,7 +18,7 @@ local stuff = {
 	}
 }
 
-meth_lua_api.callbacks.Add("OnHUDPaint", "", function()
+meth_lua_api.callbacks.Add("OnHUDPaint", tostring({}), function()
 	local curtime = SysTime()
 	local remove = {}
 
@@ -43,7 +43,7 @@ meth_lua_api.callbacks.Add("OnHUDPaint", "", function()
 	end
 end)
 
-hook.Add("PlayerTraceAttack", "", function(ply, dinfo, dir, tr)
+hook.Add("PlayerTraceAttack", tostring({}), function(ply, dinfo, dir, tr)
 	local attacker = dinfo:GetAttacker()
 
 	if not IsValid(attacker) or attacker ~= LocalPlayer() or ply == LocalPlayer() or ply == attacker then
@@ -83,7 +83,7 @@ hook.Add("PlayerTraceAttack", "", function(ply, dinfo, dir, tr)
 				ang = ang,
 				mins = mins,
 				maxs = maxs,
-				col = tr.HitGroup == ply:GetHitBoxHitGroup(ii, i) and stuff.colors.red or color_white
+				col = tr.HitBox == ii and stuff.colors.red or color_white
 			}
 		end
 	end
