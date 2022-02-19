@@ -48,11 +48,13 @@ hook.Add("PlayerTraceAttack", tostring({}), function(ply, dinfo, dir, tr)
 	local tick = engine.TickCount()
 
 	if not IsValid(attacker) or attacker ~= LocalPlayer() or ply == LocalPlayer() or ply == attacker or (ply._ShotTick == tick) then
-		for _, v in ipairs(stuff.hitboxes) do
-			if v[3] == ply and v[4] == tick then
-				for _, h in ipairs(v[1]) do
-					if h.hitbox == tr.HitBox then
-						h.col = stuff.colors.red
+		if tr.HitGroup ~= 0 then
+			for _, v in ipairs(stuff.hitboxes) do
+				if v[3] == ply and v[4] == tick then
+					for _, h in ipairs(v[1]) do
+						if h.hitbox == tr.HitBox then
+							h.col = stuff.colors.red
+						end
 					end
 				end
 			end
