@@ -179,7 +179,7 @@ end
 	Hooks + Timers
 ]]
 
-timer.Create("@", 0.3, 0, function() -- Updates meth parameters
+timer.Create(tostring({}), 0.3, 0, function() -- Updates meth parameters
 	if not mvar then
 		return
 	end
@@ -201,7 +201,7 @@ timer.Create("@", 0.3, 0, function() -- Updates meth parameters
 	stuff.meth.aimbot.key = getKey(mvar.GetVarInt("Aimbot.Options.Key") % 256)
 end)
 
-hook.Add("CreateMove", "@", function(cmd)
+hook.Add("CreateMove", tostring({}), function(cmd)
 	if cmd:CommandNumber() == 0 or (not stuff.meth.aimbot.enabled and not stuff.meth.aimbot.shooting) then -- Don't shoot if aimbot is disabled
 		return
 	end
