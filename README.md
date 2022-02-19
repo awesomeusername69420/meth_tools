@@ -19,4 +19,5 @@ Designed to work with https://methamphetamine.solutions/ but most things will wo
 - Meth patch lua thing
 - Manual antiaim
 - Entity aimbot
+- Fancy shot records
 </details>
