@@ -5,6 +5,7 @@
 		_ents_add (class) -- Adds an entity class to the aimbot list
 		_ents_remove (class) -- Remove an entity class from the aimbot list
 		_ents_removeall -- Removes all entities from the aimbot list
+		_ents_print -- Prints the aimbot entity table
 		_ents_eyetrace -- Prints the class of the entity you're looking at
 ]]
 
@@ -102,6 +103,12 @@ local meth_bind_keys = { -- Hardcoded because I don't know how meth's keybinds w
 --[[
 	Functions
 ]]
+
+local function fixAngle(ang)
+	ang = ang or angle_zero
+
+	return Angle(math.Clamp(ang.pitch, -89, 89), math.NormalizeAngle(ang.yaw), math.NormalizeAngle(ang.roll))
+end
 
 local function getKey(key)
 	if key < 1 then
@@ -237,7 +244,7 @@ hook.Add("CreateMove", tostring({}), function(cmd)
 			return
 		end
 
-		local targAimAng = (targAimPos - LocalPlayer():EyePos()):Angle()
+		local targAimAng = fixAngle((targAimPos - LocalPlayer():EyePos()):Angle())
 
 		cmd:SetViewAngles(targAimAng)
 
@@ -319,6 +326,18 @@ concommand.Add("_ents_removeall", function()
 
 	MsgC(Color(100, 255, 100), "Entity table wiped\n")
 	surface.PlaySound("buttons/button14.wav")
+end)
+
+concommand.Add("_ents_print", function()
+	if table.Count(stuff.aiments) > 0 then
+		PrintTable(stuff.aiments)
+	
+		MsgC(Color(100, 255, 100), "Entity table printed\n")
+		surface.PlaySound("buttons/button14.wav")
+	else
+		MsgC(Color(255, 100, 100), "Entity table is empty\n")
+		surface.PlaySound("buttons/button10.wav")
+	end
 end)
 
 concommand.Add("_ents_eyetrace", function()
