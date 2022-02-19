@@ -2,11 +2,11 @@
 	https://github.com/awesomeusername69420/meth_tools
 	
 	Command(s):
-		_ents_add (class) -- Adds an entity class to the aimbot list
-		_ents_remove (class) -- Remove an entity class from the aimbot list
-		_ents_removeall -- Removes all entities from the aimbot list
-		_ents_print -- Prints the aimbot entity table
-		_ents_eyetrace -- Prints the class of the entity you're looking at
+		_ents_add (class) 		-		Adds an entity class to the aimbot list
+		_ents_remove (class)	-		Remove an entity class from the aimbot list
+		_ents_removeall			-		Removes all entities from the aimbot list
+		_ents_print				-		Prints the aimbot entity table
+		_ents_eyetrace			-		Prints the class of the entity you're looking at
 ]]
 
 --[[
