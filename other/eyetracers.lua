@@ -93,23 +93,21 @@ else
 		local ogrt = render.GetRenderTarget()
 		render.SetRenderTarget()
 	
-		cam.Start3D()
-			render.SetMaterial(cache.materials.box)
+		render.SetMaterial(cache.materials.box)
 	
-			for _, v in ipairs(cache.players) do
-				if not shouldDraw(v) then
-					continue
-				end
-		
-				local startpos = getHeadPos(v)
-				local endpos = v:GetEyeTraceNoCursor().HitPos
-	
-				render.DrawLine(startpos, endpos, cache.colors.green, true)
-
-				render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green)
-				render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green, true)
+		for _, v in ipairs(cache.players) do
+			if not shouldDraw(v) then
+				continue
 			end
-		cam.End3D()
+		
+			local startpos = getHeadPos(v)
+			local endpos = v:GetEyeTraceNoCursor().HitPos
+	
+			render.DrawLine(startpos, endpos, cache.colors.green, true)
+
+			render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green)
+			render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green, true)
+		end
 	
 		render.SetRenderTarget(ogrt)
 	end)
