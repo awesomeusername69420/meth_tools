@@ -9,7 +9,7 @@ local cache = {
 
 	materials = {
 		box = CreateMaterial(tostring({}), "UnlitGeneric", { -- Default color material but with alpha
-			["$alpha"] = 0.3,
+			["$alpha"] = 0.7,
 			["$basetexture"] = "color/white",
 			["$model"] = 1,
 			["$translucent"] = 1,
@@ -80,7 +80,9 @@ if meth_lua_api then
 				local endpos = v:GetEyeTraceNoCursor().HitPos
 	
 				render.DrawLine(startpos, endpos, cache.colors.green)
+
 				render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green)
+				render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green)
 			end
 		cam.End3D()
 	
@@ -103,7 +105,9 @@ else
 				local endpos = v:GetEyeTraceNoCursor().HitPos
 	
 				render.DrawLine(startpos, endpos, cache.colors.green, true)
+
 				render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green)
+				render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green, true)
 			end
 		cam.End3D()
 	
