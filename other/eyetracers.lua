@@ -41,7 +41,11 @@ local function getHeadPos(ply)
 	local hbone = ply:LookupBone("ValveBiped.Bip01_Head1")
 	
 	if hbone then
-		return ply:GetBoneMatrix(hbone):GetTranslation()
+		local hmatrix = ply:GetBoneMatrix(hbone)
+
+		if hmatrix then
+			return hmatrix:GetTranslation()
+		end
 	end
 
 	return ply:EyePos()
