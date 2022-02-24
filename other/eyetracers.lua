@@ -19,7 +19,8 @@ local cache = {
 	},
 
 	colors = {
-		green = Color(50, 180, 90, 100)
+		green = Color(50, 180, 90, 100),
+		red = Color(255, 0, 0, 100),
 	},
 
 	players = {}
@@ -80,13 +81,15 @@ if meth_lua_api then
 					continue
 				end
 		
+				local col = (v:IsAdmin() or v:IsSuperAdmin()) and cache.colors.red or cache.colors.green
+		
 				local startpos = getHeadPos(v)
 				local endpos = v:GetEyeTraceNoCursor().HitPos
+		
+				render.DrawLine(startpos, endpos, col)
 	
-				render.DrawLine(startpos, endpos, cache.colors.green)
-
-				render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green)
-				render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green)
+				render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, col)
+				render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, col)
 			end
 		cam.End3D()
 	
@@ -103,14 +106,16 @@ else
 			if not shouldDraw(v) then
 				continue
 			end
+
+			local col = (v:IsAdmin() or v:IsSuperAdmin()) and cache.colors.red or cache.colors.green
 		
 			local startpos = getHeadPos(v)
 			local endpos = v:GetEyeTraceNoCursor().HitPos
 	
-			render.DrawLine(startpos, endpos, cache.colors.green, true)
+			render.DrawLine(startpos, endpos, col, true)
 
-			render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green)
-			render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, cache.colors.green, true)
+			render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, col)
+			render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, col, true)
 		end
 	
 		render.SetRenderTarget(ogrt)
