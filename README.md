@@ -20,4 +20,6 @@ Designed to work with https://methamphetamine.solutions/ but most things will wo
 - Manual antiaim
 - Entity aimbot
 - Fancy shot records
+- Eye tracers
+- Swastika crosshair
 </details>
