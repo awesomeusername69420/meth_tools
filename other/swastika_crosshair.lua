@@ -1,10 +1,18 @@
 --[[
 	https://github.com/awesomeusername69420/meth_tools
+
+	Command(s):
+		_swastika_length (number) 		-		Changes the length of the Swastika's lines
+		_swastika_sspeed (number) 		-		Changes the speed of the Swastika's rotation
 ]]
 
 local stuff = {
 	color_red = Color(255, 0, 0),
-	center = Vector(ScrW() / 2, ScrH() / 2, 0)
+	center = Vector(ScrW() / 2, ScrH() / 2, 0),
+	convars = {
+		length = CreateClientConVar("_swastika_length", 12, false, false, "Length of Swastika lines", 0),
+		spin = CreateClientConVar("_swastika_sspeed", 5, false, false, "Speed of Swastika spinning", 0)
+	}
 }
 
 local function canRender()
@@ -16,6 +24,7 @@ meth_lua_api.callbacks.Add("OnHUDPaint", "", function()
 		return
 	end
 
+	local length = stuff.convars.length:GetFloat()
 	local center = stuff.center
 	local x, y = center.x, center.y
 
@@ -27,16 +36,16 @@ meth_lua_api.callbacks.Add("OnHUDPaint", "", function()
 	
 	local matrix = Matrix()
 	matrix:Translate(center)
-	matrix:Rotate(Angle(0, math.NormalizeAngle(SysTime() * 50), 0))
+	matrix:Rotate(Angle(0, math.NormalizeAngle(SysTime() * (stuff.convars.spin:GetFloat() * 10)), 0))
 	matrix:Translate(-center)
 
 	cam.PushModelMatrix(matrix)
-		surface.DrawLine(x, y - 12, x, y + 12)
-		surface.DrawLine(x - 12, y, x + 12, y)
-		surface.DrawLine(x, y - 12, x + 12, y - 12)
-		surface.DrawLine(x, y + 12, x - 12, y + 12)
-		surface.DrawLine(x - 12, y, x - 12, y - 12)
-		surface.DrawLine(x + 12, y, x + 12, y + 12)
+		surface.DrawLine(x, y - length, x, y + length)
+		surface.DrawLine(x - length, y, x + length, y)
+		surface.DrawLine(x, y - length, x + length, y - length)
+		surface.DrawLine(x, y + length, x - length, y + length)
+		surface.DrawLine(x - length, y, x - length, y - length)
+		surface.DrawLine(x + length, y, x + length, y + length)
 	cam.PopModelMatrix()
 
 	render.SetRenderTarget(ogrt)
