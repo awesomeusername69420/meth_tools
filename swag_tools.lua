@@ -356,6 +356,7 @@ local vars = {
 	["menu_background_blur_scale"] = 3,
 	["menu_activedropdown"] = nil,
 	["menu_colorpicker_var"] = nil,
+	["weapon_scoped"] = false,
 	["hookname"] = randomString(),
 	["renderpanic"] = false,
 	["darkrp_gestures"] = {
@@ -928,6 +929,7 @@ local cache = { -- Vastly improves performance
 	["cp_ignore"] = true,
 	["drp_ignore"] = true,
 	["menu_background_step"] = 0,
+	["players"] = {},
 	["scrh"] = 0,
 	["scrw"] = 0,
 	["traitors"] = {},
@@ -1969,14 +1971,16 @@ local function initDetours() -- Rest of the detours
 		local rest = {...}
 		
 		if vars.detours_RunConsoleCommand then
+			local lcmd = string.lower(cmd)
+
 			for _, v in ipairs(badCommands) do
-				if string.find(cmd, v) then
+				if lcmd == v then
 					alert("Block RunConsoleCommand()", vars.logs_detours, "d")
 					return
 				end
-				
+
 				for _, r in ipairs(rest) do
-					if string.find(r, v) then
+					if v == string.lower(r) then
 						alert("Block RunConsoleCommand()", vars.logs_detours, "d")
 						return
 					end
@@ -2653,7 +2657,7 @@ local function getClosest(smart)
 	
 	local lpos = meta_en.GetPos(LocalPlayer())
 	
-	for _, v in ipairs(player.GetAll()) do
+	for _, v in ipairs(cache.players) do
 		if not validEntity(v) or v == LocalPlayer() then
 			continue
 		end
@@ -3985,7 +3989,7 @@ local function doHUDPaint()
 			local blend = render.GetBlend()
 		
 			cam.Start3D()
-				for _, v in ipairs(player.GetAll()) do
+				for _, v in ipairs(cache.players) do
 					if vars.renderpanic then
 						render.SetBlend(blend)
 						
@@ -4222,7 +4226,7 @@ if ismeth then
 							local mx, my = ScrW() / 2, ScrH() / 2
 							local lpos = meta_en.GetPos(LocalPlayer())
 							
-							for _, v in ipairs(player.GetAll()) do -- Get the best backtrack target base off cursor and distance
+							for _, v in ipairs(cache.players) do -- Get the best backtrack target base off cursor and distance
 								if not validEntity(v) or v == LocalPlayer() then
 									continue
 								end
@@ -4271,7 +4275,7 @@ if ismeth then
 					end
 				end
 			
-				if (canrender(METHFLAG_NOTHIRDPERSON) and canrender(METHFLAG_NOFREECAM)) and not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
+				if (canrender(METHFLAG_NOTHIRDPERSON) and canrender(METHFLAG_NOFREECAM)) and not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) and not vars.weapon_scoped then
 					if (vars.chams_viewmodel or vars.view_screengrab_test) and validEntity(LocalPlayer()) then
 						local VM = meta_pl.GetViewModel(LocalPlayer())
 						
@@ -5374,7 +5378,7 @@ hook.Add("Tick", vars.hookname, function()
 
 	if isttt then -- Get alive players to force last player to be traitor in TTT
 		if vars.tools_detectors_traitordetector then
-			for _, v in ipairs(player.GetAll()) do
+			for _, v in ipairs(cache.players) do
 				if not meta_en.IsValid(v) or not meta_pl.Alive(v) then
 					continue
 				end
@@ -5388,7 +5392,7 @@ hook.Add("Tick", vars.hookname, function()
 		table.Empty(traitors)
 		table.Empty(spectators)
 	
-		for _, v in ipairs(player.GetAll()) do
+		for _, v in ipairs(cache.players) do
 			if not meta_en.IsValid(v) or v == LocalPlayer() then
 				continue
 			end
@@ -5882,7 +5886,7 @@ hook.Add("DoAnimationEvent", vars.hookname, function(ply, event, data)
 	local tr = util.TraceLine({
 		start = src,
 		endpos = src + (dir * 32767),
-		filter = player.GetAll(),
+		filter = cache.players,
 		ignoreworld = false,
 		mask = MASK_SHOT,
 	})
@@ -5922,7 +5926,33 @@ hook.Add("player_hurt", vars.hookname, function(data) -- Shot Records
 	end
 end)
 
-timer.Create(vars.hookname, 1, 0, function() -- Funny timer
+timer.Create(vars.hookname, 0.3, 0, function() -- Funny timer
+	-- Scope check
+
+	vars.weapon_scoped = false
+
+	local wep = meta_pl.GetActiveWeapon(LocalPlayer())
+
+	if validEntity(wep) then
+		local ams = wep.AdjustMouseSensitivity
+
+		if ams then
+			local wepams = ams(wep)
+
+			if wepams then
+				vars.weapon_scoped = wepams ~= 1
+			end
+		end
+	end
+
+	-- Update player cache
+
+	cache.players = {}
+
+	for _, v in ipairs(player.GetAll()) do
+		cache.players[#cache.players + 1] = v
+	end
+
 	-- Log handling
 	
 	if vars.logs then
@@ -5968,7 +5998,7 @@ timer.Create(vars.hookname, 1, 0, function() -- Funny timer
 		local cd, ac = detours.concommand_GetTable()
 	
 		if cd.ulx then
-			for _, v in ipairs(player.GetAll()) do
+			for _, v in ipairs(cache.players) do
 				if not meta_en.IsValid(v) or v == LocalPlayer() then
 					continue
 				end
