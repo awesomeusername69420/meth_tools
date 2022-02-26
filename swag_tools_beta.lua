@@ -356,6 +356,7 @@ local vars = {
 	["menu_background_blur_scale"] = 3,
 	["menu_activedropdown"] = nil,
 	["menu_colorpicker_var"] = nil,
+	["weapon_scoped"] = false,
 	["hookname"] = randomString(),
 	["renderpanic"] = false,
 	["darkrp_gestures"] = {
@@ -4274,7 +4275,7 @@ if ismeth then
 					end
 				end
 			
-				if (canrender(METHFLAG_NOTHIRDPERSON) and canrender(METHFLAG_NOFREECAM)) and not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) then
+				if (canrender(METHFLAG_NOTHIRDPERSON) and canrender(METHFLAG_NOFREECAM)) and not meta_pl.ShouldDrawLocalPlayer(LocalPlayer()) and not vars.weapon_scoped then
 					if (vars.chams_viewmodel or vars.view_screengrab_test) and validEntity(LocalPlayer()) then
 						local VM = meta_pl.GetViewModel(LocalPlayer())
 						
@@ -5926,6 +5927,26 @@ hook.Add("player_hurt", vars.hookname, function(data) -- Shot Records
 end)
 
 timer.Create(vars.hookname, 0.3, 0, function() -- Funny timer
+	-- Scope check
+
+	vars.weapon_scoped = false
+
+	local wep = meta_pl.GetActiveWeapon(LocalPlayer())
+
+	if validEntity(wep) then
+		local ams = wep.AdjustMouseSensitivity
+
+		if ams then
+			local wepams = ams(wep)
+
+			if wepams then
+				vars.weapon_scoped = wepams ~= 1
+			end
+		end
+	end
+
+	-- Update player cache
+
 	cache.players = {}
 
 	for _, v in ipairs(player.GetAll()) do
