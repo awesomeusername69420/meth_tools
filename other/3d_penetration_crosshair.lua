@@ -46,8 +46,10 @@ local cache = {
 	},
 
 	colors = {
-		green = Color(50, 180, 90, 100),
-		red = Color(255, 0, 0, 100),
+		green = Color(50, 180, 90, 255),
+		red = Color(255, 0, 0, 255),
+		green_a = Color(50, 180, 90, 100),
+		red_a = Color(255, 0, 0, 100)
 	}
 }
 
@@ -61,16 +63,18 @@ for k, v in pairs(cache.penetration.convars) do
 	end
 end
 
-local function getEyeTrace()
-	local calcang = LocalPlayer():EyeAngles():Forward()
-
+local function getForward()
 	if LocalPlayer():IsWorldClicking() then
-		calcang = gui.ScreenToVector(gui.MouseX(), gui.MouseY())
+		return gui.ScreenToVector(gui.MouseX(), gui.MouseY())
 	end
 
+	return LocalPlayer():EyeAngles():Forward()
+end
+
+local function getEyeTrace()
 	local tr = util.TraceLine({
 		start =  cache.eyepos,
-		endpos = cache.eyepos + (calcang * 32768),
+		endpos = cache.eyepos + (getForward() * 32768),
 		mask = MASK_SHOT,
 		filter = LocalPlayer()
 	})
@@ -229,7 +233,7 @@ local function canPenetrate()
 		end
 
 		local eyepos = eyetrace.HitPos
-		local forward = LocalPlayer():EyeAngles():Forward()
+		local forward = getForward()
 		local endtrace = nil
 		local endpos = nil
 
@@ -284,16 +288,26 @@ if meth_lua_api then
 		cache.weapon.lastpen = penetrate
 
 		local col = penetrate and cache.colors.green or cache.colors.red
+		local qcol = penetrate and cache.colors.green_a or cache.colors.red_a
+
+		local normalend = endpos + eyetrace.HitNormal
+		local normalang = eyetrace.HitNormal:Angle()
+		local up = normalang:Up() * 6
+		local right = normalang:Right() * 6
 
 		cam.Start3D()
-			render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, col)
-			render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, col)
+			render.DrawLine(normalend + up + right, normalend + up - right, col)
+			render.DrawLine(normalend + up + right, normalend - up + right, col)
+			render.DrawLine(normalend - up + right, normalend - up - right, col)
+			render.DrawLine(normalend - up - right, normalend + up - right, col)
+	
+			render.DrawQuadEasy(normalend, eyetrace.HitNormal, 12, 12, qcol, 180)
 		cam.End3D()
 	
 		render.SetRenderTarget(ogrt)
 	end)
 else
-	hook.Add("PreDrawEffects", tostring({}), function()
+	hook.Add("PreDrawEffects", "", function()
 		local ogrt = render.GetRenderTarget()
 		render.SetRenderTarget()
 	
@@ -308,15 +322,25 @@ else
 		cache.weapon.lastpen = penetrate
 
 		local col = penetrate and cache.colors.green or cache.colors.red
-		
-		render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, col)
-		render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, col, true)
+		local qcol = penetrate and cache.colors.green_a or cache.colors.red_a
+
+		local normalend = endpos + eyetrace.HitNormal
+		local normalang = eyetrace.HitNormal:Angle()
+		local up = normalang:Up() * 6
+		local right = normalang:Right() * 6
+
+		render.DrawLine(normalend + up + right, normalend + up - right, col, true)
+		render.DrawLine(normalend + up + right, normalend - up + right, col, true)
+		render.DrawLine(normalend - up + right, normalend - up - right, col, true)
+		render.DrawLine(normalend - up - right, normalend + up - right, col, true)
+
+		render.DrawQuadEasy(normalend, eyetrace.HitNormal, 12, 12, qcol, 180)
 	
 		render.SetRenderTarget(ogrt)
 	end)
 end
 
-hook.Add("CalcView", tostring({}), function(ply, pos)
+hook.Add("CalcView", "", function(ply, pos)
 	if not IsValid(ply) then
 		return
 	end
