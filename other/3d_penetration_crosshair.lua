@@ -110,8 +110,6 @@ local function getAmmoPen(wep)
 			return nil
 		end
 
-		local eyetrace = LocalPlayer():GetEyeTrace()
-
 		if isBase(wep, "bobs") then -- M9K is bob's base
 			if cache.penetration.convars.m9k and cache.penetration.convars.m9k:GetBool() then
 				return nil
@@ -138,7 +136,7 @@ local function getAmmoPen(wep)
 				mul = cache.penetration.convars.tfa_mul:GetFloat()
 			end
 
-			return (gafm(wep) / gpm(wep, eyetrace.MatType)) * mul
+			return ((gafm(wep) / gpm(wep, LocalPlayer():GetEyeTrace().MatType)) * mul) * 0.875
 		end
 
 		if isBase(wep, "arccw") then
@@ -173,7 +171,7 @@ local function canPenetrate()
 		local endtrace = nil
 		local endpos = nil
 
-		for i = 1, 1000 do -- There's probably a better way of doing this but this is what I came up with so fuck you
+		for i = 1, 300 do -- There's probably a better way of doing this but this is what I came up with so fuck you
 			local cur = eyepos + (forward * i)
 
 			local tr = util.TraceLine({
@@ -190,11 +188,14 @@ local function canPenetrate()
 		end
 
 		if endpos then
+			local decimals = string.Split(tostring(ammopen), ".")
+			decimals = decimals[2] and #decimals[2] or 0
+
 			if isBase(wep, "tfa") then
-				return eyepos:Distance(endpos) / 100 <= ammopen / 2
+				return math.Round(eyepos:Distance(endpos) / 100, decimals) <= ammopen / 2
 			end
 
-			return math.Round(eyepos:DistToSqr(endpos)) < ammopen
+			return math.Round(eyepos:DistToSqr(endpos), decimals) < ammopen
 		end
 	end
 
