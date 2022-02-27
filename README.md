@@ -22,4 +22,5 @@ Designed to work with https://methamphetamine.solutions/ but most things will wo
 - Fancy shot records
 - Eye tracers
 - Swastika crosshair
+- 3D Penetration Crosshair
 </details>
