@@ -28,6 +28,8 @@ local cache = {
 		},
 
 		convars = {
+			last = {},
+
 			arccw = GetConVar("arccw_enable_penetration"),
 			m9k = GetConVar("M9KDisablePenetration"),
 			tfa = GetConVar("sv_tfa_bullet_penetration"),
@@ -35,11 +37,26 @@ local cache = {
 		}
 	},
 
+	weapon = {
+		class = nil,
+		pen = nil
+	},
+
 	colors = {
 		green = Color(50, 180, 90, 100),
 		red = Color(255, 0, 0, 100),
 	}
 }
+
+for k, v in pairs(cache.penetration.convars) do
+	if type(v) == "table" then
+		continue
+	end
+
+	if v then
+		cache.penetration.convars.last[k] = v:GetFloat()
+	end
+end
 
 local function isBase(wep, base)
 	if IsValid(wep) then
@@ -54,6 +71,32 @@ local function isBase(wep, base)
 end
 
 local function getAmmoPen(wep)
+	if wep:GetClass() == cache.weapon.class then
+		local rcache = true
+
+		for k, v in pairs(cache.penetration.convars.last) do -- Check cache for convar changes
+			if v ~= cache.penetration.convars[k]:GetFloat() then
+				rcache = false
+
+				for k, v in pairs(cache.penetration.convars) do -- Update convars if one is different
+					if type(v) == "table" then
+						continue
+					end
+				
+					if v then
+						cache.penetration.convars.last[k] = v:GetFloat()
+					end
+				end
+
+				break
+			end
+		end
+
+		if rcache then
+			return cache.weapon.pen
+		end
+	end
+
 	if IsValid(wep) then
 		local ammotype = wep:GetPrimaryAmmoType()
 
@@ -114,7 +157,11 @@ local function canPenetrate()
 	local wep = LocalPlayer():GetActiveWeapon()
 
 	if IsValid(wep) then
+
 		local ammopen = getAmmoPen(wep) or -1
+
+		cache.weapon.class = wep:GetClass()
+		cache.weapon.pen = ammopen
 
 		if not ammopen then
 			return false
