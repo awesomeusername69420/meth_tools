@@ -220,8 +220,10 @@ if meth_lua_api then
 
 		local col = penetrate and cache.colors.green or cache.colors.red
 	
-		render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, col)
-		render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, col, true)
+		cam.Start3D()
+			render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, col)
+			render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, col)
+		cam.End3D()
 	
 		render.SetRenderTarget(ogrt)
 	end)
