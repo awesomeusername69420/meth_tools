@@ -112,6 +112,8 @@ local function getAmmoPen(wep)
 			return nil
 		end
 
+		local eyetrace = LocalPlayer():GetEyeTrace()
+
 		if isBase(wep, "bobs") then -- M9K is bob's base
 			if cache.penetration.convars.m9k and cache.penetration.convars.m9k:GetBool() then
 				return nil
@@ -138,7 +140,7 @@ local function getAmmoPen(wep)
 				mul = cache.penetration.convars.tfa_mul:GetFloat()
 			end
 
-			return ((gafm(wep) / gpm(wep, LocalPlayer():GetEyeTrace().MatType)) * mul) * 0.875
+			return ((gafm(wep) / gpm(wep, eyetrace.MatType)) * mul) * 0.875
 		end
 
 		if isBase(wep, "arccw") then
@@ -147,6 +149,20 @@ local function getAmmoPen(wep)
 			end
 
 			return math.pow(wep.Penetration or math.huge, 2)
+		end
+
+		if isBase(wep, "fas2") then
+			if not wep.PenetrationEnabled or not wep.PenStr or eyetrace.MatType == MAT_SLOSH then
+				return nil
+			end
+
+			local ent = eyetrace.Entity
+
+			if IsValid(ent) and (ent:IsPlayer() or ent:IsNPC()) then
+				return nil
+			end
+			
+			return math.pow(wep.PenStr, 2) + (wep.PenStr * 0.25)
 		end
 	end
 
@@ -159,16 +175,16 @@ local function canPenetrate()
 	if IsValid(wep) then
 		local ammopen = getAmmoPen(wep) or -1
 
-		cache.weapon.class = wep:GetClass()
+		cache.weapon.class = not isBase(wep, "fas2") and wep:GetClass() or nil
 		cache.weapon.pen = ammopen
 
 		if not ammopen then
 			return false
 		end
-
+		
 		local eyetrace = LocalPlayer():GetEyeTrace()
 		local eyepos = eyetrace.HitPos
-		local forward = LocalPlayer():EyeAngles():Forward()
+		local forward = EyeAngles():Forward()
 		local endtrace = nil
 		local endpos = nil
 
