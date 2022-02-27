@@ -117,7 +117,7 @@ local function canPenetrate()
 		local ammopen = getAmmoPen(wep) or -1
 
 		if not ammopen then
-			--return false
+			return false
 		end
 
 		local eyetrace = LocalPlayer():GetEyeTrace()
