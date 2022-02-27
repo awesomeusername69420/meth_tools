@@ -179,6 +179,20 @@ local function getAmmoPen(wep)
 			
 			return math.pow(wep.PenStr, 2) + (wep.PenStr * 0.25)
 		end
+
+		if isBase(wep, "cw") then
+			if not wep.CanPenetrate or not wep.PenStr or eyetrace.MatType == MAT_SLOSH then
+				return nil
+			end
+
+			local ent = eyetrace.Entity
+
+			if IsValid(ent) and (ent:IsPlayer() or ent:IsNPC()) then
+				return nil
+			end
+			
+			return math.pow(wep.PenStr, 2) + (wep.PenStr * 0.25)
+		end
 	end
 
 	return nil
