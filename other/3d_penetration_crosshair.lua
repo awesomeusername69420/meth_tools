@@ -258,7 +258,7 @@ local function canPenetrate()
 end
 
 if meth_lua_api then
-	meth_lua_api.callbacks.Add("OnHUDPaint", "", function()
+	meth_lua_api.callbacks.Add("OnHUDPaint", tostring({}), function()
 		if not canRender() then
 			return
 		end
@@ -286,7 +286,7 @@ if meth_lua_api then
 		render.SetRenderTarget(ogrt)
 	end)
 else
-	hook.Add("PreDrawEffects", "", function()
+	hook.Add("PreDrawEffects", tostring({}), function()
 		local ogrt = render.GetRenderTarget()
 		render.SetRenderTarget()
 	
