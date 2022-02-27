@@ -60,6 +60,17 @@ for k, v in pairs(cache.penetration.convars) do
 	end
 end
 
+local function getEyeTrace()
+	local tr = util.TraceLine({
+		start = EyePos(),
+		endpos = EyePos() + (EyeAngles():Forward() * 32768),
+		mask = MASK_SHOT,
+		filter = LocalPlayer()
+	})
+
+	return tr
+end
+
 local function canRender()
 	return not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not LocalPlayer():IsTyping()
 end
@@ -116,7 +127,7 @@ local function getAmmoPen(wep)
 			return nil
 		end
 
-		local eyetrace = LocalPlayer():GetEyeTrace()
+		local eyetrace = getEyeTrace()
 
 		if isBase(wep, "bobs") then -- M9K is bob's base
 			if cache.penetration.convars.m9k and cache.penetration.convars.m9k:GetBool() then
@@ -177,7 +188,7 @@ local function canPenetrate()
 	local wep = LocalPlayer():GetActiveWeapon()
 
 	if IsValid(wep) then
-		local eyetrace = LocalPlayer():GetEyeTrace()
+		local eyetrace = getEyeTrace()
 
 		if isBase(wep, "fas2") then
 			local ent = eyetrace.Entity
@@ -243,7 +254,7 @@ if meth_lua_api then
 	
 		render.SetMaterial(cache.materials.box)
 	
-		local eyetrace = LocalPlayer():GetEyeTrace()
+		local eyetrace = getEyeTrace()
 		local endpos = eyetrace.HitPos
 
 		local penetrate = endpos == cache.weapon.hitpos and cache.weapon.lastpen or canPenetrate()
@@ -267,7 +278,7 @@ else
 	
 		render.SetMaterial(cache.materials.box)
 	
-		local eyetrace = LocalPlayer():GetEyeTrace()
+		local eyetrace = getEyeTrace()
 		local endpos = eyetrace.HitPos
 
 		local penetrate = endpos == cache.weapon.hitpos and cache.weapon.lastpen or canPenetrate()
