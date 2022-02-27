@@ -62,9 +62,15 @@ for k, v in pairs(cache.penetration.convars) do
 end
 
 local function getEyeTrace()
+	local calcang = LocalPlayer():EyeAngles():Forward()
+
+	if LocalPlayer():IsWorldClicking() then
+		calcang = gui.ScreenToVector(gui.MouseX(), gui.MouseY())
+	end
+
 	local tr = util.TraceLine({
-		start = cache.eyepos,
-		endpos = cache.eyepos + (LocalPlayer():EyeAngles():Forward() * 32768),
+		start =  cache.eyepos,
+		endpos = cache.eyepos + (calcang * 32768),
 		mask = MASK_SHOT,
 		filter = LocalPlayer()
 	})
