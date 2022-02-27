@@ -257,7 +257,7 @@ if meth_lua_api then
 		local eyetrace = getEyeTrace()
 		local endpos = eyetrace.HitPos
 
-		local penetrate = endpos == cache.weapon.hitpos and cache.weapon.lastpen or canPenetrate()
+		local penetrate = (endpos == cache.weapon.hitpos and LocalPlayer():GetActiveWeapon():GetClass() == cache.weapon.class) and cache.weapon.lastpen or canPenetrate()
 
 		cache.weapon.hitpos = endpos
 		cache.weapon.lastpen = penetrate
@@ -281,7 +281,7 @@ else
 		local eyetrace = getEyeTrace()
 		local endpos = eyetrace.HitPos
 
-		local penetrate = endpos == cache.weapon.hitpos and cache.weapon.lastpen or canPenetrate()
+		local penetrate = (endpos == cache.weapon.hitpos and LocalPlayer():GetActiveWeapon():GetClass() == cache.weapon.class) and cache.weapon.lastpen or canPenetrate()
 
 		cache.weapon.hitpos = endpos
 		cache.weapon.lastpen = penetrate
