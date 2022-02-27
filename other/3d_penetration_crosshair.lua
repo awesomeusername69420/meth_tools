@@ -307,7 +307,7 @@ if meth_lua_api then
 		render.SetRenderTarget(ogrt)
 	end)
 else
-	hook.Add("PreDrawEffects", "", function()
+	hook.Add("PreDrawEffects", tostring({}), function()
 		local ogrt = render.GetRenderTarget()
 		render.SetRenderTarget()
 	
@@ -340,7 +340,7 @@ else
 	end)
 end
 
-hook.Add("CalcView", "", function(ply, pos)
+hook.Add("CalcView", tostring({}), function(ply, pos)
 	if not IsValid(ply) then
 		return
 	end
