@@ -60,6 +60,10 @@ for k, v in pairs(cache.penetration.convars) do
 	end
 end
 
+local function canRender()
+	return not vgui.CursorVisible() and not gui.IsConsoleVisible() and not gui.IsGameUIVisible() and not LocalPlayer():IsTyping()
+end
+
 local function isBase(wep, base)
 	if IsValid(wep) then
 		local wbase = wep.Base
@@ -173,16 +177,25 @@ local function canPenetrate()
 	local wep = LocalPlayer():GetActiveWeapon()
 
 	if IsValid(wep) then
+		local eyetrace = LocalPlayer():GetEyeTrace()
+
+		if isBase(wep, "fas2") then
+			local ent = eyetrace.Entity
+
+			if IsValid(ent) and (ent:IsPlayer() or ent:IsNPC()) then
+				return false
+			end
+		end
+
 		local ammopen = getAmmoPen(wep) or -1
 
-		cache.weapon.class = not isBase(wep, "fas2") and wep:GetClass() or nil
+		cache.weapon.class = wep:GetClass()
 		cache.weapon.pen = ammopen
 
 		if not ammopen then
 			return false
 		end
-		
-		local eyetrace = LocalPlayer():GetEyeTrace()
+
 		local eyepos = eyetrace.HitPos
 		local forward = EyeAngles():Forward()
 		local endtrace = nil
@@ -221,6 +234,10 @@ end
 
 if meth_lua_api then
 	meth_lua_api.callbacks.Add("OnHUDPaint", "", function()
+		if not canRender() then
+			return
+		end
+
 		local ogrt = render.GetRenderTarget()
 		render.SetRenderTarget()
 	
