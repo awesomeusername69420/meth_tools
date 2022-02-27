@@ -3,6 +3,7 @@
 ]]
 
 local cache = {
+	eyepos = vector_origin,
 	mins = Vector(-4, -4, -4),
 	maxs = Vector(4, 4, 4),
 
@@ -62,8 +63,8 @@ end
 
 local function getEyeTrace()
 	local tr = util.TraceLine({
-		start = LocalPlayer():EyePos(),
-		endpos = LocalPlayer():EyePos() + (LocalPlayer():EyeAngles():Forward() * 32768),
+		start = cache.eyepos,
+		endpos = cache.eyepos + (LocalPlayer():EyeAngles():Forward() * 32768),
 		mask = MASK_SHOT,
 		filter = LocalPlayer()
 	})
@@ -222,7 +223,7 @@ local function canPenetrate()
 		end
 
 		local eyepos = eyetrace.HitPos
-		local forward = EyeAngles():Forward()
+		local forward = LocalPlayer():EyeAngles():Forward()
 		local endtrace = nil
 		local endpos = nil
 
@@ -308,3 +309,11 @@ else
 		render.SetRenderTarget(ogrt)
 	end)
 end
+
+hook.Add("CalcView", tostring({}), function(ply, pos)
+	if not IsValid(ply) then
+		return
+	end
+
+	cache.eyepos = pos
+end)
