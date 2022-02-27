@@ -39,6 +39,8 @@ local cache = {
 
 	weapon = {
 		class = nil,
+		hitpos = nil,
+		lastpen = false,
 		pen = nil
 	},
 
@@ -155,7 +157,6 @@ local function canPenetrate()
 	local wep = LocalPlayer():GetActiveWeapon()
 
 	if IsValid(wep) then
-
 		local ammopen = getAmmoPen(wep) or -1
 
 		cache.weapon.class = wep:GetClass()
@@ -171,7 +172,7 @@ local function canPenetrate()
 		local endtrace = nil
 		local endpos = nil
 
-		for i = 1, 300 do -- There's probably a better way of doing this but this is what I came up with so fuck you
+		for i = 1, 75 do -- There's probably a better way of doing this but this is what I came up with so fuck you
 			local cur = eyepos + (forward * i)
 
 			local tr = util.TraceLine({
@@ -209,8 +210,15 @@ if meth_lua_api then
 	
 		render.SetMaterial(cache.materials.box)
 	
-		local col = canPenetrate() and cache.colors.green or cache.colors.red
-		local endpos = LocalPlayer():GetEyeTrace().HitPos
+		local eyetrace = LocalPlayer():GetEyeTrace()
+		local endpos = eyetrace.HitPos
+
+		local penetrate = endpos == cache.weapon.hitpos and cache.weapon.lastpen or canPenetrate()
+
+		cache.weapon.hitpos = endpos
+		cache.weapon.lastpen = penetrate
+
+		local col = penetrate and cache.colors.green or cache.colors.red
 	
 		render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, col)
 		render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, col, true)
@@ -224,9 +232,16 @@ else
 	
 		render.SetMaterial(cache.materials.box)
 	
-		local col = canPenetrate() and cache.colors.green or cache.colors.red
-		local endpos = LocalPlayer():GetEyeTrace().HitPos
-	
+		local eyetrace = LocalPlayer():GetEyeTrace()
+		local endpos = eyetrace.HitPos
+
+		local penetrate = endpos == cache.weapon.hitpos and cache.weapon.lastpen or canPenetrate()
+
+		cache.weapon.hitpos = endpos
+		cache.weapon.lastpen = penetrate
+
+		local col = penetrate and cache.colors.green or cache.colors.red
+		
 		render.DrawBox(endpos, angle_zero, cache.mins, cache.maxs, col)
 		render.DrawWireframeBox(endpos, angle_zero, cache.mins, cache.maxs, col, true)
 	
