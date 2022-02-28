@@ -296,12 +296,12 @@ if meth_lua_api then
 		local right = normalang:Right() * 6
 
 		cam.Start3D()
+			render.DrawQuadEasy(normalend, eyetrace.HitNormal, 12, 12, qcol, 180)
+
 			render.DrawLine(normalend + up + right, normalend + up - right, col)
 			render.DrawLine(normalend + up + right, normalend - up + right, col)
 			render.DrawLine(normalend - up + right, normalend - up - right, col)
 			render.DrawLine(normalend - up - right, normalend + up - right, col)
-	
-			render.DrawQuadEasy(normalend, eyetrace.HitNormal, 12, 12, qcol, 180)
 		cam.End3D()
 	
 		render.SetRenderTarget(ogrt)
@@ -329,12 +329,12 @@ else
 		local up = normalang:Up() * 6
 		local right = normalang:Right() * 6
 
+		render.DrawQuadEasy(normalend, eyetrace.HitNormal, 12, 12, qcol, 180)
+
 		render.DrawLine(normalend + up + right, normalend + up - right, col, true)
 		render.DrawLine(normalend + up + right, normalend - up + right, col, true)
 		render.DrawLine(normalend - up + right, normalend - up - right, col, true)
 		render.DrawLine(normalend - up - right, normalend + up - right, col, true)
-
-		render.DrawQuadEasy(normalend, eyetrace.HitNormal, 12, 12, qcol, 180)
 	
 		render.SetRenderTarget(ogrt)
 	end)
