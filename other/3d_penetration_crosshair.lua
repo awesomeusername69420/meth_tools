@@ -9,7 +9,7 @@ local cache = {
 
 	materials = {
 		box = CreateMaterial(tostring({}), "UnlitGeneric", { -- Default color material but with alpha
-			["$alpha"] = 0.7,
+			["$alpha"] = 0.4,
 			["$basetexture"] = "color/white",
 			["$model"] = 1,
 			["$translucent"] = 1,
