@@ -215,7 +215,7 @@ local function canPenetrate()
 	if IsValid(wep) then
 		local eyetrace = getEyeTrace()
 
-		if isBase(wep, "fas2") then
+		if isBase(wep, "fas2") or isBase(wep, "cw") then
 			local ent = eyetrace.Entity
 
 			if IsValid(ent) and (ent:IsPlayer() or ent:IsNPC()) then
