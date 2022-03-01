@@ -245,7 +245,7 @@ local function canPenetrate()
 				endpos = cur
 			})
 
-			if not tr.HitWorld then
+			if not tr.Hit then
 				endpos = cur
 				endtrace = tr
 
