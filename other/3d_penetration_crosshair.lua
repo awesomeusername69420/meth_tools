@@ -75,7 +75,6 @@ local function getEyeTrace()
 	local tr = util.TraceLine({
 		start =  cache.eyepos,
 		endpos = cache.eyepos + (getForward() * 32768),
-		mask = MASK_SHOT,
 		filter = LocalPlayer()
 	})
 
