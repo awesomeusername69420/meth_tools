@@ -18,10 +18,10 @@ local function getFPS()
 end
 
 local function getTPS()
-	return math.Round(1 / engine.ServerFrameTime())
+	return math.Clamp(math.Round(1 / engine.ServerFrameTime()), 0, stuff.tickrate)
 end
 
-timer.Create("bbbb", 0.3, 0, function() -- Update stuff every now and then to avoid lag (Except tickrate, that will never change)
+timer.Create(tostring({}), 0.3, 0, function() -- Update stuff every now and then to avoid lag (Except tickrate, that will never change)
 	stuff.hostname = GetHostName()
 	stuff.tps = getTPS()
 	stuff.fps = getFPS()
@@ -29,7 +29,7 @@ timer.Create("bbbb", 0.3, 0, function() -- Update stuff every now and then to av
 	stuff.playercount = player.GetCount()
 end)
 
-meth_lua_api.callbacks.Add("OnHUDPaint", "bbbb", function()
+meth_lua_api.callbacks.Add("OnHUDPaint", tostring({}), function()
 	local w, h = 0, 20
 
 	surface.SetFont("BudgetLabel")
