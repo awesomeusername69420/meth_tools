@@ -101,7 +101,7 @@ local function getAveragePing()
 	return math.Round(cur / #stuff.cache.ping)
 end
 
-timer.Create("bbbb", 0.3, 0, function() -- Update stuff every now and then to avoid lag (Except tickrate, that will never change)
+timer.Create(tostring({}), 0.3, 0, function() -- Update stuff every now and then to avoid lag (Except tickrate, that will never change)
 	stuff.hostname = GetHostName()
 	stuff.tps = getTPS()
 	stuff.fps = getFPS()
@@ -115,7 +115,7 @@ timer.Create("bbbb", 0.3, 0, function() -- Update stuff every now and then to av
 	end
 end)
 
-meth_lua_api.callbacks.Add("OnHUDPaint", "bbbb", function()
+meth_lua_api.callbacks.Add("OnHUDPaint", tostring({}), function()
 	local ScrW = ScrW()
 	local w, h = 0, 20
 
