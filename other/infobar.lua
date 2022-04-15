@@ -122,7 +122,7 @@ meth_lua_api.callbacks.Add("OnHUDPaint", "bbbb", function()
 	surface.SetFont("BudgetLabel")
 	surface.SetTextColor(color_white)
 
-	local str = stuff.hostname .. " | TPS: " .. stuff.tps .. " / " .. stuff.tickrate .. " | FPS: " .. stuff.fps .. " | PING: " .. stuff.ping .. "ms | Players: " .. stuff.playercount
+	local str = stuff.hostname .. " | TPS: " .. stuff.tps .. " / " .. stuff.tickrate .. " | FPS: " .. stuff.fps .. " | Ping: " .. stuff.ping .. "ms | Players: " .. stuff.playercount
 	local tw, th = surface.GetTextSize(str)
 
 	w = tw + 10
