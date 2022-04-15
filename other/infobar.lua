@@ -7,7 +7,8 @@
 
 local stuff = {
 	convars = {
-		debug = CreateClientConVar("info_debug", 0, true, false, "Controls debug mode for the infobar", 0, 1)
+		debug = CreateClientConVar("info_debug", 0, true, false, "Controls debug mode for the infobar", 0, 1),
+		fps_max = GetConVar("fps_max")
 	},
 	
 	colors = {
@@ -40,7 +41,13 @@ stuff.tickrate_third = math.Round(stuff.tickrate / 3)
 stuff.tickrate_two_thirds = math.Round(stuff.tickrate * (2 / 3))
 
 local function getFPS()
-	local curfps = math.Clamp(math.Round(1 / RealFrameTime()), 0, math.huge)
+	local maxfps = stuff.convars.fps_max:GetInt()
+	
+	if maxfps == 0 then
+		maxfps = math.huge
+	end
+	
+	local curfps = math.Clamp(math.Round(1 / RealFrameTime()), 0, maxfps)
 	
 	stuff.cache.fps = stuff.cache.fps or {}
 	stuff.cache.fps[#stuff.cache.fps + 1] = curfps
