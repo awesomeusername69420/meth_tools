@@ -1,5 +1,5 @@
 --[[
-	https://github.com/awesomeusername69420/miscellaneous-gmod-stuff
+	https://github.com/awesomeusername69420/meth_tools
 ]]
 
 local colors = {
@@ -58,6 +58,9 @@ meth_lua_api.callbacks.Add("OnHUDPaint", "", function()
 		render.SetMaterial(hitboxmat)
 
 		for _, v in ipairs(GetSortedPlayers()) do
+			v:InvalidateBoneCache()
+			v:SetupBones()
+
 			for hitset = 0, v:GetHitboxSetCount() - 1 do
 				for hitbox = 0, v:GetHitBoxCount(hitset) - 1 do
 					local hitgroup = v:GetHitBoxHitGroup(hitbox, hitset)
